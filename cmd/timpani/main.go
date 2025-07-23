@@ -13,7 +13,6 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/tzrikka/timpani/internal/thrippy"
-	"github.com/tzrikka/timpani/pkg/api/slack"
 	"github.com/tzrikka/timpani/pkg/http/webhooks"
 	"github.com/tzrikka/timpani/pkg/temporal"
 	"github.com/tzrikka/xdg"
@@ -24,6 +23,12 @@ const (
 	ConfigFileName = "config.toml"
 	LinksFileName  = "links.toml"
 )
+
+var services = []string{
+	"Bitbucket",
+	"GitHub",
+	"Slack",
+}
 
 func main() {
 	bi, _ := debug.ReadBuildInfo()
@@ -55,14 +60,13 @@ func flags() []cli.Flag {
 	}
 
 	path := configFile()
-
-	// Core settings.
 	fs = append(fs, temporal.Flags(path)...)
 	fs = append(fs, thrippy.Flags(path)...)
 	fs = append(fs, webhooks.Flags(path)...)
 
-	// Thrippy link IDs.
-	fs = append(fs, slack.LinkIDFlag(path))
+	for _, s := range services {
+		fs = append(fs, thrippy.LinkIDFlag(path, s))
+	}
 
 	return fs
 }

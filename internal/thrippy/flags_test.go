@@ -32,10 +32,10 @@ func TestLinkID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := &cli.Command{
-				Flags: []cli.Flag{&cli.StringFlag{Name: "thrippy-link-provider"}},
+				Flags: []cli.Flag{&cli.StringFlag{Name: "thrippy-link-sp"}},
 			}
-			_ = cmd.Set("thrippy-link-provider", tt.flag)
-			got, gotOK := LinkID(zerolog.Nop(), cmd, "provider")
+			_ = cmd.Set("thrippy-link-sp", tt.flag)
+			got, gotOK := LinkID(zerolog.Nop(), cmd, "sp")
 			if got != tt.want {
 				t.Errorf("LinkID() got = %v, want %v", got, tt.want)
 			}

@@ -57,6 +57,7 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventRequest) (map[string]any, error) {
 	signal := fmt.Sprintf("%s.events.%s", strings.ToLower(req.Source), req.Name)
 
+	// https://docs.temporal.io/develop/go/observability#visibility
 	kw := temporal.NewSearchAttributeKeyKeyword("WaitingForSignal").ValueSet(signal)
 	if err := workflow.UpsertTypedSearchAttributes(ctx, kw); err != nil {
 		return nil, fmt.Errorf("failed to set workflow search attribute: %w", err)

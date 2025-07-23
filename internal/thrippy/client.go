@@ -7,11 +7,8 @@ package thrippy
 
 import (
 	"context"
-	"strings"
 	"time"
 
-	"github.com/lithammer/shortuuid/v4"
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
 	"go.temporal.io/sdk/activity"
 	"google.golang.org/grpc"
@@ -39,27 +36,10 @@ func NewLinkClient(id string, cmd *cli.Command) LinkClient {
 	}
 }
 
-// LinkID extracts and checks the configured Thrippy
-// link ID for the given third-party service provider.
-func LinkID(l zerolog.Logger, cmd *cli.Command, provider string) (string, bool) {
-	id := cmd.String("thrippy-link-" + strings.ToLower(provider))
-	if id == "" {
-		l.Warn().Msg("Thrippy link ID not configured for " + provider)
-		return "", false
-	}
-
-	if _, err := shortuuid.DefaultEncoder.Decode(id); err != nil {
-		l.Error().Msg("invalid Thrippy link ID configured for " + provider)
-		return "", false
-	}
-
-	return id, true
-}
-
 // LinkData returns the template name and saved secrets of the receiver's Thrippy link.
 // This function does not distinguish between "not found" and other gRPC errors. The
 // output must not be cached as it may change at any time, e.g. OAuth access tokens.
-func (t *LinkClient) LinkData(ctx context.Context, providerName string) (string, map[string]string, error) {
+func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, error) {
 	l := activity.GetLogger(ctx)
 
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))

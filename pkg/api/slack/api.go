@@ -35,7 +35,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 
 	var template string
 	var secrets map[string]string
-	template, secrets, err = a.thrippy.LinkData(ctx, "slack")
+	template, secrets, err = a.thrippy.LinkData(ctx)
 	if err != nil {
 		return
 	}

@@ -2,8 +2,6 @@ package slack
 
 import (
 	"github.com/rs/zerolog"
-	altsrc "github.com/urfave/cli-altsrc/v3"
-	"github.com/urfave/cli-altsrc/v3/toml"
 	"github.com/urfave/cli/v3"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/worker"
@@ -14,19 +12,6 @@ import (
 
 type API struct {
 	thrippy thrippy.LinkClient
-}
-
-// LinkIDFlag defines a CLI flag for a Thrippy link ID. This flag can also be
-// set using an environment variable and the application's configuration file.
-func LinkIDFlag(configFilePath altsrc.StringSourcer) cli.Flag {
-	return &cli.StringFlag{
-		Name:  "thrippy-link-slack",
-		Usage: "Thrippy link ID for Slack",
-		Sources: cli.NewValueSourceChain(
-			cli.EnvVar("THRIPPY_LINK_SLACK"),
-			toml.TOML("thrippy.links.slack", configFilePath),
-		),
-	}
 }
 
 // Register exposes Temporal activities and workflows via the Timpani worker.
