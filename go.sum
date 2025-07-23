@@ -90,8 +90,8 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
 github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-github.com/tzrikka/thrippy-api v1.1.2 h1:RGP0zj8oi0Tuv7Z/a+Wld0s9hymblfQSvtAKH3wmc4U=
-github.com/tzrikka/thrippy-api v1.1.2/go.mod h1:6EKFuG+/WaNThPMqag8SLk82nVL4aEmpt3OAZ+CrJ8k=
+github.com/tzrikka/thrippy-api v1.1.3 h1:5VAVGHMs2AOdCAqI00HpggNRjtOawBTFzUL+TARde/M=
+github.com/tzrikka/thrippy-api v1.1.3/go.mod h1:ve/JwnzNqgD5MSOn7v6NpHsbP1EclQu4t67sliz42VY=
 github.com/tzrikka/xdg v1.2.5 h1:WbO2/xSuGb2H9hsDfoVajyBis0GJpBxO9gCpfvF8sPY=
 github.com/tzrikka/xdg v1.2.5/go.mod h1:+m6NMy3/CSXZ3CEz+FCyGbnh+jv43tQrPv2e25o+twA=
 github.com/urfave/cli-altsrc/v3 v3.0.1 h1:v+gHk59syLk8ao9rYybZs43+D5ut/gzj0omqQ1XYl8k=
