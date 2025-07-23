@@ -58,6 +58,8 @@ type internalMessage struct {
 
 // IncomingMessages returns the connection's channel that publishes
 // data [Message]s as they are received from the server.
+//
+// [Message]: https://pkg.go.dev/github.com/tzrikka/timpani/pkg/websocket#Message
 func (c *Conn) IncomingMessages() <-chan Message {
 	return c.reader
 }

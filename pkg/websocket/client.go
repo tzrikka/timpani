@@ -148,6 +148,8 @@ func (c *Client) replaceConn() {
 
 // IncomingMessages returns the client's channel that publishes
 // data [Message]s as they are received from the server.
+//
+// [Message]: https://pkg.go.dev/github.com/tzrikka/timpani/pkg/websocket#Message
 func (c *Client) IncomingMessages() <-chan Message {
 	return c.outMsgs
 }
