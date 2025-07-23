@@ -140,6 +140,7 @@ func TestParseBody(t *testing.T) {
 			method:      http.MethodPost,
 			contentType: "application/x-www-form-urlencoded",
 			body:        "key1=value1&key2=value2",
+			wantRaw:     []byte("key1=value1&key2=value2"),
 		},
 		{
 			name:        "post_json",
