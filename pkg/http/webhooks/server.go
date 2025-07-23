@@ -28,21 +28,32 @@ const (
 )
 
 type httpServer struct {
-	httpPort   int      // To initialize the HTTP server.
-	thrippyURL *url.URL // Optional passthrough for Thrippy OAuth.
+	httpPort     int             // To initialize the HTTP server.
+	webhookLinks map[string]bool // Configured Thrippy link IDs.
+	thrippyURL   *url.URL        // Optional passthrough for Thrippy OAuth.
 
 	thrippyGRPCAddr string
 	thrippyCreds    credentials.TransportCredentials
-	temporal        intlis.TemporalConfig
+
+	temporal intlis.TemporalConfig // Destination for event notifications.
 }
 
 func NewHTTPServer(cmd *cli.Command) *httpServer {
+	links := map[string]bool{}
+	for _, fn := range cmd.FlagNames() {
+		if strings.HasPrefix(fn, "thrippy-link-") {
+			links[cmd.String(fn)] = true
+		}
+	}
+
 	return &httpServer{
-		httpPort:   cmd.Int("webhook-port"),
-		thrippyURL: baseURL(cmd.String("thrippy-http-addr")),
+		httpPort:     cmd.Int("webhook-port"),
+		webhookLinks: links,
+		thrippyURL:   baseURL(cmd.String("thrippy-http-addr")),
 
 		thrippyGRPCAddr: cmd.String("thrippy-server-addr"),
 		thrippyCreds:    thrippy.SecureCreds(cmd),
+
 		temporal: intlis.TemporalConfig{
 			HostPort:  cmd.String("temporal-host-port"),
 			Namespace: cmd.String("temporal-namespace"),
@@ -121,6 +132,11 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 	l = l.With().Str("link_id", linkID).Logger()
 	if pathSuffix != "" {
 		l = l.With().Str("path_suffix", pathSuffix).Logger()
+	}
+
+	if _, ok := s.webhookLinks[linkID]; !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	template, secrets, err := s.linkData(r.Context(), linkID)
