@@ -52,8 +52,8 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 	return nil
 }
 
-// waitForEventWorkflow is a generic Temporal workflow that
-// waits for a specific [Signal] call from an event listener.
+// waitForEventWorkflow is a generic Temporal workflow that waits for a specific [Signal]
+// call from an event listener. Timeouts are optional. This workflow supports cancellation.
 func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventRequest) (map[string]any, error) {
 	signal := fmt.Sprintf("%s.events.%s", strings.ToLower(req.Source), req.Name)
 
@@ -63,6 +63,20 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 		return nil, fmt.Errorf("failed to set workflow search attribute: %w", err)
 	}
 
+	childCtx, cancel := workflow.WithCancel(ctx)
+	defer cancel()
+
+	ch := workflow.GetSignalChannel(ctx, signal)
+	payload := make(map[string]any)
+	l := workflow.GetLogger(ctx)
+	startTime := time.Now()
+
+	selector := workflow.NewSelector(childCtx)
+	selector.AddReceive(ch, func(c workflow.ReceiveChannel, _ bool) {
+		c.Receive(ctx, &payload)
+		l.Debug("received signal", "signal", signal, "duration", time.Since(startTime).String())
+	})
+
 	if req.Timeout == "" {
 		req.Timeout = "0s"
 	}
@@ -71,21 +85,34 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 		return nil, err
 	}
 
-	l := workflow.GetLogger(ctx)
-	ch := workflow.GetSignalChannel(ctx, signal)
-	var payload map[string]any
-
+	var timer workflow.Future
 	if timeout == 0 {
-		l.Debug("waiting for signal", "signal", signal)
-		ch.Receive(ctx, &payload)
-		l.Debug("signal channel unblocked")
-		return payload, nil
+		l.Debug("waiting for signal without timeout", "signal", signal)
+	} else {
+		l.Debug("waiting for signal", "signal", signal, "timeout", req.Timeout)
+
+		// Using a selector instead of ch.ReceiveWithTimeout() to support workflow cancellation.
+		timer = workflow.NewTimer(ctx, timeout)
+		selector.AddFuture(timer, func(_ workflow.Future) {
+			l.Debug("timeout while waiting for signal", "signal", signal, "timeout", req.Timeout)
+			err = fmt.Errorf("timeout (%s)", req.Timeout)
+		})
 	}
 
-	l.Debug("waiting for signal", "signal", signal, "timeout", req.Timeout)
-	ch.ReceiveWithTimeout(ctx, timeout, &payload)
-	l.Debug("signal channel unblocked")
-	return payload, nil
+	selector.AddReceive(childCtx.Done(), func(workflow.ReceiveChannel, bool) {
+		l.Error("workflow canceled while waiting for signal", "signal", signal, "error", childCtx.Err().Error())
+	})
+
+	selector.Select(ctx)
+
+	switch {
+	case childCtx.Err() != nil:
+		return nil, childCtx.Err()
+	case err != nil:
+		return nil, err
+	default:
+		return payload, nil
+	}
 }
 
 // Signal sends a specific payload, which was received as an asynchronous event
