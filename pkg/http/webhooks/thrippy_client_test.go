@@ -78,7 +78,8 @@ func TestHTTPServerLinkData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			lis, err := net.Listen("tcp", "127.0.0.1:0")
+			lc := net.ListenConfig{}
+			lis, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
 			if err != nil {
 				t.Fatal(err)
 			}

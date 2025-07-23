@@ -86,7 +86,7 @@ func generateWebSocketURL(ctx context.Context, appToken string) (string, error) 
 		return "", fmt.Errorf("failed to parse JSON in HTTP response body: %w", err)
 	}
 	if !decoded.OK {
-		return "", fmt.Errorf("Slack API error: %s", decoded.Error)
+		return "", fmt.Errorf("error reported by Slack API: %s", decoded.Error)
 	}
 
 	return decoded.URL, nil
@@ -121,7 +121,8 @@ func clientEventLoop(l zerolog.Logger, c *websocket.Client) {
 		// https://docs.slack.dev/apis/events-api/using-socket-mode#connect
 		case "hello":
 			t := msg.DebugInfo.ApproximateConnectionTime
-			t -= 63 + rand.IntN(10) // 63-72 seconds before the actual timeout.
+			// 63-72 seconds before the actual timeout.
+			t -= 63 + rand.IntN(10) //gosec:disable G404 -- no need for crypto/rand
 			c.RefreshConnectionIn(time.Duration(t) * time.Second)
 			continue
 

@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/lithammer/shortuuid/v4"
@@ -35,8 +34,6 @@ type httpServer struct {
 	thrippyGRPCAddr string
 	thrippyCreds    credentials.TransportCredentials
 	temporal        intlis.TemporalConfig
-
-	conns sync.Map
 }
 
 func NewHTTPServer(cmd *cli.Command) *httpServer {
