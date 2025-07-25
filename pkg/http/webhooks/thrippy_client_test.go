@@ -113,7 +113,7 @@ func TestHTTPServerLinkData(t *testing.T) {
 	}
 }
 
-func TestCheckLinkData(t *testing.T) {
+func TestCheckLinkDataForWebhook(t *testing.T) {
 	tests := []struct {
 		name     string
 		template string
@@ -147,8 +147,48 @@ func TestCheckLinkData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := checkLinkData(zerolog.Nop(), tt.template, tt.secrets, tt.err); got != tt.want {
-				t.Errorf("checkLinkData() = %v, want %v", got, tt.want)
+			if got := checkLinkDataForWebhook(zerolog.Nop(), tt.template, tt.secrets, tt.err); got != tt.want {
+				t.Errorf("checkLinkDataForWebhook() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckLinkDataForConn(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		secrets  map[string]string
+		err      error
+		wantErr  bool
+	}{
+		{
+			name:    "internal_error",
+			err:     errors.New("some error"),
+			wantErr: true,
+		},
+		{
+			name:    "not_found",
+			wantErr: true,
+		},
+		{
+			name:     "no_secrets",
+			template: "name",
+			wantErr:  true,
+		},
+		{
+			name:     "happy_path",
+			template: "name",
+			secrets: map[string]string{
+				"foo": "bar",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkLinkDataForConn(zerolog.Nop(), tt.template, tt.secrets, tt.err); (got != nil) != tt.wantErr {
+				t.Errorf("checkLinkDataForConn() err = %v, want %v", got, tt.wantErr)
 			}
 		})
 	}

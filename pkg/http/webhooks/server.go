@@ -2,7 +2,9 @@ package webhooks
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -39,6 +41,8 @@ type httpServer struct {
 }
 
 func NewHTTPServer(cmd *cli.Command) *httpServer {
+	// Enumerate all configured Thrippy links - see also the initialization
+	// of non-webhook connections in [httpServer.ConnectLinks].
 	links := map[string]bool{}
 	for _, fn := range cmd.FlagNames() {
 		if strings.HasPrefix(fn, "thrippy-link-") {
@@ -134,13 +138,15 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 		l = l.With().Str("path_suffix", pathSuffix).Logger()
 	}
 
-	if _, ok := s.webhookLinks[linkID]; !ok {
+	// Nuance: "configured, ok := ..." can return "false, true"
+	// (if the link is configured, but not as a stateless webhook).
+	if configured := s.webhookLinks[linkID]; !configured {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	template, secrets, err := s.linkData(r.Context(), linkID)
-	if statusCode := checkLinkData(l, template, secrets, err); statusCode != http.StatusOK {
+	if statusCode := checkLinkDataForWebhook(l, template, secrets, err); statusCode != http.StatusOK {
 		w.WriteHeader(statusCode)
 		return
 	}
@@ -226,4 +232,37 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 	}
 
 	return raw, decoded, nil
+}
+
+// ConnectLinks initializes stateful connections for all the
+// configured Thrippy links that are not stateless webhooks.
+func (s *httpServer) ConnectLinks(ctx context.Context) error {
+	for linkID := range s.webhookLinks {
+		template, secrets, err := s.linkData(ctx, linkID)
+		l := log.Logger.With().Str("link_id", linkID).Logger()
+		if checkLinkDataForConn(l, template, secrets, err) != nil {
+			return err
+		}
+
+		l = l.With().Str("template", template).Logger()
+		if _, ok := listeners.WebhookHandlers[template]; ok {
+			l.Info().Msg("enabled stateless HTTP webhook")
+			continue
+		}
+
+		f, ok := listeners.ConnectionHandlers[template]
+		if !ok {
+			err := errors.New("unsupported link template for listener connections")
+			l.Err(err).Send()
+			return err
+		}
+
+		s.webhookLinks[linkID] = false // Connections are configured, but are not stateless webhooks.
+
+		if err := f(ctx, intlis.LinkData{ID: linkID, Template: template, Secrets: secrets}); err != nil {
+			l.Err(err).Msg("failed to initialize connection")
+		}
+	}
+
+	return nil
 }

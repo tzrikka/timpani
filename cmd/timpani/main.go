@@ -38,9 +38,13 @@ func main() {
 		Usage:   "Temporal worker that sends API calls and receives event notifications",
 		Version: bi.Main.Version,
 		Flags:   flags(),
-		Action: func(_ context.Context, cmd *cli.Command) error {
+		Action: func(ctx context.Context, cmd *cli.Command) error {
 			initLog(cmd.Bool("dev"))
-			go webhooks.NewHTTPServer(cmd).Run()
+			s := webhooks.NewHTTPServer(cmd)
+			go s.Run()
+			if err := s.ConnectLinks(ctx); err != nil {
+				return err
+			}
 			return temporal.Run(log.Logger, cmd)
 		},
 	}

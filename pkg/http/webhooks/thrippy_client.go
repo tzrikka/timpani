@@ -2,6 +2,7 @@ package webhooks
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/rs/zerolog"
@@ -54,7 +55,7 @@ func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[s
 	return resp1.GetTemplate(), resp2.GetCredentials(), nil
 }
 
-func checkLinkData(l zerolog.Logger, template string, secrets map[string]string, err error) int {
+func checkLinkDataForWebhook(l zerolog.Logger, template string, secrets map[string]string, err error) int {
 	if err != nil {
 		l.Warn().Err(err).Msg("failed to get link secrets from Thrippy over gRPC")
 		return http.StatusInternalServerError
@@ -71,4 +72,23 @@ func checkLinkData(l zerolog.Logger, template string, secrets map[string]string,
 	}
 
 	return http.StatusOK
+}
+
+func checkLinkDataForConn(l zerolog.Logger, template string, secrets map[string]string, err error) error {
+	if err != nil {
+		l.Err(err).Msg("failed to get link secrets from Thrippy over gRPC")
+		return err
+	}
+
+	if template == "" && secrets == nil {
+		l.Error().Msg("link ID not found in Thrippy")
+		return errors.New("configured link ID not found in Thrippy")
+	}
+
+	if template != "" && secrets == nil {
+		l.Error().Str("template", template).Msg("Thrippy link not initialized")
+		return errors.New("link not initialized in Thrippy")
+	}
+
+	return nil
 }

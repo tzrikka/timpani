@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/pkg/websocket"
@@ -22,22 +23,22 @@ const (
 	maxSize     = 1024 // 1 KiB.
 )
 
-func ConnectionHandler(ctx context.Context, data listeners.LinkData) int {
-	l := zerolog.Ctx(ctx).With().Str("link_type", "slack").Str("link_medium", "websocket").Logger()
+func ConnectionHandler(ctx context.Context, data listeners.LinkData) error {
+	l := log.Logger.With().Str("link_type", "slack").Str("link_medium", "websocket").Logger()
 	t := data.Secrets["app_token"]
 	if t == "" {
 		l.Warn().Msg("Thrippy link missing required credentials")
-		return http.StatusForbidden
+		return errors.New("forbidden")
 	}
 
 	c, err := websocket.NewOrCachedClient(ctx, urlFunc(t), t)
 	if err != nil {
 		l.Err(err).Msg("Slack Socket Mode connection error")
-		return http.StatusInternalServerError
+		return errors.New("internal server error")
 	}
 
 	go clientEventLoop(l, c)
-	return http.StatusOK
+	return nil
 }
 
 func urlFunc(appToken string) func(ctx context.Context) (string, error) {
