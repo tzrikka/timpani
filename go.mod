@@ -9,7 +9,7 @@ require (
 	github.com/tzrikka/xdg v1.2.5
 	github.com/urfave/cli-altsrc/v3 v3.0.1
 	github.com/urfave/cli/v3 v3.3.8
-	go.temporal.io/api v1.50.0
+	go.temporal.io/api v1.51.0
 	go.temporal.io/sdk v1.35.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.6
