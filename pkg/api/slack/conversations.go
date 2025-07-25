@@ -38,7 +38,7 @@ type ConversationsArchiveResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.archive
-func (a *API) ConversationsArchiveActivity(ctx context.Context, req *ConversationsArchiveRequest) (*ConversationsArchiveResponse, error) {
+func (a *API) ConversationsArchiveActivity(ctx context.Context, req ConversationsArchiveRequest) (*ConversationsArchiveResponse, error) {
 	resp := new(ConversationsArchiveResponse)
 	if err := a.httpPost(ctx, ConversationsArchiveName, req, resp); err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ type ConversationsCloseResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.close
-func (a *API) ConversationsCloseActivity(ctx context.Context, req *ConversationsCloseRequest) (*ConversationsCloseResponse, error) {
+func (a *API) ConversationsCloseActivity(ctx context.Context, req ConversationsCloseRequest) (*ConversationsCloseResponse, error) {
 	resp := new(ConversationsCloseResponse)
 	if err := a.httpPost(ctx, ConversationsCloseName, req, resp); err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ type ConversationsCreateResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.create
-func (a *API) ConversationsCreateActivity(ctx context.Context, req *ConversationsCreateRequest) (*ConversationsCreateResponse, error) {
+func (a *API) ConversationsCreateActivity(ctx context.Context, req ConversationsCreateRequest) (*ConversationsCreateResponse, error) {
 	resp := new(ConversationsCreateResponse)
 	if err := a.httpPost(ctx, ConversationsCreateName, req, resp); err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ type ConversationsHistoryResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.history
-func (a *API) ConversationsHistoryActivity(ctx context.Context, req *ConversationsHistoryRequest) (*ConversationsHistoryResponse, error) {
+func (a *API) ConversationsHistoryActivity(ctx context.Context, req ConversationsHistoryRequest) (*ConversationsHistoryResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	if req.Cursor != "" {
@@ -173,7 +173,7 @@ type ConversationsInfoResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.info
-func (a *API) ConversationsInfoActivity(ctx context.Context, req *ConversationsInfoRequest) (*ConversationsInfoResponse, error) {
+func (a *API) ConversationsInfoActivity(ctx context.Context, req ConversationsInfoRequest) (*ConversationsInfoResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	if req.IncludeLocale {
@@ -210,7 +210,7 @@ type ConversationsInviteResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.invite
-func (a *API) ConversationsInviteActivity(ctx context.Context, req *ConversationsInviteRequest) (*ConversationsInviteResponse, error) {
+func (a *API) ConversationsInviteActivity(ctx context.Context, req ConversationsInviteRequest) (*ConversationsInviteResponse, error) {
 	resp := new(ConversationsInviteResponse)
 	if err := a.httpPost(ctx, ConversationsInviteName, req, resp); err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ type ConversationsJoinResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.join
-func (a *API) ConversationsJoinActivity(ctx context.Context, req *ConversationsJoinRequest) (*ConversationsJoinResponse, error) {
+func (a *API) ConversationsJoinActivity(ctx context.Context, req ConversationsJoinRequest) (*ConversationsJoinResponse, error) {
 	resp := new(ConversationsJoinResponse)
 	if err := a.httpPost(ctx, ConversationsJoinName, req, resp); err != nil {
 		return nil, err
@@ -258,7 +258,7 @@ type ConversationsKickResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.kick
-func (a *API) ConversationsKickActivity(ctx context.Context, req *ConversationsKickRequest) (*ConversationsKickResponse, error) {
+func (a *API) ConversationsKickActivity(ctx context.Context, req ConversationsKickRequest) (*ConversationsKickResponse, error) {
 	resp := new(ConversationsKickResponse)
 	if err := a.httpPost(ctx, ConversationsKickName, req, resp); err != nil {
 		return nil, err
@@ -282,7 +282,7 @@ type ConversationsLeaveResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.leave
-func (a *API) ConversationsLeaveActivity(ctx context.Context, req *ConversationsLeaveRequest) (*ConversationsLeaveResponse, error) {
+func (a *API) ConversationsLeaveActivity(ctx context.Context, req ConversationsLeaveRequest) (*ConversationsLeaveResponse, error) {
 	resp := new(ConversationsLeaveResponse)
 	if err := a.httpPost(ctx, ConversationsLeaveName, req, resp); err != nil {
 		return nil, err
@@ -310,7 +310,7 @@ type ConversationsListResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.list
-func (a *API) ConversationsListActivity(ctx context.Context, req *ConversationsListRequest) (*ConversationsListResponse, error) {
+func (a *API) ConversationsListActivity(ctx context.Context, req ConversationsListRequest) (*ConversationsListResponse, error) {
 	query := url.Values{}
 	if req.Cursor != "" {
 		query.Set("cursor", req.Cursor)
@@ -354,7 +354,7 @@ type ConversationsMembersResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.members
-func (a *API) ConversationsMembersActivity(ctx context.Context, req *ConversationsMembersRequest) (*ConversationsMembersResponse, error) {
+func (a *API) ConversationsMembersActivity(ctx context.Context, req ConversationsMembersRequest) (*ConversationsMembersResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	if req.Cursor != "" {
@@ -392,7 +392,7 @@ type ConversationsOpenResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.open
-func (a *API) ConversationsOpenActivity(ctx context.Context, req *ConversationsOpenRequest) (*ConversationsOpenResponse, error) {
+func (a *API) ConversationsOpenActivity(ctx context.Context, req ConversationsOpenRequest) (*ConversationsOpenResponse, error) {
 	resp := new(ConversationsOpenResponse)
 	if err := a.httpPost(ctx, ConversationsOpenName, req, resp); err != nil {
 		return nil, err
@@ -417,7 +417,7 @@ type ConversationsRenameResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.rename
-func (a *API) ConversationsRenameActivity(ctx context.Context, req *ConversationsRenameRequest) (*ConversationsRenameResponse, error) {
+func (a *API) ConversationsRenameActivity(ctx context.Context, req ConversationsRenameRequest) (*ConversationsRenameResponse, error) {
 	resp := new(ConversationsRenameResponse)
 	if err := a.httpPost(ctx, ConversationsRenameName, req, resp); err != nil {
 		return nil, err
@@ -450,7 +450,7 @@ type ConversationsRepliesResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.replies
-func (a *API) ConversationsRepliesActivity(ctx context.Context, req *ConversationsRepliesRequest) (*ConversationsRepliesResponse, error) {
+func (a *API) ConversationsRepliesActivity(ctx context.Context, req ConversationsRepliesRequest) (*ConversationsRepliesResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	query.Set("ts", req.TS)
@@ -497,7 +497,7 @@ type ConversationsSetPurposeResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.setPurpose
-func (a *API) ConversationsSetPurposeActivity(ctx context.Context, req *ConversationsSetPurposeRequest) (*ConversationsSetPurposeResponse, error) {
+func (a *API) ConversationsSetPurposeActivity(ctx context.Context, req ConversationsSetPurposeRequest) (*ConversationsSetPurposeResponse, error) {
 	resp := new(ConversationsSetPurposeResponse)
 	if err := a.httpPost(ctx, ConversationsSetPurposeName, req, resp); err != nil {
 		return nil, err
@@ -522,7 +522,7 @@ type ConversationsSetTopicResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.setTopic
-func (a *API) ConversationsSetTopicActivity(ctx context.Context, req *ConversationsSetTopicRequest) (*ConversationsSetTopicResponse, error) {
+func (a *API) ConversationsSetTopicActivity(ctx context.Context, req ConversationsSetTopicRequest) (*ConversationsSetTopicResponse, error) {
 	resp := new(ConversationsSetTopicResponse)
 	if err := a.httpPost(ctx, ConversationsSetTopicName, req, resp); err != nil {
 		return nil, err
@@ -544,7 +544,7 @@ type ConversationsUnarchiveResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/conversations.unarchive
-func (a *API) ConversationsUnarchiveActivity(ctx context.Context, req *ConversationsUnarchiveRequest) (*ConversationsUnarchiveResponse, error) {
+func (a *API) ConversationsUnarchiveActivity(ctx context.Context, req ConversationsUnarchiveRequest) (*ConversationsUnarchiveResponse, error) {
 	resp := new(ConversationsUnarchiveResponse)
 	if err := a.httpPost(ctx, ConversationsUnarchiveName, req, resp); err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 )
 
 func TestApprovalBlocks(t *testing.T) {
-	blocks := approvalBlocks(&TimpaniPostApprovalRequest{RedButton: "red"}, "id")
+	blocks := approvalBlocks(TimpaniPostApprovalRequest{RedButton: "red"}, "id")
 
 	elems, ok := blocks[4]["elements"]
 	if !ok {

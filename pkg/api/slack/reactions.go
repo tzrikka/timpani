@@ -27,7 +27,7 @@ type ReactionsAddResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/reactions.add
-func (a *API) ReactionsAddActivity(ctx context.Context, req *ReactionsAddRequest) (*ReactionsAddResponse, error) {
+func (a *API) ReactionsAddActivity(ctx context.Context, req ReactionsAddRequest) (*ReactionsAddResponse, error) {
 	resp := new(ReactionsAddResponse)
 	if err := a.httpPost(ctx, ReactionsAddName, req, resp); err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ type ReactionsGetResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/reactions.get
-func (a *API) ReactionsGetActivity(ctx context.Context, req *ReactionsGetRequest) (*ReactionsGetResponse, error) {
+func (a *API) ReactionsGetActivity(ctx context.Context, req ReactionsGetRequest) (*ReactionsGetResponse, error) {
 	query := url.Values{}
 	if req.Channel != "" {
 		query.Set("channel", req.Channel)
@@ -104,7 +104,7 @@ type ReactionsListResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/reactions.list
-func (a *API) ReactionsListActivity(ctx context.Context, req *ReactionsListRequest) (*ReactionsListResponse, error) {
+func (a *API) ReactionsListActivity(ctx context.Context, req ReactionsListRequest) (*ReactionsListResponse, error) {
 	query := url.Values{}
 	if req.User != "" {
 		query.Set("user", req.User)
@@ -154,7 +154,7 @@ type ReactionsRemoveResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/reactions.remove
-func (a *API) ReactionsRemoveActivity(ctx context.Context, req *ReactionsRemoveRequest) (*ReactionsRemoveResponse, error) {
+func (a *API) ReactionsRemoveActivity(ctx context.Context, req ReactionsRemoveRequest) (*ReactionsRemoveResponse, error) {
 	resp := new(ReactionsRemoveResponse)
 	if err := a.httpPost(ctx, ReactionsRemoveName, req, resp); err != nil {
 		return nil, err

@@ -35,7 +35,7 @@ type UsersConversationsResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.conversations
-func (a *API) UsersConversationsActivity(ctx context.Context, req *UsersConversationsRequest) (*UsersConversationsResponse, error) {
+func (a *API) UsersConversationsActivity(ctx context.Context, req UsersConversationsRequest) (*UsersConversationsResponse, error) {
 	query := url.Values{}
 	if req.Cursor != "" {
 		query.Set("cursor", req.Cursor)
@@ -84,7 +84,7 @@ type UsersGetPresenceResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.getPresence
-func (a *API) UsersGetPresenceActivity(ctx context.Context, req *UsersGetPresenceRequest) (*UsersGetPresenceResponse, error) {
+func (a *API) UsersGetPresenceActivity(ctx context.Context, req UsersGetPresenceRequest) (*UsersGetPresenceResponse, error) {
 	query := url.Values{}
 	if req.User != "" {
 		query.Set("user", req.User)
@@ -112,7 +112,7 @@ type UsersIdentityResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.identity
-func (a *API) UsersIdentityActivity(ctx context.Context, _ *UsersIdentityRequest) (*UsersIdentityResponse, error) {
+func (a *API) UsersIdentityActivity(ctx context.Context, _ UsersIdentityRequest) (*UsersIdentityResponse, error) {
 	resp := new(UsersIdentityResponse)
 	if err := a.httpGet(ctx, UsersIdentityName, url.Values{}, resp); err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ type UsersInfoResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.info
-func (a *API) UsersInfoActivity(ctx context.Context, req *UsersInfoRequest) (*UsersInfoResponse, error) {
+func (a *API) UsersInfoActivity(ctx context.Context, req UsersInfoRequest) (*UsersInfoResponse, error) {
 	query := url.Values{}
 	query.Set("user", req.User)
 	if req.IncludeLocale {
@@ -172,7 +172,7 @@ type UsersListResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.list
-func (a *API) UsersListActivity(ctx context.Context, req *UsersListRequest) (*UsersListResponse, error) {
+func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) (*UsersListResponse, error) {
 	query := url.Values{}
 	if req.Cursor != "" {
 		query.Set("cursor", req.Cursor)
@@ -210,7 +210,7 @@ type UsersLookupByEmailResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.lookupByEmail
-func (a *API) UsersLookupByEmailActivity(ctx context.Context, req *UsersLookupByEmailRequest) (*UsersLookupByEmailResponse, error) {
+func (a *API) UsersLookupByEmailActivity(ctx context.Context, req UsersLookupByEmailRequest) (*UsersLookupByEmailResponse, error) {
 	query := url.Values{}
 	query.Set("email", req.Email)
 
@@ -238,7 +238,7 @@ type UsersProfileGetResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/users.profile.get
-func (a *API) UsersProfileGetActivity(ctx context.Context, req *UsersProfileGetRequest) (*UsersProfileGetResponse, error) {
+func (a *API) UsersProfileGetActivity(ctx context.Context, req UsersProfileGetRequest) (*UsersProfileGetResponse, error) {
 	query := url.Values{}
 	if req.IncludeLabels {
 		query.Set("include_labels", "true")

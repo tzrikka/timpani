@@ -41,7 +41,7 @@ type ChatDeleteResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/chat.delete
-func (a *API) ChatDeleteActivity(ctx context.Context, req *ChatDeleteRequest) (*ChatDeleteResponse, error) {
+func (a *API) ChatDeleteActivity(ctx context.Context, req ChatDeleteRequest) (*ChatDeleteResponse, error) {
 	resp := new(ChatDeleteResponse)
 	if err := a.httpPost(ctx, ChatDeleteName, req, resp); err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ type ChatGetPermalinkResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/chat.getPermalink
-func (a *API) ChatGetPermalinkActivity(ctx context.Context, req *ChatGetPermalinkRequest) (*ChatGetPermalinkResponse, error) {
+func (a *API) ChatGetPermalinkActivity(ctx context.Context, req ChatGetPermalinkRequest) (*ChatGetPermalinkResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	query.Set("message_ts", req.MessageTS)
@@ -109,7 +109,7 @@ type ChatPostEphemeralResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/chat.postEphemeral
-func (a *API) ChatPostEphemeralActivity(ctx context.Context, req *ChatPostEphemeralRequest) (*ChatPostEphemeralResponse, error) {
+func (a *API) ChatPostEphemeralActivity(ctx context.Context, req ChatPostEphemeralRequest) (*ChatPostEphemeralResponse, error) {
 	resp := new(ChatPostEphemeralResponse)
 	if err := a.httpPost(ctx, ChatPostEphemeralName, req, resp); err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ type ChatPostMessageResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/chat.postMessage
-func (a *API) ChatPostMessageActivity(ctx context.Context, req *ChatPostMessageRequest) (*ChatPostMessageResponse, error) {
+func (a *API) ChatPostMessageActivity(ctx context.Context, req ChatPostMessageRequest) (*ChatPostMessageResponse, error) {
 	resp := new(ChatPostMessageResponse)
 	if err := a.httpPost(ctx, ChatPostMessageName, req, resp); err != nil {
 		return nil, err
@@ -190,7 +190,7 @@ type ChatUpdateResponse struct {
 }
 
 // https://docs.slack.dev/reference/methods/chat.update
-func (a *API) ChatUpdateActivity(ctx context.Context, req *ChatUpdateRequest) (*ChatUpdateResponse, error) {
+func (a *API) ChatUpdateActivity(ctx context.Context, req ChatUpdateRequest) (*ChatUpdateResponse, error) {
 	resp := new(ChatUpdateResponse)
 	if err := a.httpPost(ctx, ChatUpdateName, req, resp); err != nil {
 		return nil, err
@@ -238,7 +238,7 @@ type TimpaniPostApprovalResponse struct {
 //
 // For message formatting tips, see
 // https://docs.slack.dev/messaging/formatting-message-text.
-func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req *TimpaniPostApprovalRequest) (*TimpaniPostApprovalResponse, error) {
+func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req TimpaniPostApprovalRequest) (*TimpaniPostApprovalResponse, error) {
 	info := workflow.GetInfo(ctx)
 	// See the usage of action IDs in [slackEventsWorkflow].
 	id := base64.RawURLEncoding.EncodeToString([]byte(info.WorkflowExecution.ID))
@@ -279,7 +279,7 @@ func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req *TimpaniPost
 }
 
 // approvalBlocks is based on https://docs.slack.dev/block-kit.
-func approvalBlocks(req *TimpaniPostApprovalRequest, id string) []map[string]any {
+func approvalBlocks(req TimpaniPostApprovalRequest, id string) []map[string]any {
 	greenButton := req.GreenButton
 	if greenButton == "" {
 		greenButton = DefaultGreenButton
