@@ -34,7 +34,7 @@ type LinkData struct {
 
 type WebhookHandlerFunc func(ctx context.Context, w http.ResponseWriter, r RequestData) int
 
-type ConnHandlerFunc func(ctx context.Context, data LinkData) error
+type ConnHandlerFunc func(ctx context.Context, tc TemporalConfig, data LinkData) error
 
 const (
 	WaitForEventWorkflow = "timpani.waitForEvent"

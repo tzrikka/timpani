@@ -5,19 +5,15 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"slices"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
-	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
 const (
@@ -82,37 +78,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	}
 
 	// Dispatch the event notification, based on its type.
-
-	// https://docs.slack.dev/apis/events-api#events-JSON
-	payload := r.JSONPayload
-	eventType := payload["type"]
-	if eventType == "event_callback" {
-		if m, ok := payload["event"].(map[string]any); ok {
-			eventType = m["type"]
-		}
-	}
-
-	// https://docs.slack.dev/interactivity/implementing-slash-commands#app_command_handling
-	if r.WebForm.Get("command") != "" {
-		eventType = "slash_command"
-		payload = webFormToMap(r.WebForm)
-	}
-
-	// https://docs.slack.dev/interactivity/handling-user-interaction#payloads
-	// https://docs.slack.dev/reference/interaction-payloads
-	if p := r.WebForm.Get("payload"); p != "" {
-		payload = map[string]any{}
-		if err := json.NewDecoder(strings.NewReader(p)).Decode(&payload); err != nil {
-			l.Err(err).Msg("failed to decode interaction event payload")
-			return http.StatusInternalServerError
-		}
-		eventType = payload["type"]
-	}
-
-	ctx = l.WithContext(ctx)
-	name := fmt.Sprintf("slack.events.%s", eventType)
-	if err := temporal.Signal(ctx, r.Temporal, name, payload); err != nil {
-		l.Err(err).Msg("failed to send Temporal signal")
+	if err := dispatchFromWebhook(l.WithContext(ctx), r); err != nil {
 		return http.StatusInternalServerError
 	}
 
@@ -199,13 +165,4 @@ func verifySignature(l zerolog.Logger, signingSecret, ts, want string, body []by
 
 	got := fmt.Sprintf("%s=%s", slackSigVersion, hex.EncodeToString(mac.Sum(nil)))
 	return hmac.Equal([]byte(got), []byte(want))
-}
-
-// webFormToMap converts a web form into a Go map which is compatible with JSON.
-func webFormToMap(vs url.Values) map[string]any {
-	m := make(map[string]any)
-	for k, v := range vs {
-		m[k] = v[0]
-	}
-	return m
 }

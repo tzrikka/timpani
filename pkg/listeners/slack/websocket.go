@@ -23,7 +23,7 @@ const (
 	maxSize     = 1024 // 1 KiB.
 )
 
-func ConnectionHandler(ctx context.Context, data listeners.LinkData) error {
+func ConnectionHandler(ctx context.Context, tc listeners.TemporalConfig, data listeners.LinkData) error {
 	l := log.Logger.With().Str("link_type", "slack").Str("link_medium", "websocket").Logger()
 	t := data.Secrets["app_token"]
 	if t == "" {
@@ -37,7 +37,7 @@ func ConnectionHandler(ctx context.Context, data listeners.LinkData) error {
 		return errors.New("internal server error")
 	}
 
-	go clientEventLoop(l, c)
+	go clientEventLoop(l, tc, c)
 	return nil
 }
 
@@ -103,7 +103,7 @@ type apiResponse struct {
 // all types of asynchronous Slack events which were received as WebSocket
 // data messages. It also prevents downtime by informing the client when
 // to refresh its underlying WebSocket connection, before it times out.
-func clientEventLoop(l zerolog.Logger, c *websocket.Client) {
+func clientEventLoop(l zerolog.Logger, tc listeners.TemporalConfig, c *websocket.Client) {
 	for {
 		raw, ok := <-c.IncomingMessages()
 		if !ok {
@@ -146,9 +146,18 @@ func clientEventLoop(l zerolog.Logger, c *websocket.Client) {
 			}
 		}
 
+		l.Info().Str("msg_type", msg.Type).Str("envelope_id", msg.EnvelopeID).
+			Bool("accepts_response_payload", msg.AcceptsResponsePayload).
+			Msg("received WebSocket message")
+
 		// https://docs.slack.dev/apis/events-api/using-socket-mode#acknowledge
 		if err := c.SendJSONMessage(resp); err != nil {
 			l.Err(err).Msg("failed to ack Slack Socket Mode event")
+		}
+
+		// Dispatch the event notification, based on its type.
+		if err := dispatchFromWebSocket(l, tc, msg.Payload); err != nil {
+			continue
 		}
 	}
 }

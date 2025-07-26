@@ -273,9 +273,7 @@ func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req TimpaniPostA
 		return nil, fmt.Errorf("failed to wait for events: %w", err)
 	}
 
-	resp2 := &TimpaniPostApprovalResponse{InteractionEvent: payload}
-	resp2.OK = true
-	return resp2, nil
+	return &TimpaniPostApprovalResponse{InteractionEvent: payload}, nil
 }
 
 // approvalBlocks is based on https://docs.slack.dev/block-kit.

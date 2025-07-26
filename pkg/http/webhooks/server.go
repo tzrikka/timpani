@@ -236,7 +236,7 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 
 // ConnectLinks initializes stateful connections for all the
 // configured Thrippy links that are not stateless webhooks.
-func (s *httpServer) ConnectLinks(ctx context.Context) error {
+func (s *httpServer) ConnectLinks(ctx context.Context, cmd *cli.Command) error {
 	for linkID := range s.webhookLinks {
 		template, secrets, err := s.linkData(ctx, linkID)
 		l := log.Logger.With().Str("link_id", linkID).Logger()
@@ -246,7 +246,7 @@ func (s *httpServer) ConnectLinks(ctx context.Context) error {
 
 		l = l.With().Str("template", template).Logger()
 		if _, ok := listeners.WebhookHandlers[template]; ok {
-			l.Info().Msg("enabled stateless HTTP webhook")
+			l.Info().Msg("enabled stateless webhook listener")
 			continue
 		}
 
@@ -259,9 +259,13 @@ func (s *httpServer) ConnectLinks(ctx context.Context) error {
 
 		s.webhookLinks[linkID] = false // Connections are configured, but are not stateless webhooks.
 
-		if err := f(ctx, intlis.LinkData{ID: linkID, Template: template, Secrets: secrets}); err != nil {
+		data := intlis.LinkData{ID: linkID, Template: template, Secrets: secrets}
+		if err := f(ctx, s.temporal, data); err != nil {
 			l.Err(err).Msg("failed to initialize connection")
+			return err
 		}
+
+		l.Info().Msg("enabled stateful connection listener")
 	}
 
 	return nil
