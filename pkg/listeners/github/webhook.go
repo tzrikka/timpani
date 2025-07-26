@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
 const (
@@ -42,6 +43,12 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 			l.Err(err).Msg("failed to extract and decode JSON payload from form data")
 			return http.StatusInternalServerError
 		}
+	}
+
+	// Dispatch the event notification as a Temporal signal.
+	if err := temporal.Signal(ctx, r.Temporal, "github.event", r.JSONPayload); err != nil {
+		l.Err(err).Msg("failed to send Temporal signal")
+		return http.StatusInternalServerError
 	}
 
 	return http.StatusOK
