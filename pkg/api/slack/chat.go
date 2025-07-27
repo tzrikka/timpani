@@ -263,8 +263,7 @@ func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req TimpaniPostA
 	}
 
 	wf := workflow.ExecuteChildWorkflow(ctx, listeners.WaitForEventWorkflow, listeners.WaitForEventRequest{
-		Source:  "slack",
-		Name:    "block_actions",
+		Signal:  "slack.events.block_actions",
 		Timeout: req.Timeout,
 	})
 

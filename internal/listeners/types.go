@@ -41,7 +41,6 @@ const (
 )
 
 type WaitForEventRequest struct {
-	Source  string `json:"source"`
-	Name    string `json:"name"`
+	Signal  string `json:"signal"`
 	Timeout string `json:"timeout,omitempty"`
 }

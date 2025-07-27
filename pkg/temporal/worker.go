@@ -9,7 +9,6 @@ package temporal
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -57,10 +56,8 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 // waitForEventWorkflow is a generic Temporal workflow that waits for a specific [Signal]
 // call from an event listener. Timeouts are optional. This workflow supports cancellation.
 func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventRequest) (map[string]any, error) {
-	signal := fmt.Sprintf("%s.events.%s", strings.ToLower(req.Source), req.Name)
-
 	// https://docs.temporal.io/develop/go/observability#visibility
-	kw := temporal.NewSearchAttributeKeyKeyword("WaitingForSignal").ValueSet(signal)
+	kw := temporal.NewSearchAttributeKeyKeywordList("WaitingForSignals").ValueSet([]string{req.Signal})
 	if err := workflow.UpsertTypedSearchAttributes(ctx, kw); err != nil {
 		return nil, fmt.Errorf("failed to set workflow search attribute: %w", err)
 	}
@@ -68,7 +65,7 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	childCtx, cancel := workflow.WithCancel(ctx)
 	defer cancel()
 
-	ch := workflow.GetSignalChannel(ctx, signal)
+	ch := workflow.GetSignalChannel(ctx, req.Signal)
 	payload := make(map[string]any)
 	l := workflow.GetLogger(ctx)
 	startTime := time.Now()
@@ -76,7 +73,7 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	selector := workflow.NewSelector(childCtx)
 	selector.AddReceive(ch, func(c workflow.ReceiveChannel, _ bool) {
 		c.Receive(ctx, &payload)
-		l.Debug("received signal", "signal", signal, "duration", time.Since(startTime).String())
+		l.Debug("received signal", "signal", req.Signal, "duration", time.Since(startTime).String())
 	})
 
 	if req.Timeout == "" {
@@ -89,20 +86,20 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 
 	var timer workflow.Future
 	if timeout == 0 {
-		l.Debug("waiting for signal without timeout", "signal", signal)
+		l.Debug("waiting for signal without timeout", "signal", req.Signal)
 	} else {
-		l.Debug("waiting for signal", "signal", signal, "timeout", req.Timeout)
+		l.Debug("waiting for signal", "signal", req.Signal, "timeout", req.Timeout)
 
 		// Using a selector instead of ch.ReceiveWithTimeout() to support workflow cancellation.
 		timer = workflow.NewTimer(ctx, timeout)
 		selector.AddFuture(timer, func(_ workflow.Future) {
-			l.Debug("timeout while waiting for signal", "signal", signal, "timeout", req.Timeout)
+			l.Debug("timeout while waiting for signal", "signal", req.Signal, "timeout", req.Timeout)
 			err = fmt.Errorf("timeout (%s)", req.Timeout)
 		})
 	}
 
 	selector.AddReceive(childCtx.Done(), func(workflow.ReceiveChannel, bool) {
-		l.Error("workflow canceled while waiting for signal", "signal", signal, "error", childCtx.Err().Error())
+		l.Error("workflow canceled while waiting for signal", "signal", req.Signal, "error", childCtx.Err().Error())
 	})
 
 	selector.Select(ctx)
@@ -139,9 +136,8 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 	// https://docs.temporal.io/list-filter
 	// https://docs.temporal.io/search-attribute
 	// https://docs.temporal.io/develop/go/observability#visibility
-	query := "WorkflowType = '%s' AND WaitingForSignal = '%s' AND ExecutionStatus = '%s'"
 	list, err := c.ListWorkflow(ctx, &workflowservice.ListWorkflowExecutionsRequest{
-		Query: fmt.Sprintf(query, listeners.WaitForEventWorkflow, name, "Running"),
+		Query: fmt.Sprintf("WaitingForSignals IN ('%s') AND ExecutionStatus = '%s'", name, "Running"),
 	})
 	if err != nil {
 		return fmt.Errorf("workflow search error: %w", err)
