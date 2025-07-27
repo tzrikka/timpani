@@ -21,7 +21,6 @@ import (
 const (
 	ConfigDirName  = "timpani"
 	ConfigFileName = "config.toml"
-	LinksFileName  = "links.toml"
 )
 
 var services = []string{
