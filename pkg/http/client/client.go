@@ -21,18 +21,23 @@ import (
 
 const (
 	timeout = 3 * time.Second
-	maxSize = 10 << 20 // 10 MiB.
+	maxSize = 4 << 20 // 4 MiB.
+
+	AcceptJSON = "application/json"
 )
 
 // HTTPRequest sends an HTTP GET or POST request to an external API.
+//
 // For GET requests, the queryOrJSONBody parameter is expected to be
-// [url.Values]. For POST requests, it should be any struct that can be
-// encoded as JSON. Some errors (failure to construct a request or decode
-// a response body) are returned as non-retryable [temporal.ApplicationError]s.
+// [url.Values]. For other request methods (e.g. POST), it should be
+// any struct that can be encoded as JSON.
+//
+// Some errors (failure to construct a request or decode a response body)
+// are returned as non-retryable [temporal.ApplicationError]s.
 //
 // [temporal.ApplicationError]: https://pkg.go.dev/go.temporal.io/temporal#ApplicationError
-func HTTPRequest(ctx context.Context, httpMethod, u, authToken string, queryOrJSONBody any) ([]byte, error) {
-	req, cancel, err := constructRequest(ctx, httpMethod, u, authToken, queryOrJSONBody)
+func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, queryOrJSONBody any) ([]byte, error) {
+	req, cancel, err := constructRequest(ctx, httpMethod, u, authToken, accept, queryOrJSONBody)
 	if err != nil {
 		return nil, err
 	}
@@ -60,9 +65,11 @@ func HTTPRequest(ctx context.Context, httpMethod, u, authToken string, queryOrJS
 	return body, nil
 }
 
-func constructRequest(ctx context.Context, method, u, token string, queryOrJSONBody any) (*http.Request, context.CancelFunc, error) {
+func constructRequest(ctx context.Context, method, u, token, accept string, queryOrJSONBody any) (*http.Request, context.CancelFunc, error) {
 	if method == http.MethodGet {
-		u = fmt.Sprintf("%s?%s", u, queryOrJSONBody.(url.Values).Encode())
+		if query, ok := queryOrJSONBody.(url.Values); ok && len(query) > 0 {
+			u = fmt.Sprintf("%s?%s", u, query.Encode())
+		}
 	}
 
 	b, err := requestBody(method, queryOrJSONBody)
@@ -78,9 +85,11 @@ func constructRequest(ctx context.Context, method, u, token string, queryOrJSONB
 		return nil, nil, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
 	}
 
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", accept)
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	if method != http.MethodGet {
+		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	}
 
 	return req, cancel, nil
 }

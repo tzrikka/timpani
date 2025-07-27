@@ -249,7 +249,7 @@ func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req TimpaniPostA
 		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 5},
 	})
 
-	ac := workflow.ExecuteActivity(ctx, ChatPostMessageName, &ChatPostMessageRequest{
+	ac := workflow.ExecuteActivity(ctx, ChatPostMessageName, ChatPostMessageRequest{
 		Channel:        req.Channel,
 		Blocks:         approvalBlocks(req, id),
 		Metadata:       req.Metadata,

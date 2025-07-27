@@ -3,6 +3,7 @@ module github.com/tzrikka/timpani
 go 1.24.5
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/rs/zerolog v1.34.0
 	github.com/tzrikka/thrippy-api v1.1.3

@@ -21,6 +21,7 @@ import (
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/api/github"
 	"github.com/tzrikka/timpani/pkg/api/slack"
 )
 
@@ -43,6 +44,7 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 	w.RegisterWorkflowWithOptions(waitForEventWorkflow, workflow.RegisterOptions{
 		Name: listeners.WaitForEventWorkflow,
 	})
+	github.Register(l, cmd, w)
 	slack.Register(l, cmd, w)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {

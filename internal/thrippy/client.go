@@ -36,6 +36,34 @@ func NewLinkClient(id string, cmd *cli.Command) LinkClient {
 	}
 }
 
+// LinkCreds returns the saved secrets of the receiver's Thrippy link. This
+// function does not distinguish between "not found" and other gRPC errors. The
+// output must not be cached as it may change at any time, e.g. OAuth access tokens.
+func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
+	l := activity.GetLogger(ctx)
+
+	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
+	if err != nil {
+		l.Error("failed to create gRPC client connection", "error", err.Error(), "grpc_addr", t.grpcAddr)
+		return nil, err
+	}
+	defer conn.Close()
+
+	c := thrippypb.NewThrippyServiceClient(conn)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	resp, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{
+		LinkId: proto.String(t.LinkID),
+	}.Build())
+	if err != nil {
+		l.Error("Thrippy GetCredentials error", "error", err.Error(), "link_id", t.LinkID)
+		return nil, err
+	}
+
+	return resp.GetCredentials(), nil
+}
+
 // LinkData returns the template name and saved secrets of the receiver's Thrippy link.
 // This function does not distinguish between "not found" and other gRPC errors. The
 // output must not be cached as it may change at any time, e.g. OAuth access tokens.

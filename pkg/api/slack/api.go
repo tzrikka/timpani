@@ -40,22 +40,22 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 		return
 	}
 
-	urlBase := "https://slack.com"
+	baseURL := "https://slack.com"
 	if template == "slack-oauth-gov" {
-		urlBase = "https://slack-gov.com" // https://docs.slack.dev/govslack
+		baseURL = "https://slack-gov.com" // https://docs.slack.dev/govslack
 	}
 
-	apiURL, err = url.JoinPath(urlBase, "api", strings.TrimPrefix(urlSuffix, "slack."))
+	apiURL, err = url.JoinPath(baseURL, "api", strings.TrimPrefix(urlSuffix, "slack."))
 	if err != nil {
 		msg := "failed to construct Slack API URL"
-		l.Error(msg, "error", err.Error(), "url_base", urlBase, "url_suffix", urlSuffix)
+		l.Error(msg, "error", err.Error(), "base_url", baseURL, "url_suffix", urlSuffix)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
 
 	botToken = secrets["bot_token"]
 	if botToken == "" {
-		botToken = secrets["access_token"] // OAuth token, possibly short-lived.
+		botToken = secrets["access_token"] // Short-lived OAuth token.
 	}
 	if botToken == "" {
 		msg := "Slack bot token not found in Thrippy link credentials"
@@ -67,13 +67,14 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 	return
 }
 
+// httpGet is a Slack-specific HTTP GET wrapper for [client.HTTPRequest].
 func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, jsonResp any) error {
 	l, apiURL, botToken, err := a.httpRequestPrep(ctx, urlSuffix)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, query)
+	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
 	if err != nil {
 		l.Error("HTTP GET request error", "error", err.Error(), "url", apiURL)
 		return err
@@ -86,17 +87,18 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("successful HTTP GET request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	l.Info("sent HTTP GET request", "link_id", a.thrippy.LinkID, "url", apiURL)
 	return nil
 }
 
+// httpPost is a Slack-specific HTTP POST wrapper for [client.HTTPRequest].
 func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp any) error {
 	l, apiURL, botToken, err := a.httpRequestPrep(ctx, urlSuffix)
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, jsonBody)
+	resp, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
 	if err != nil {
 		l.Error("HTTP POST request error", "error", err.Error(), "url", apiURL)
 		return err
@@ -109,6 +111,6 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("successful HTTP POST request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	l.Info("sent HTTP POST request", "link_id", a.thrippy.LinkID, "url", apiURL)
 	return nil
 }
