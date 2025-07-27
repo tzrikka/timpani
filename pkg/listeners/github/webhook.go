@@ -20,6 +20,7 @@ import (
 
 const (
 	contentTypeHeader = "Content-Type"
+	eventHeader       = "X-Github-Event"
 	signatureHeader   = "X-Hub-Signature-256"
 )
 
@@ -46,7 +47,8 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	}
 
 	// Dispatch the event notification as a Temporal signal.
-	if err := temporal.Signal(ctx, r.Temporal, "github.event", r.JSONPayload); err != nil {
+	signalName := "github.events." + r.Headers.Get(eventHeader)
+	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
 		return http.StatusInternalServerError
 	}
