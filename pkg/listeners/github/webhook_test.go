@@ -98,7 +98,7 @@ func TestCheckSignatureHeader(t *testing.T) {
 				RawPayload: []byte("body"),
 			}
 
-			if got := checkSignatureHeader(zerolog.Nop(), r); got != tt.want {
+			if got := CheckSignatureHeader(zerolog.Nop(), r); got != tt.want {
 				t.Errorf("checkSignatureHeader() = %d, want %d", got, tt.want)
 			}
 		})
