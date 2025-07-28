@@ -27,13 +27,10 @@ const (
 func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.RequestData) int {
 	l := zerolog.Ctx(ctx).With().Str("link_type", "github").Str("link_medium", "webhook").Logger()
 
-	statusCode := checkContentTypeHeader(l, r)
-	if statusCode != http.StatusOK {
+	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
 		return statusCode
 	}
-
-	statusCode = checkSignatureHeader(l, r)
-	if statusCode != http.StatusOK {
+	if statusCode := CheckSignatureHeader(l, r); statusCode != http.StatusOK {
 		return statusCode
 	}
 
@@ -58,10 +55,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
 	expected := []string{"application/json", "application/x-www-form-urlencoded"}
-	v := r.Headers.Get(contentTypeHeader)
+	ct := r.Headers.Get(contentTypeHeader)
 
-	if !slices.Contains(expected, v) {
-		l.Warn().Str("header", contentTypeHeader).Str("got", v).Any("want", expected).
+	if !slices.Contains(expected, ct) {
+		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", expected).
 			Msg("bad request: unexpected header value")
 		return http.StatusBadRequest
 	}
@@ -69,7 +66,8 @@ func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
 	return http.StatusOK
 }
 
-func checkSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
+// CheckSignatureHeader is defined by and for GitHub, but also reused by Bitbucket.
+func CheckSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
 	sig := r.Headers.Get(signatureHeader)
 	if sig == "" {
 		l.Warn().Str("header", signatureHeader).Msg("bad request: missing header")

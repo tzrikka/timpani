@@ -34,18 +34,13 @@ const (
 func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.RequestData) int {
 	l := zerolog.Ctx(ctx).With().Str("link_type", "slack").Str("link_medium", "webhook").Logger()
 
-	statusCode := checkContentTypeHeader(l, r)
-	if statusCode != http.StatusOK {
+	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
 		return statusCode
 	}
-
-	statusCode = checkTimestampHeader(l, r)
-	if statusCode != http.StatusOK {
+	if statusCode := checkTimestampHeader(l, r); statusCode != http.StatusOK {
 		return statusCode
 	}
-
-	statusCode = checkSignatureHeader(l, r)
-	if statusCode != http.StatusOK {
+	if statusCode := checkSignatureHeader(l, r); statusCode != http.StatusOK {
 		return statusCode
 	}
 
@@ -87,10 +82,10 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
 	expected := []string{"application/json", "application/x-www-form-urlencoded"}
-	v := r.Headers.Get(contentTypeHeader)
+	ct := r.Headers.Get(contentTypeHeader)
 
-	if !slices.Contains(expected, v) {
-		l.Warn().Str("header", contentTypeHeader).Str("got", v).Any("want", expected).
+	if !slices.Contains(expected, ct) {
+		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", expected).
 			Msg("bad request: unexpected header value")
 		return http.StatusBadRequest
 	}
