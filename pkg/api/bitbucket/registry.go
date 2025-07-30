@@ -23,6 +23,8 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
 	registerActivity(w, a.UsersGetActivity, UsersGetName)
+
+	registerActivity(w, a.WorkspacesListMembersActivity, WorkspacesListMembersName)
 }
 
 func registerActivity(w worker.Worker, f any, name string) {

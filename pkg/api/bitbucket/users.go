@@ -30,8 +30,7 @@ func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[st
 	path = fmt.Sprintf("%s/%s%s", path, req.AccountID, req.UUID)
 
 	resp := map[string]any{}
-	err := a.httpGet(ctx, path, nil, &resp)
-	if err != nil {
+	if err := a.httpGet(ctx, path, nil, &resp); err != nil {
 		return nil, err
 	}
 	return resp, nil
