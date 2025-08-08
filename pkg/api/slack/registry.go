@@ -23,6 +23,11 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
+	registerActivity(w, a.BookmarksAddActivity, BookmarksAddName)
+	registerActivity(w, a.BookmarksEditActivity, BookmarksEditName)
+	registerActivity(w, a.BookmarksListActivity, BookmarksListName)
+	registerActivity(w, a.BookmarksRemoveActivity, BookmarksRemoveName)
+
 	registerActivity(w, a.ChatDeleteActivity, ChatDeleteName)
 	registerActivity(w, a.ChatGetPermalinkActivity, ChatGetPermalinkName)
 	registerActivity(w, a.ChatPostEphemeralActivity, ChatPostEphemeralName)
