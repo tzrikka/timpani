@@ -13,12 +13,13 @@ const (
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
 type WorkspacesListMembersRequest struct {
+	Workspace    string   `json:"workspace"`
 	EmailsFilter []string `json:"emails_filter"`
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
 func (a *API) WorkspacesListMembersActivity(ctx context.Context, req WorkspacesListMembersRequest) (map[string]any, error) {
-	path := "/workspaces/TODO/members"
+	path := fmt.Sprintf("/workspaces/%s/members", req.Workspace)
 
 	query := url.Values{}
 	if len(req.EmailsFilter) > 0 {
