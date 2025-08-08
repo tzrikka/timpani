@@ -37,7 +37,11 @@ func logMessageWithAttributes(e *zerolog.Event, msg string, keyvals ...any) {
 			continue
 		}
 		for len(as) > 1 {
-			e = e.Any(as[0].(string), as[1])
+			if err, ok := as[1].(error); ok {
+				e = e.AnErr(as[0].(string), err)
+			} else {
+				e = e.Any(as[0].(string), as[1])
+			}
 			as = as[2:]
 		}
 		if len(as) > 0 {

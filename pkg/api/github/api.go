@@ -46,7 +46,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 	apiURL, err = url.JoinPath(baseURL, path)
 	if err != nil {
 		msg := "failed to construct GitHub API URL"
-		l.Error(msg, "error", err.Error(), "base_url", baseURL, "path", path)
+		l.Error(msg, "error", err, "base_url", baseURL, "path", path)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
@@ -59,7 +59,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 		token, err = generateJWT(secrets["client_id"], secrets["private_key"])
 		if err != nil {
 			msg := "failed to generate JWT for GitHub API call"
-			l.Warn(msg, "link_id", a.thrippy.LinkID, "error", err.Error())
+			l.Warn(msg, "link_id", a.thrippy.LinkID, "error", err)
 			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
 			return
 		}
@@ -116,14 +116,14 @@ func (a *API) httpGet(ctx context.Context, path string, query url.Values, jsonRe
 
 	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, query)
 	if err != nil {
-		l.Error("HTTP GET request error", "error", err.Error(), "url", apiURL)
+		l.Error("HTTP GET request error", "error", err, "url", apiURL)
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err.Error(), "url", apiURL)
-		msg = fmt.Sprintf("%s: %s", msg, err.Error())
+		l.Error(msg, "error", err, "url", apiURL)
+		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 

@@ -44,7 +44,7 @@ func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
 
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
 	if err != nil {
-		l.Error("failed to create gRPC client connection", "error", err.Error(), "grpc_addr", t.grpcAddr)
+		l.Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
 		return nil, err
 	}
 	defer conn.Close()
@@ -57,7 +57,7 @@ func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
 		LinkId: proto.String(t.LinkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetCredentials error", "error", err.Error(), "link_id", t.LinkID)
+		l.Error("Thrippy GetCredentials error", "error", err, "link_id", t.LinkID)
 		return nil, err
 	}
 
@@ -72,7 +72,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
 	if err != nil {
-		l.Error("failed to create gRPC client connection", "error", err.Error(), "grpc_addr", t.grpcAddr)
+		l.Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
 		return "", nil, err
 	}
 	defer conn.Close()
@@ -86,7 +86,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 		LinkId: proto.String(t.LinkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetLink error", "error", err.Error(), "link_id", t.LinkID)
+		l.Error("Thrippy GetLink error", "error", err, "link_id", t.LinkID)
 		return "", nil, err
 	}
 
@@ -95,7 +95,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 		LinkId: proto.String(t.LinkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetCredentials error", "error", err.Error(), "link_id", t.LinkID)
+		l.Error("Thrippy GetCredentials error", "error", err, "link_id", t.LinkID)
 		return "", nil, err
 	}
 

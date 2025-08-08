@@ -59,8 +59,8 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 // call from an event listener. Timeouts are optional. This workflow supports cancellation.
 func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventRequest) (map[string]any, error) {
 	// https://docs.temporal.io/develop/go/observability#visibility
-	kw := temporal.NewSearchAttributeKeyKeywordList("WaitingForSignals").ValueSet([]string{req.Signal})
-	if err := workflow.UpsertTypedSearchAttributes(ctx, kw); err != nil {
+	sa := temporal.NewSearchAttributeKeyKeywordList("WaitingForSignals").ValueSet([]string{req.Signal})
+	if err := workflow.UpsertTypedSearchAttributes(ctx, sa); err != nil {
 		return nil, fmt.Errorf("failed to set workflow search attribute: %w", err)
 	}
 
@@ -101,7 +101,7 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	}
 
 	selector.AddReceive(childCtx.Done(), func(workflow.ReceiveChannel, bool) {
-		l.Error("workflow canceled while waiting for signal", "signal", req.Signal, "error", childCtx.Err().Error())
+		l.Error("workflow canceled while waiting for signal", "signal", req.Signal, "error", childCtx.Err())
 	})
 
 	selector.Select(ctx)

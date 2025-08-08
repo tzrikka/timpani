@@ -48,7 +48,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 	apiURL, err = url.JoinPath(baseURL, "api", strings.TrimPrefix(urlSuffix, "slack."))
 	if err != nil {
 		msg := "failed to construct Slack API URL"
-		l.Error(msg, "error", err.Error(), "base_url", baseURL, "url_suffix", urlSuffix)
+		l.Error(msg, "error", err, "base_url", baseURL, "url_suffix", urlSuffix)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
@@ -76,14 +76,14 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 
 	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
 	if err != nil {
-		l.Error("HTTP GET request error", "error", err.Error(), "url", apiURL)
+		l.Error("HTTP GET request error", "error", err, "url", apiURL)
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err.Error(), "url", apiURL)
-		msg = fmt.Sprintf("%s: %s", msg, err.Error())
+		l.Error(msg, "error", err, "url", apiURL)
+		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
@@ -100,14 +100,14 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 
 	resp, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
 	if err != nil {
-		l.Error("HTTP POST request error", "error", err.Error(), "url", apiURL)
+		l.Error("HTTP POST request error", "error", err, "url", apiURL)
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err.Error(), "url", apiURL)
-		msg = fmt.Sprintf("%s: %s", msg, err.Error())
+		l.Error(msg, "error", err, "url", apiURL)
+		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
