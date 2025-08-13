@@ -33,7 +33,7 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 	c, err := client.Dial(client.Options{
 		HostPort:  addr,
 		Namespace: cmd.String("temporal-namespace"),
-		Logger:    LogAdapter{zerolog: l},
+		Logger:    LogAdapter{zerolog: l.With().CallerWithSkipFrameCount(4).Logger()},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to dial Temporal: %w", err)
@@ -128,7 +128,7 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 	c, err := client.Dial(client.Options{
 		HostPort:  cfg.HostPort,
 		Namespace: cfg.Namespace,
-		Logger:    LogAdapter{zerolog: *l},
+		Logger:    LogAdapter{zerolog: l.With().CallerWithSkipFrameCount(4).Logger()},
 	})
 	if err != nil {
 		return fmt.Errorf("client dial error: %w", err)
