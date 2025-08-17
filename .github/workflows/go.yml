@@ -26,8 +26,8 @@ jobs:
         run: go build -v ./cmd/timpani
       - name: Test
         run: gotestsum -f github-actions
-      # - name: Lint
-      #   uses: golangci/golangci-lint-action@v8  # https://github.com/golangci/golangci-lint-action
-      #   with:
-      #     version: v2.3.1     # https://github.com/golangci/golangci-lint/releases
-      #     args: --timeout=5m  # https://github.com/golangci/golangci-lint-action/issues/308
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8  # https://github.com/golangci/golangci-lint-action
+        with:
+          version: v2.4.0     # https://github.com/golangci/golangci-lint/releases
+          args: --timeout=5m  # https://github.com/golangci/golangci-lint-action/issues/308
