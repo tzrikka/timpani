@@ -38,7 +38,7 @@ func main() {
 		Version: bi.Main.Version,
 		Flags:   flags(),
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			initLog(cmd.Bool("dev"))
+			initLog(cmd.Bool("dev") || cmd.Bool("pretty-log"))
 			s := webhooks.NewHTTPServer(cmd)
 			go s.Run()
 			if err := s.ConnectLinks(ctx, cmd); err != nil {
@@ -59,6 +59,10 @@ func flags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  "dev",
 			Usage: "simple setup, but unsafe for production",
+		},
+		&cli.BoolFlag{
+			Name:  "pretty-log",
+			Usage: "human-readable console logging, instead of JSON",
 		},
 	}
 

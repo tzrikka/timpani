@@ -53,9 +53,9 @@ func NewHTTPServer(cmd *cli.Command) *httpServer {
 	return &httpServer{
 		httpPort:     cmd.Int("webhook-port"),
 		webhookLinks: links,
-		thrippyURL:   baseURL(cmd.String("thrippy-http-addr")),
+		thrippyURL:   baseURL(cmd.String("thrippy-http-address")),
 
-		thrippyGRPCAddr: cmd.String("thrippy-server-addr"),
+		thrippyGRPCAddr: cmd.String("thrippy-grpc-address"),
 		thrippyCreds:    thrippy.SecureCreds(cmd),
 
 		temporal: intlis.TemporalConfig{

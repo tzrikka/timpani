@@ -11,18 +11,18 @@ const (
 	DefaultTaskQueue = "timpani"
 )
 
-// Flags defines CLI flags to configure a Temporal worker. These flags can also
-// be set using environment variables and the application's configuration file.
+// Flags defines CLI flags to configure a Temporal worker. Usually these flags
+// are set using environment variables or the application's configuration file.
 func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	return []cli.Flag{
 		// https://pkg.go.dev/go.temporal.io/sdk/internal#ClientOptions
 		&cli.StringFlag{
-			Name:  "temporal-host-port",
+			Name:  "temporal-address",
 			Usage: "Temporal server address",
 			Value: client.DefaultHostPort,
 			Sources: cli.NewValueSourceChain(
-				cli.EnvVar("TEMPORAL_HOST_PORT"),
-				toml.TOML("temporal.host_port", configFilePath),
+				cli.EnvVar("TEMPORAL_ADDRESS"),
+				toml.TOML("temporal.address", configFilePath),
 			),
 		},
 		&cli.StringFlag{

@@ -14,17 +14,17 @@ const (
 	DefaultGRPCAddress = "localhost:14460"
 )
 
-// Flags defines CLI flags to configure a Thrippy gRPC client. These flags can also
-// be set using environment variables and the application's configuration file.
+// Flags defines CLI flags to configure a Thrippy gRPC client. Usually these flags
+// are set using environment variables or the application's configuration file.
 func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:  "thrippy-server-addr",
+			Name:  "thrippy-grpc-address",
 			Usage: "Thrippy gRPC server address",
 			Value: DefaultGRPCAddress,
 			Sources: cli.NewValueSourceChain(
-				cli.EnvVar("THRIPPY_SERVER_ADDRESS"),
-				toml.TOML("thrippy.server_address", configFilePath),
+				cli.EnvVar("THRIPPY_GRPC_ADDRESS"),
+				toml.TOML("thrippy.grpc_address", configFilePath),
 			),
 		},
 		&cli.StringFlag{
@@ -65,34 +65,38 @@ func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	}
 }
 
-// LinkIDFlag defines a CLI flag for the Thrippy link ID of a given
-// third-party service provider. This flag can also be set using an
-// environment variable and the application's configuration file.
-func LinkIDFlag(configFilePath altsrc.StringSourcer, sp string) cli.Flag {
-	lowerCase := strings.ToLower(sp)
+// LinkIDFlag defines a CLI flag to specify the Thrippy link ID of a third-party service.
+// Usually this flag is set using an environment variable or the application's configuration file.
+func LinkIDFlag(configFilePath altsrc.StringSourcer, service string) cli.Flag {
+	lowerCase := strings.ToLower(service)
 	return &cli.StringFlag{
 		Name:  "thrippy-link-" + lowerCase,
-		Usage: "Thrippy link ID for " + sp,
+		Usage: "Thrippy link ID for " + service,
 		Sources: cli.NewValueSourceChain(
-			cli.EnvVar("THRIPPY_LINK_"+strings.ToUpper(sp)),
+			cli.EnvVar("THRIPPY_LINK_"+strings.ToUpper(service)),
 			toml.TOML("thrippy.links."+lowerCase, configFilePath),
 		),
+		Validator: validateOptionalUUID,
 	}
 }
 
-// LinkID extracts and checks the configured Thrippy
-// link ID for the given third-party service provider.
-func LinkID(l zerolog.Logger, cmd *cli.Command, sp string) (string, bool) {
-	id := cmd.String("thrippy-link-" + strings.ToLower(sp))
+// LinkID extracts and checks the configured Thrippy link ID for the given third-party service.
+func LinkID(l zerolog.Logger, cmd *cli.Command, service string) (string, bool) {
+	id := cmd.String("thrippy-link-" + strings.ToLower(service))
 	if id == "" {
-		l.Warn().Msg("Thrippy link ID not configured for " + sp)
+		l.Warn().Msg("Thrippy link ID not configured for " + service)
 		return "", false
 	}
 
 	if _, err := shortuuid.DefaultEncoder.Decode(id); err != nil {
-		l.Error().Msg("invalid Thrippy link ID configured for " + sp)
+		l.Error().Msg("invalid Thrippy link ID configured for " + service)
 		return "", false
 	}
 
 	return id, true
+}
+
+func validateOptionalUUID(id string) error {
+	_, err := shortuuid.DefaultEncoder.Decode(id)
+	return err
 }

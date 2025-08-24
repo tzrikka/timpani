@@ -12,8 +12,8 @@ const (
 	DefaultWebhookPort = 14480
 )
 
-// Flags defines CLI flags to configure an HTTP server. These flags can also
-// be set using environment variables and the application's configuration file.
+// Flags defines CLI flags to configure an HTTP server. Usually these flags
+// are set using environment variables or the application's configuration file.
 func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	return []cli.Flag{
 		&cli.IntFlag{
@@ -27,7 +27,7 @@ func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 			Validator: validatePort,
 		},
 		&cli.StringFlag{
-			Name:  "thrippy-http-addr",
+			Name:  "thrippy-http-address",
 			Usage: "optional Thrippy address, to pass-through OAuth callbacks, to share a single HTTP tunnel",
 			Sources: cli.NewValueSourceChain(
 				cli.EnvVar("THRIPPY_HTTP_PASSTHROUGH_ADDRESS"),
