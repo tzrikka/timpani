@@ -12,8 +12,8 @@ const (
 	DefaultWebhookPort = 14480
 )
 
-// Flags defines CLI flags to configure an HTTP server. Usually these flags
-// are set using environment variables or the application's configuration file.
+// Flags defines CLI flags to configure an HTTP server. These flags are usually
+// set using environment variables or the application's configuration file.
 func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	return []cli.Flag{
 		&cli.IntFlag{

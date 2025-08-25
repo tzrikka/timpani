@@ -14,8 +14,8 @@ const (
 	DefaultGRPCAddress = "localhost:14460"
 )
 
-// Flags defines CLI flags to configure a Thrippy gRPC client. Usually these flags
-// are set using environment variables or the application's configuration file.
+// Flags defines CLI flags to configure a Thrippy gRPC client. These flags are
+// usually set using environment variables or the application's configuration file.
 func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
@@ -66,7 +66,7 @@ func Flags(configFilePath altsrc.StringSourcer) []cli.Flag {
 }
 
 // LinkIDFlag defines a CLI flag to specify the Thrippy link ID of a third-party service.
-// Usually this flag is set using an environment variable or the application's configuration file.
+// This flag is usually set using an environment variable or the application's configuration file.
 func LinkIDFlag(configFilePath altsrc.StringSourcer, service string) cli.Flag {
 	lowerCase := strings.ToLower(service)
 	return &cli.StringFlag{
