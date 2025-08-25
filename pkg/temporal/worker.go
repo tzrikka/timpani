@@ -27,7 +27,7 @@ import (
 
 // Run initializes the Temporal worker, and blocks.
 func Run(l zerolog.Logger, cmd *cli.Command) error {
-	addr := cmd.String("temporal-host-port")
+	addr := cmd.String("temporal-address")
 	l.Info().Msgf("Temporal server address: %s", addr)
 
 	c, err := client.Dial(client.Options{

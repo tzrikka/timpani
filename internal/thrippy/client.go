@@ -31,7 +31,7 @@ type LinkClient struct {
 func NewLinkClient(id string, cmd *cli.Command) LinkClient {
 	return LinkClient{
 		LinkID:   id,
-		grpcAddr: cmd.String("thrippy-server-addr"),
+		grpcAddr: cmd.String("thrippy-grpc-address"),
 		creds:    SecureCreds(cmd),
 	}
 }
