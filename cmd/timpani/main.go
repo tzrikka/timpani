@@ -105,6 +105,4 @@ func initLog(devMode bool) {
 		Out:        os.Stdout,
 		TimeFormat: "15:04:05.000",
 	}).With().Caller().Logger()
-
-	log.Warn().Msg("********** DEV MODE - UNSAFE IN PRODUCTION! **********")
 }
