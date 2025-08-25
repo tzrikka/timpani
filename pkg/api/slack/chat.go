@@ -89,16 +89,19 @@ type ChatPostEphemeralRequest struct {
 	Channel string `json:"channel"`
 	User    string `json:"user"`
 
-	Attachments  []map[string]any `json:"attachments,omitempty"`
 	Blocks       []map[string]any `json:"blocks,omitempty"`
-	IconEmoji    string           `json:"icon_emoji,omitempty"`
-	IconURL      string           `json:"icon_url,omitempty"`
-	LinkNames    bool             `json:"link_names,omitempty"`
+	Attachments  []map[string]any `json:"attachments,omitempty"`
 	MarkdownText string           `json:"markdown_text,omitempty"`
-	Parse        string           `json:"parse,omitempty"`
 	Text         string           `json:"text,omitempty"`
-	ThreadTS     string           `json:"thread_ts,omitempty"`
-	Username     string           `json:"username,omitempty"`
+
+	ThreadTS string `json:"thread_ts,omitempty"`
+
+	IconEmoji string `json:"icon_emoji,omitempty"`
+	IconURL   string `json:"icon_url,omitempty"`
+
+	LinkNames bool   `json:"link_names,omitempty"`
+	Parse     string `json:"parse,omitempty"`
+	Username  string `json:"username,omitempty"`
 }
 
 // https://docs.slack.dev/reference/methods/chat.postEphemeral
@@ -124,20 +127,24 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req ChatPostEphemer
 type ChatPostMessageRequest struct {
 	Channel string `json:"channel"`
 
-	Attachments  []map[string]any `json:"attachments,omitempty"`
 	Blocks       []map[string]any `json:"blocks,omitempty"`
-	IconEmoji    string           `json:"icon_emoji,omitempty"`
-	IconURL      string           `json:"icon_url,omitempty"`
-	LinkNames    bool             `json:"link_names,omitempty"`
+	Attachments  []map[string]any `json:"attachments,omitempty"`
 	MarkdownText string           `json:"markdown_text,omitempty"`
-	Metadata     map[string]any   `json:"metadata,omitempty"`
-	// Ignoring "mrkdwn" for now, because it has an unusual default value (true).
-	Parse          string `json:"parse,omitempty"`
-	ReplyBroadcast bool   `json:"reply_broadcast,omitempty"`
-	Text           string `json:"text,omitempty"`
+	Text         string           `json:"text,omitempty"`
+
 	ThreadTS       string `json:"thread_ts,omitempty"`
-	UnfurnLinks    bool   `json:"unfurl_links,omitempty"`
-	Username       string `json:"username,omitempty"`
+	ReplyBroadcast bool   `json:"reply_broadcast,omitempty"`
+
+	IconEmoji string         `json:"icon_emoji,omitempty"`
+	IconURL   string         `json:"icon_url,omitempty"`
+	Metadata  map[string]any `json:"metadata,omitempty"`
+
+	LinkNames bool `json:"link_names,omitempty"`
+	// Ignoring "mrkdwn" for now, because it has an unusual default value (true).
+	Parse       string `json:"parse,omitempty"`
+	UnfurlLinks bool   `json:"unfurl_links,omitempty"`
+	UnfurlMedia bool   `json:"unfurl_media,omitempty"`
+	Username    string `json:"username,omitempty"`
 }
 
 // https://docs.slack.dev/reference/methods/chat.postMessage
@@ -168,15 +175,17 @@ type ChatUpdateRequest struct {
 	Channel string `json:"channel"`
 	TS      string `json:"ts"`
 
-	Attachments    []map[string]any `json:"attachments,omitempty"`
-	Blocks         []map[string]any `json:"blocks,omitempty"`
-	MarkdownText   string           `json:"markdown_text,omitempty"`
-	Metadata       map[string]any   `json:"metadata,omitempty"`
-	LinkNames      bool             `json:"link_names,omitempty"`
-	Parse          string           `json:"parse,omitempty"`
-	Text           string           `json:"text,omitempty"`
-	ReplyBroadcast bool             `json:"reply_broadcast,omitempty"`
-	FileIDs        []string         `json:"file_ids,omitempty"`
+	Blocks       []map[string]any `json:"blocks,omitempty"`
+	Attachments  []map[string]any `json:"attachments,omitempty"`
+	MarkdownText string           `json:"markdown_text,omitempty"`
+	Text         string           `json:"text,omitempty"`
+
+	AsUser         bool           `json:"as_user,omitempty"`
+	FileIDs        []string       `json:"file_ids,omitempty"`
+	LinkNames      bool           `json:"link_names,omitempty"`
+	Metadata       map[string]any `json:"metadata,omitempty"`
+	Parse          string         `json:"parse,omitempty"`
+	ReplyBroadcast bool           `json:"reply_broadcast,omitempty"`
 }
 
 // https://docs.slack.dev/reference/methods/chat.update
