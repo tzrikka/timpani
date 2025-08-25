@@ -59,7 +59,7 @@ func NewHTTPServer(cmd *cli.Command) *httpServer {
 		thrippyCreds:    thrippy.SecureCreds(cmd),
 
 		temporal: intlis.TemporalConfig{
-			HostPort:  cmd.String("temporal-host-port"),
+			HostPort:  cmd.String("temporal-address"),
 			Namespace: cmd.String("temporal-namespace"),
 			TaskQueue: cmd.String("temporal-task-queue"),
 		},
