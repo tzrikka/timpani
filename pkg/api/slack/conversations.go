@@ -98,7 +98,7 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req Conversations
 	}
 	if !resp.OK {
 		if resp.Error == "name_taken" { // Let the caller decide how to handle this error.
-			return resp, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
