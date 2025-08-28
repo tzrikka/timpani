@@ -64,12 +64,13 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#responding_to_commands
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#responding_with_errors
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#best-practices
+	statusCode := http.StatusOK
 	if sc := r.WebForm.Get("command"); sc != "" {
 		l.Debug().Str("event_type", "slash_command").Msg("replied to Slack slash command")
 		w.Header().Add(contentTypeHeader, "application/json; charset=utf-8")
 		resp := "{\"response_type\": \"ephemeral\", \"text\": \"Your command: `%s %s`\"}"
 		_, _ = fmt.Fprintf(w, resp, sc, r.WebForm.Get("text"))
-		return 0 // [http.StatusOK] already written by "w.Write" ("fmt.Fprintf(w)").
+		statusCode = 0 // [http.StatusOK] already written by "w.Write" ("fmt.Fprintf(w)").
 	}
 
 	// Dispatch the event notification, based on its type.
@@ -77,7 +78,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 		return http.StatusInternalServerError
 	}
 
-	return http.StatusOK
+	return statusCode
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
