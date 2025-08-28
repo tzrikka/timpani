@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+
+	"go.temporal.io/sdk/temporal"
 )
 
 const (
@@ -95,6 +97,9 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req Conversations
 		return nil, err
 	}
 	if !resp.OK {
+		if resp.Error == "name_taken" { // Let the caller decide how to handle this error.
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 	return resp, nil
