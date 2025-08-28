@@ -17,8 +17,8 @@ const (
 // https://docs.slack.dev/reference/methods/reactions.add
 type ReactionsAddRequest struct {
 	Channel   string `json:"channel"`
-	Name      string `json:"name"`
 	Timestamp string `json:"timestamp"`
+	Name      string `json:"name"`
 }
 
 // https://docs.slack.dev/reference/methods/reactions.add

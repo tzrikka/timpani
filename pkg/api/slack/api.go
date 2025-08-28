@@ -47,8 +47,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 
 	apiURL, err = url.JoinPath(baseURL, "api", strings.TrimPrefix(urlSuffix, "slack."))
 	if err != nil {
-		msg := "failed to construct Slack API URL"
-		l.Error(msg, "error", err, "base_url", baseURL, "url_suffix", urlSuffix)
+		l.Error("failed to construct Slack API URL", "error", err, "base_url", baseURL, "url_suffix", urlSuffix)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}

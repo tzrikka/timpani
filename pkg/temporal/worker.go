@@ -25,7 +25,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/api/slack"
 )
 
-// Run initializes the Temporal worker, and blocks.
+// Run initializes the Temporal worker, and blocks to keep it running.
 func Run(l zerolog.Logger, cmd *cli.Command) error {
 	addr := cmd.String("temporal-address")
 	l.Info().Msgf("Temporal server address: %s", addr)
@@ -101,7 +101,7 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	}
 
 	selector.AddReceive(childCtx.Done(), func(workflow.ReceiveChannel, bool) {
-		l.Error("workflow canceled while waiting for signal", "signal", req.Signal, "error", childCtx.Err())
+		l.Error("workflow canceled while waiting for signal", "error", childCtx.Err(), "signal", req.Signal)
 	})
 
 	selector.Select(ctx)
@@ -147,7 +147,7 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 
 	for _, info := range list.GetExecutions() {
 		wid, rid := info.Execution.WorkflowId, info.Execution.RunId
-		l.Debug().Str("signal", name).Str("workflow_id", wid).Str("run_id", rid).
+		l.Info().Str("signal", name).Str("workflow_id", wid).Str("run_id", rid).
 			Msg("sending signal to Temporal workflow")
 		if err := c.SignalWorkflow(ctx, wid, rid, name, payload); err != nil {
 			return fmt.Errorf("signaling error: %w", err)

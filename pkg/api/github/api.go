@@ -45,8 +45,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 
 	apiURL, err = url.JoinPath(baseURL, path)
 	if err != nil {
-		msg := "failed to construct GitHub API URL"
-		l.Error(msg, "error", err, "base_url", baseURL, "path", path)
+		l.Error("failed to construct GitHub API URL", "error", err, "base_url", baseURL, "path", path)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
@@ -59,7 +58,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 		token, err = generateJWT(secrets["client_id"], secrets["private_key"])
 		if err != nil {
 			msg := "failed to generate JWT for GitHub API call"
-			l.Warn(msg, "link_id", a.thrippy.LinkID, "error", err)
+			l.Warn(msg, "error", err, "link_id", a.thrippy.LinkID)
 			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
 			return
 		}

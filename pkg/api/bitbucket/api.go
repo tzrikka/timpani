@@ -29,8 +29,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 
 	apiURL, err = url.JoinPath(baseURL, path)
 	if err != nil {
-		msg := "failed to construct GitHub API URL"
-		l.Error(msg, "error", err, "base_url", baseURL, "path", path)
+		l.Error("failed to construct Bitbucket API URL", "error", err, "base_url", baseURL, "path", path)
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
