@@ -28,6 +28,8 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	registerActivity(w, a.BookmarksListActivity, BookmarksListName)
 	registerActivity(w, a.BookmarksRemoveActivity, BookmarksRemoveName)
 
+	registerActivity(w, a.BotsInfoActivity, BotsInfoName)
+
 	registerActivity(w, a.ChatDeleteActivity, ChatDeleteName)
 	registerActivity(w, a.ChatGetPermalinkActivity, ChatGetPermalinkName)
 	registerActivity(w, a.ChatPostEphemeralActivity, ChatPostEphemeralName)
