@@ -28,7 +28,9 @@ type BotsInfoResponse struct {
 func (a *API) BotsInfoActivity(ctx context.Context, req BotsInfoRequest) (*BotsInfoResponse, error) {
 	query := url.Values{}
 	query.Set("bot", req.Bot)
-	query.Set("team_id", req.TeamID)
+	if req.TeamID != "" {
+		query.Set("team_id", req.TeamID)
+	}
 
 	resp := new(BotsInfoResponse)
 	if err := a.httpGet(ctx, BotsInfoName, query, resp); err != nil {
