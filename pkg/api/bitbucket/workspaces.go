@@ -5,20 +5,12 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-)
 
-const (
-	WorkspacesListMembersName = "bitbucket.workspaces.listMembers"
+	"github.com/tzrikka/timpani-api/pkg/bitbucket"
 )
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
-type WorkspacesListMembersRequest struct {
-	Workspace    string   `json:"workspace"`
-	EmailsFilter []string `json:"emails_filter"`
-}
-
-// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
-func (a *API) WorkspacesListMembersActivity(ctx context.Context, req WorkspacesListMembersRequest) (map[string]any, error) {
+func (a *API) WorkspacesListMembersActivity(ctx context.Context, req bitbucket.WorkspacesListMembersRequest) (*bitbucket.WorkspacesListMembersResponse, error) {
 	path := fmt.Sprintf("/workspaces/%s/members", req.Workspace)
 
 	query := url.Values{}
@@ -26,9 +18,10 @@ func (a *API) WorkspacesListMembersActivity(ctx context.Context, req WorkspacesL
 		query.Set("q", fmt.Sprintf(`user.email IN ("%s")`, strings.Join(req.EmailsFilter, `","`)))
 	}
 
-	resp := map[string]any{}
-	if err := a.httpGet(ctx, path, query, &resp); err != nil {
+	resp := new(bitbucket.WorkspacesListMembersResponse)
+	if err := a.httpGet(ctx, path, query, resp); err != nil {
 		return nil, err
 	}
+
 	return resp, nil
 }

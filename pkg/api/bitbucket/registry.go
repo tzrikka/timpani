@@ -6,6 +6,7 @@ import (
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/worker"
 
+	"github.com/tzrikka/timpani-api/pkg/bitbucket"
 	"github.com/tzrikka/timpani/internal/thrippy"
 )
 
@@ -22,9 +23,9 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
-	registerActivity(w, a.UsersGetActivity, UsersGetName)
+	registerActivity(w, a.UsersGetActivity, bitbucket.UsersGetActivityName)
 
-	registerActivity(w, a.WorkspacesListMembersActivity, WorkspacesListMembersName)
+	registerActivity(w, a.WorkspacesListMembersActivity, bitbucket.WorkspacesListMembersActivityName)
 }
 
 func registerActivity(w worker.Worker, f any, name string) {
