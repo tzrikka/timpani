@@ -64,7 +64,7 @@ func (c *Conn) readMessage() *internalMessage {
 		// "A fragmented message consists of a single frame with the FIN bit
 		// clear and an opcode other than 0, followed by zero or more frames
 		// with the FIN bit clear and the opcode set to 0, and terminated by
-		// a single frame with the FIN bit set and an opcode of 0."
+		// a single frame with the FIN bit set and an opcode of 0".
 		case opcodeContinuation, OpcodeText, OpcodeBinary:
 			if h.opcode != opcodeContinuation {
 				op = h.opcode
@@ -78,7 +78,7 @@ func (c *Conn) readMessage() *internalMessage {
 			}
 
 		// "If an endpoint receives a Close frame and did not previously send
-		// a Close frame, the endpoint MUST send a Close frame in response."
+		// a Close frame, the endpoint MUST send a Close frame in response".
 		case opcodeClose:
 			c.closeReceived = true
 			status, reason := c.parseClosePayload(data)
@@ -86,7 +86,7 @@ func (c *Conn) readMessage() *internalMessage {
 			return nil // Not an error, but we no longer need to receive new frames.
 
 		// "An endpoint MUST be capable of handling control
-		// frames in the middle of a fragmented message."
+		// frames in the middle of a fragmented message".
 		case opcodePing:
 			if err := <-c.sendControlFrame(opcodePong, data); err != nil {
 				c.logger.Err(err).Bytes("payload", data).Msg("failed to send WebSocket pong control frame")
@@ -114,7 +114,7 @@ func (c *Conn) finalizeMessage(op Opcode, data []byte) *internalMessage {
 	// "When an endpoint is to interpret a byte stream as UTF-8 but finds
 	// that the byte stream is not, in fact, a valid UTF-8 stream, that
 	// endpoint MUST _Fail the WebSocket Connection_. This rule applies both
-	// during the opening handshake and during subsequent data exchange."
+	// during the opening handshake and during subsequent data exchange".
 	if op == OpcodeText && len(data) > 0 && !utf8.Valid(data) {
 		c.logger.Error().Msg("protocol error due to invalid UTF-8 text")
 		c.sendCloseControlFrame(StatusInvalidData, "invalid UTF-8 text")

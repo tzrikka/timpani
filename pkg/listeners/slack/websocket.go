@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/tzrikka/timpani/internal/listeners"
@@ -37,7 +36,7 @@ func ConnectionHandler(ctx context.Context, tc listeners.TemporalConfig, data li
 		return errors.New("internal server error")
 	}
 
-	go clientEventLoop(l, tc, c)
+	go clientEventLoop(l.WithContext(ctx), tc, c)
 	return nil
 }
 
@@ -103,7 +102,8 @@ type apiResponse struct {
 // all types of asynchronous Slack events which were received as WebSocket
 // data messages. It also prevents downtime by informing the client when
 // to refresh its underlying WebSocket connection, before it times out.
-func clientEventLoop(l zerolog.Logger, tc listeners.TemporalConfig, c *websocket.Client) {
+func clientEventLoop(ctx context.Context, tc listeners.TemporalConfig, c *websocket.Client) {
+	l := log.Ctx(ctx)
 	for {
 		raw, ok := <-c.IncomingMessages()
 		if !ok {
@@ -124,7 +124,7 @@ func clientEventLoop(l zerolog.Logger, tc listeners.TemporalConfig, c *websocket
 			t := msg.DebugInfo.ApproximateConnectionTime
 			// 63-72 seconds before the actual timeout.
 			t -= 63 + rand.IntN(10) //gosec:disable G404 -- no need for crypto/rand
-			c.RefreshConnectionIn(time.Duration(t) * time.Second)
+			c.RefreshConnectionIn(ctx, time.Duration(t)*time.Second)
 			continue
 
 		// https://docs.slack.dev/apis/events-api/using-socket-mode#disconnect
@@ -156,7 +156,7 @@ func clientEventLoop(l zerolog.Logger, tc listeners.TemporalConfig, c *websocket
 		}
 
 		// Dispatch the event notification, based on its type.
-		if err := dispatchFromWebSocket(l, tc, msg.Payload); err != nil {
+		if err := dispatchFromWebSocket(ctx, tc, msg.Payload); err != nil {
 			continue
 		}
 	}

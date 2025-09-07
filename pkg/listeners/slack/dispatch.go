@@ -30,16 +30,15 @@ func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) error {
 	return nil
 }
 
-func dispatchFromWebSocket(l zerolog.Logger, tc listeners.TemporalConfig, payload map[string]any) error {
+func dispatchFromWebSocket(ctx context.Context, tc listeners.TemporalConfig, payload map[string]any) error {
 	signalName, payload, err := parsePayload(payload, nil)
 	if err != nil {
-		l.Err(err).Msg("failed to decode event payload")
+		zerolog.Ctx(ctx).Err(err).Msg("failed to decode event payload")
 		return err
 	}
 
-	ctx := l.WithContext(context.Background())
 	if err := temporal.Signal(ctx, tc, signalName, payload); err != nil {
-		l.Err(err).Msg("failed to send Temporal signal")
+		zerolog.Ctx(ctx).Err(err).Msg("failed to send Temporal signal")
 		return err
 	}
 

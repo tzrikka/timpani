@@ -62,6 +62,8 @@ func TestHTTPRequest(t *testing.T) {
 }
 
 func handler(t *testing.T) http.HandlerFunc {
+	t.Helper()
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got := r.Header.Get("Accept")
 		want := "application/json"

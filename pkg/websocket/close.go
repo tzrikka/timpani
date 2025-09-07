@@ -186,7 +186,7 @@ func (c *Conn) sendCloseControlFrame(status StatusCode, reason string) {
 	defer c.closeSentMu.Unlock()
 
 	// "If an endpoint receives a Close frame and did not previously send
-	// a Close frame, the endpoint MUST send a Close frame in response."
+	// a Close frame, the endpoint MUST send a Close frame in response".
 	if c.closeSent {
 		return
 	}

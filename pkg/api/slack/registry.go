@@ -7,6 +7,7 @@ import (
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 
+	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/thrippy"
 )
 
@@ -23,51 +24,49 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
-	registerActivity(w, a.BookmarksAddActivity, BookmarksAddName)
-	registerActivity(w, a.BookmarksEditActivity, BookmarksEditName)
-	registerActivity(w, a.BookmarksListActivity, BookmarksListName)
-	registerActivity(w, a.BookmarksRemoveActivity, BookmarksRemoveName)
+	registerActivity(w, a.BookmarksAddActivity, slack.BookmarksAddActivityName)
+	registerActivity(w, a.BookmarksEditActivity, slack.BookmarksEditActivityName)
+	registerActivity(w, a.BookmarksListActivity, slack.BookmarksListActivityName)
+	registerActivity(w, a.BookmarksRemoveActivity, slack.BookmarksRemoveActivityName)
 
-	registerActivity(w, a.BotsInfoActivity, BotsInfoName)
+	registerActivity(w, a.BotsInfoActivity, slack.BotsInfoActivityName)
 
-	registerActivity(w, a.ChatDeleteActivity, ChatDeleteName)
-	registerActivity(w, a.ChatGetPermalinkActivity, ChatGetPermalinkName)
-	registerActivity(w, a.ChatPostEphemeralActivity, ChatPostEphemeralName)
-	registerActivity(w, a.ChatPostMessageActivity, ChatPostMessageName)
-	registerActivity(w, a.ChatUpdateActivity, ChatUpdateName)
+	registerActivity(w, a.ChatDeleteActivity, slack.ChatDeleteActivityName)
+	registerActivity(w, a.ChatGetPermalinkActivity, slack.ChatGetPermalinkActivityName)
+	registerActivity(w, a.ChatPostEphemeralActivity, slack.ChatPostEphemeralActivityName)
+	registerActivity(w, a.ChatPostMessageActivity, slack.ChatPostMessageActivityName)
+	registerActivity(w, a.ChatUpdateActivity, slack.ChatUpdateActivityName)
 
-	registerActivity(w, a.ConversationsArchiveActivity, ConversationsArchiveName)
-	registerActivity(w, a.ConversationsCloseActivity, ConversationsCloseName)
-	registerActivity(w, a.ConversationsCreateActivity, ConversationsCreateName)
-	registerActivity(w, a.ConversationsHistoryActivity, ConversationsHistoryName)
-	registerActivity(w, a.ConversationsInfoActivity, ConversationsInfoName)
-	registerActivity(w, a.ConversationsInviteActivity, ConversationsInviteName)
-	registerActivity(w, a.ConversationsJoinActivity, ConversationsJoinName)
-	registerActivity(w, a.ConversationsKickActivity, ConversationsKickName)
-	registerActivity(w, a.ConversationsLeaveActivity, ConversationsLeaveName)
-	registerActivity(w, a.ConversationsListActivity, ConversationsListName)
-	registerActivity(w, a.ConversationsMembersActivity, ConversationsMembersName)
-	registerActivity(w, a.ConversationsOpenActivity, ConversationsOpenName)
-	registerActivity(w, a.ConversationsRenameActivity, ConversationsRenameName)
-	registerActivity(w, a.ConversationsRepliesActivity, ConversationsRepliesName)
-	registerActivity(w, a.ConversationsSetPurposeActivity, ConversationsSetPurposeName)
-	registerActivity(w, a.ConversationsSetTopicActivity, ConversationsSetTopicName)
-	registerActivity(w, a.ConversationsUnarchiveActivity, ConversationsUnarchiveName)
+	registerActivity(w, a.ConversationsArchiveActivity, slack.ConversationsArchiveActivityName)
+	registerActivity(w, a.ConversationsCloseActivity, slack.ConversationsCloseActivityName)
+	registerActivity(w, a.ConversationsCreateActivity, slack.ConversationsCreateActivityName)
+	registerActivity(w, a.ConversationsHistoryActivity, slack.ConversationsHistoryActivityName)
+	registerActivity(w, a.ConversationsInfoActivity, slack.ConversationsInfoActivityName)
+	registerActivity(w, a.ConversationsInviteActivity, slack.ConversationsInviteActivityName)
+	registerActivity(w, a.ConversationsJoinActivity, slack.ConversationsJoinActivityName)
+	registerActivity(w, a.ConversationsKickActivity, slack.ConversationsKickActivityName)
+	registerActivity(w, a.ConversationsLeaveActivity, slack.ConversationsLeaveActivityName)
+	registerActivity(w, a.ConversationsListActivity, slack.ConversationsListActivityName)
+	registerActivity(w, a.ConversationsMembersActivity, slack.ConversationsMembersActivityName)
+	registerActivity(w, a.ConversationsOpenActivity, slack.ConversationsOpenActivityName)
+	registerActivity(w, a.ConversationsRenameActivity, slack.ConversationsRenameActivityName)
+	registerActivity(w, a.ConversationsRepliesActivity, slack.ConversationsRepliesActivityName)
+	registerActivity(w, a.ConversationsSetPurposeActivity, slack.ConversationsSetPurposeActivityName)
+	registerActivity(w, a.ConversationsSetTopicActivity, slack.ConversationsSetTopicActivityName)
 
-	registerActivity(w, a.ReactionsAddActivity, ReactionsAddName)
-	registerActivity(w, a.ReactionsGetActivity, ReactionsGetName)
-	registerActivity(w, a.ReactionsListActivity, ReactionsListName)
-	registerActivity(w, a.ReactionsRemoveActivity, ReactionsRemoveName)
+	registerActivity(w, a.ReactionsAddActivity, slack.ReactionsAddActivityName)
+	registerActivity(w, a.ReactionsGetActivity, slack.ReactionsGetActivityName)
+	registerActivity(w, a.ReactionsListActivity, slack.ReactionsListActivityName)
+	registerActivity(w, a.ReactionsRemoveActivity, slack.ReactionsRemoveActivityName)
 
-	registerActivity(w, a.UsersConversationsActivity, UsersConversationsName)
-	registerActivity(w, a.UsersGetPresenceActivity, UsersGetPresenceName)
-	registerActivity(w, a.UsersIdentityActivity, UsersIdentityName)
-	registerActivity(w, a.UsersInfoActivity, UsersInfoName)
-	registerActivity(w, a.UsersListActivity, UsersListName)
-	registerActivity(w, a.UsersLookupByEmailActivity, UsersLookupByEmailName)
-	registerActivity(w, a.UsersProfileGetActivity, UsersProfileGetName)
+	registerActivity(w, a.UsersConversationsActivity, slack.UsersConversationsActivityName)
+	registerActivity(w, a.UsersGetPresenceActivity, slack.UsersGetPresenceActivityName)
+	registerActivity(w, a.UsersInfoActivity, slack.UsersInfoActivityName)
+	registerActivity(w, a.UsersListActivity, slack.UsersListActivityName)
+	registerActivity(w, a.UsersLookupByEmailActivity, slack.UsersLookupByEmailActivityName)
+	registerActivity(w, a.UsersProfileGetActivity, slack.UsersProfileGetActivityName)
 
-	registerWorkflow(w, a.TimpaniPostApprovalWorkflow, TimpaniPostApprovalName)
+	registerWorkflow(w, a.TimpaniPostApprovalWorkflow, slack.TimpaniPostApprovalWorkflowName)
 }
 
 func registerActivity(w worker.Worker, f any, name string) {

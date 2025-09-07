@@ -2,11 +2,17 @@ version: "2"
 
 linters:
   enable:
+    - asciicheck
+    - bidichk
     - bodyclose
     - canonicalheader
     - containedctx
+    - contextcheck
     - copyloopvar
+    - dupl
     - dupword
+    - embeddedstructfieldcheck
+    - errcheck
     - errchkjson
     - errname
     - errorlint
@@ -14,11 +20,14 @@ linters:
     - fatcontext
     - gocheckcompilerdirectives
     - gocritic
-    # - godot
+    - godot
     - godox
     - gosec
     - gosmopolitan
+    - govet
+    - ineffassign
     - intrange
+    - mirror
     - misspell
     - musttag
     - noctx
@@ -27,8 +36,12 @@ linters:
     - predeclared
     - recvcheck
     # - revive
+    - staticcheck
+    - thelper
     - unconvert
+    - unused
     - usestdlibvars
+    - usetesting
     - zerologlint
 
   exclusions:
@@ -61,7 +74,7 @@ formatters:
     gofumpt:
       extra-rules: true
     golines:
-      max-len: 150
+      max-len: 160
 
 issues:
   max-issues-per-linter: 0

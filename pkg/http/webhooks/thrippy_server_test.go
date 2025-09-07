@@ -115,6 +115,8 @@ func TestHTTPServerThrippyHandler(t *testing.T) {
 }
 
 func mockThrippyServer(t *testing.T, wantQuery url.Values, resp *http.Response) http.HandlerFunc {
+	t.Helper()
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Support redirection in tests.
 		if r.URL.Path == "/redirect" {

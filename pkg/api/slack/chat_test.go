@@ -2,10 +2,12 @@ package slack
 
 import (
 	"testing"
+
+	"github.com/tzrikka/timpani-api/pkg/slack"
 )
 
 func TestApprovalBlocks(t *testing.T) {
-	blocks := approvalBlocks(TimpaniPostApprovalRequest{RedButton: "red"}, "id")
+	blocks := approvalBlocks(slack.TimpaniPostApprovalRequest{RedButton: "red"}, "id")
 
 	elems, ok := blocks[4]["elements"]
 	if !ok {

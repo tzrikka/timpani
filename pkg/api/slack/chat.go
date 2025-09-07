@@ -11,233 +11,82 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
+	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/listeners"
 )
 
-const (
-	ChatDeleteName        = "slack.chat.delete"
-	ChatGetPermalinkName  = "slack.chat.getPermalink"
-	ChatPostEphemeralName = "slack.chat.postEphemeral"
-	ChatPostMessageName   = "slack.chat.postMessage"
-	ChatUpdateName        = "slack.chat.update"
-
-	TimpaniPostApprovalName = "slack.timpani.postApproval"
-)
-
-// https://docs.slack.dev/reference/methods/chat.delete
-type ChatDeleteRequest struct {
-	Channel string `json:"channel"`
-	TS      string `json:"ts"`
-
-	AsUser bool `json:"as_user,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.delete
-type ChatDeleteResponse struct {
-	slackResponse
-
-	Channel string `json:"channel,omitempty"`
-	TS      string `json:"ts,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.delete
-func (a *API) ChatDeleteActivity(ctx context.Context, req ChatDeleteRequest) (*ChatDeleteResponse, error) {
-	resp := new(ChatDeleteResponse)
-	if err := a.httpPost(ctx, ChatDeleteName, req, resp); err != nil {
+// https://docs.slack.dev/reference/methods/chat.delete/
+func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteRequest) (*slack.ChatDeleteResponse, error) {
+	resp := new(slack.ChatDeleteResponse)
+	if err := a.httpPost(ctx, slack.ChatDeleteActivityName, req, resp); err != nil {
 		return nil, err
 	}
+
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
+
 	return resp, nil
 }
 
-// https://docs.slack.dev/reference/methods/chat.getPermalink
-type ChatGetPermalinkRequest struct {
-	Channel   string `json:"channel"`
-	MessageTS string `json:"message_ts"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.getPermalink
-type ChatGetPermalinkResponse struct {
-	slackResponse
-
-	Channel   string `json:"channel,omitempty"`
-	Permalink string `json:"permalink,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.getPermalink
-func (a *API) ChatGetPermalinkActivity(ctx context.Context, req ChatGetPermalinkRequest) (*ChatGetPermalinkResponse, error) {
+// https://docs.slack.dev/reference/methods/chat.getPermalink/
+func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPermalinkRequest) (*slack.ChatGetPermalinkResponse, error) {
 	query := url.Values{}
 	query.Set("channel", req.Channel)
 	query.Set("message_ts", req.MessageTS)
 
-	resp := new(ChatGetPermalinkResponse)
-	if err := a.httpGet(ctx, ChatGetPermalinkName, query, resp); err != nil {
+	resp := new(slack.ChatGetPermalinkResponse)
+	if err := a.httpGet(ctx, slack.ChatGetPermalinkActivityName, query, resp); err != nil {
 		return nil, err
 	}
+
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
+
 	return resp, nil
 }
 
-// https://docs.slack.dev/reference/methods/chat.postEphemeral
-//
-// https://docs.slack.dev/reference/methods/chat.postMessage#channels
-type ChatPostEphemeralRequest struct {
-	Channel string `json:"channel"`
-	User    string `json:"user"`
-
-	Blocks       []map[string]any `json:"blocks,omitempty"`
-	Attachments  []map[string]any `json:"attachments,omitempty"`
-	MarkdownText string           `json:"markdown_text,omitempty"`
-	Text         string           `json:"text,omitempty"`
-
-	ThreadTS string `json:"thread_ts,omitempty"`
-
-	IconEmoji string `json:"icon_emoji,omitempty"`
-	IconURL   string `json:"icon_url,omitempty"`
-
-	LinkNames bool   `json:"link_names,omitempty"`
-	Parse     string `json:"parse,omitempty"`
-	Username  string `json:"username,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.postEphemeral
-type ChatPostEphemeralResponse struct {
-	slackResponse
-
-	MessageTS string `json:"message_ts,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.postEphemeral
-func (a *API) ChatPostEphemeralActivity(ctx context.Context, req ChatPostEphemeralRequest) (*ChatPostEphemeralResponse, error) {
-	resp := new(ChatPostEphemeralResponse)
-	if err := a.httpPost(ctx, ChatPostEphemeralName, req, resp); err != nil {
+// https://docs.slack.dev/reference/methods/chat.postEphemeral/
+func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
+	resp := new(slack.ChatPostEphemeralResponse)
+	if err := a.httpPost(ctx, slack.ChatPostEphemeralActivityName, req, resp); err != nil {
 		return nil, err
 	}
+
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
+
 	return resp, nil
 }
 
-// https://docs.slack.dev/reference/methods/chat.postMessage
-type ChatPostMessageRequest struct {
-	Channel string `json:"channel"`
-
-	Blocks       []map[string]any `json:"blocks,omitempty"`
-	Attachments  []map[string]any `json:"attachments,omitempty"`
-	MarkdownText string           `json:"markdown_text,omitempty"`
-	Text         string           `json:"text,omitempty"`
-
-	ThreadTS       string `json:"thread_ts,omitempty"`
-	ReplyBroadcast bool   `json:"reply_broadcast,omitempty"`
-
-	IconEmoji string         `json:"icon_emoji,omitempty"`
-	IconURL   string         `json:"icon_url,omitempty"`
-	Metadata  map[string]any `json:"metadata,omitempty"`
-
-	LinkNames bool `json:"link_names,omitempty"`
-	// Ignoring "mrkdwn" for now, because it has an unusual default value (true).
-	Parse       string `json:"parse,omitempty"`
-	UnfurlLinks bool   `json:"unfurl_links,omitempty"`
-	UnfurlMedia bool   `json:"unfurl_media,omitempty"`
-	Username    string `json:"username,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.postMessage
-type ChatPostMessageResponse struct {
-	slackResponse
-
-	Channel string         `json:"channel,omitempty"`
-	TS      string         `json:"ts,omitempty"`
-	Message map[string]any `json:"message,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.postMessage
-func (a *API) ChatPostMessageActivity(ctx context.Context, req ChatPostMessageRequest) (*ChatPostMessageResponse, error) {
-	resp := new(ChatPostMessageResponse)
-	if err := a.httpPost(ctx, ChatPostMessageName, req, resp); err != nil {
+// https://docs.slack.dev/reference/methods/chat.postMessage/
+func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
+	resp := new(slack.ChatPostMessageResponse)
+	if err := a.httpPost(ctx, slack.ChatPostMessageActivityName, req, resp); err != nil {
 		return nil, err
 	}
+
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
+
 	return resp, nil
 }
 
-// https://docs.slack.dev/reference/methods/chat.update
-//
-// https://docs.slack.dev/reference/methods/chat.postMessage#channels
-type ChatUpdateRequest struct {
-	Channel string `json:"channel"`
-	TS      string `json:"ts"`
-
-	Blocks       []map[string]any `json:"blocks,omitempty"`
-	Attachments  []map[string]any `json:"attachments,omitempty"`
-	MarkdownText string           `json:"markdown_text,omitempty"`
-	Text         string           `json:"text,omitempty"`
-
-	AsUser         bool           `json:"as_user,omitempty"`
-	FileIDs        []string       `json:"file_ids,omitempty"`
-	LinkNames      bool           `json:"link_names,omitempty"`
-	Metadata       map[string]any `json:"metadata,omitempty"`
-	Parse          string         `json:"parse,omitempty"`
-	ReplyBroadcast bool           `json:"reply_broadcast,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.update
-type ChatUpdateResponse struct {
-	slackResponse
-
-	Channel string         `json:"channel,omitempty"`
-	TS      string         `json:"ts,omitempty"`
-	Text    string         `json:"text,omitempty"`
-	Message map[string]any `json:"message,omitempty"`
-}
-
-// https://docs.slack.dev/reference/methods/chat.update
-func (a *API) ChatUpdateActivity(ctx context.Context, req ChatUpdateRequest) (*ChatUpdateResponse, error) {
-	resp := new(ChatUpdateResponse)
-	if err := a.httpPost(ctx, ChatUpdateName, req, resp); err != nil {
+// https://docs.slack.dev/reference/methods/chat.update/
+func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
+	resp := new(slack.ChatUpdateResponse)
+	if err := a.httpPost(ctx, slack.ChatUpdateActivityName, req, resp); err != nil {
 		return nil, err
 	}
+
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
+
 	return resp, nil
-}
-
-const (
-	DefaultGreenButton = "Approve"
-	DefaultRedButton   = "Deny"
-)
-
-// TimpaniPostApprovalRequest is very similar to [ChatPostMessageRequest].
-// If button labels are not specified here, their default values are
-// [DefaultGreenButton] and [DefaultRedButton].
-type TimpaniPostApprovalRequest struct {
-	Channel string `json:"channel"`
-
-	Header  string `json:"header"`
-	Message string `json:"message"`
-
-	GreenButton string `json:"green_button,omitempty"`
-	RedButton   string `json:"red_button,omitempty"`
-
-	Metadata       map[string]any `json:"metadata,omitempty"`
-	ReplyBroadcast bool           `json:"reply_broadcast,omitempty"`
-	ThreadTS       string         `json:"thread_ts,omitempty"`
-
-	Timeout string `json:"timeout,omitempty"`
-}
-
-type TimpaniPostApprovalResponse struct {
-	slackResponse
-
-	InteractionEvent map[string]any `json:"interaction_event,omitempty"`
 }
 
 // TimpaniPostApprovalWorkflow is a convenience wrapper over
@@ -247,45 +96,48 @@ type TimpaniPostApprovalResponse struct {
 //
 // For message formatting tips, see
 // https://docs.slack.dev/messaging/formatting-message-text.
-func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req TimpaniPostApprovalRequest) (*TimpaniPostApprovalResponse, error) {
+func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req slack.TimpaniPostApprovalRequest) (*slack.TimpaniPostApprovalResponse, error) {
 	info := workflow.GetInfo(ctx)
-	// See the usage of action IDs in [slackEventsWorkflow].
 	id := base64.RawURLEncoding.EncodeToString([]byte(info.WorkflowExecution.ID))
-
-	ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		TaskQueue:           info.TaskQueueName,
-		StartToCloseTimeout: 3 * time.Second,
-		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 5},
+		StartToCloseTimeout: 5 * time.Second,
+		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 3},
 	})
 
-	ac := workflow.ExecuteActivity(ctx, ChatPostMessageName, ChatPostMessageRequest{
-		Channel:        req.Channel,
-		Blocks:         approvalBlocks(req, id),
-		Metadata:       req.Metadata,
-		ReplyBroadcast: req.ReplyBroadcast,
+	fut1 := workflow.ExecuteActivity(actx, slack.ChatPostMessageActivityName, slack.ChatPostMessageRequest{
+		Channel: req.Channel,
+		Blocks:  approvalBlocks(req, id),
+
 		ThreadTS:       req.ThreadTS,
+		ReplyBroadcast: req.ReplyBroadcast,
+		Metadata:       req.Metadata,
 	})
 
-	resp1 := ChatPostMessageResponse{}
-	if err := ac.Get(ctx, &resp1); err != nil {
+	if err := fut1.Get(ctx, nil); err != nil {
 		return nil, fmt.Errorf("failed to post chat message: %w", err)
 	}
 
-	wf := workflow.ExecuteChildWorkflow(ctx, listeners.WaitForEventWorkflow, listeners.WaitForEventRequest{
+	fut2 := workflow.ExecuteChildWorkflow(ctx, listeners.WaitForEventWorkflow, listeners.WaitForEventRequest{
 		Signal:  "slack.events.block_actions",
 		Timeout: req.Timeout,
 	})
 
 	var payload map[string]any
-	if err := wf.Get(ctx, &payload); err != nil {
+	if err := fut2.Get(ctx, &payload); err != nil {
 		return nil, fmt.Errorf("failed to wait for events: %w", err)
 	}
 
-	return &TimpaniPostApprovalResponse{InteractionEvent: payload}, nil
+	return &slack.TimpaniPostApprovalResponse{InteractionEvent: payload}, nil
 }
 
+const (
+	DefaultGreenButton = "Approve"
+	DefaultRedButton   = "Deny"
+)
+
 // approvalBlocks is based on https://docs.slack.dev/block-kit.
-func approvalBlocks(req TimpaniPostApprovalRequest, id string) []map[string]any {
+func approvalBlocks(req slack.TimpaniPostApprovalRequest, id string) []map[string]any {
 	greenButton := req.GreenButton
 	if greenButton == "" {
 		greenButton = DefaultGreenButton

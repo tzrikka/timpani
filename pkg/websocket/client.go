@@ -47,7 +47,7 @@ func NewOrCachedClient(ctx context.Context, url urlFunc, id string, opts ...Dial
 	if loaded { // Stored by a different goroutine since clients.Load() above.
 		deleteClient(c)
 	} else { // Newly-stored by this goroutine, so activate its message relay.
-		go c.relayMessages()
+		go c.relayMessages(ctx)
 	}
 
 	return actual.(*Client), nil
@@ -85,9 +85,8 @@ func newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
 	return Dial(ctx, url, opts...)
 }
 
-func (c *Client) newConn(f urlFunc, opts ...DialOpt) (*Conn, error) {
-	ctx := c.logger.WithContext(context.Background())
-	return newConn(ctx, f, opts...)
+func (c *Client) newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
+	return newConn(c.logger.WithContext(ctx), f, opts...)
 }
 
 // deleteClient deletes a newly-created [Client] which is not needed anymore,
@@ -106,21 +105,21 @@ func deleteClient(c *Client) {
 
 // relayMessages runs as a [Client] goroutine, to route data [Message]s
 // from the client's underlying [Conn] to the client's subscribers.
-func (c *Client) relayMessages() {
+func (c *Client) relayMessages(ctx context.Context) {
 	for {
 		if msg, ok := <-c.inMsgs; ok {
 			c.outMsgs <- msg
 			continue
 		}
 
-		c.replaceConn()
+		c.replaceConn(ctx)
 	}
 }
 
 // replaceConn either creates a new [Conn] (if the existing one is
 // closing/closed), or switches seamlessly to a secondary one which
 // was created by the timer-based goroutine in [RefreshConnectionIn].
-func (c *Client) replaceConn() {
+func (c *Client) replaceConn(ctx context.Context) {
 	defer func() {
 		c.inMsgs = c.conns[0].IncomingMessages()
 	}()
@@ -135,7 +134,7 @@ func (c *Client) replaceConn() {
 	// Create a new connection, with endless retries.
 	i := 0
 	for {
-		conn, err := c.newConn(c.url, c.opts...)
+		conn, err := c.newConn(ctx, c.url, c.opts...)
 		if err == nil {
 			c.conns[0] = conn
 			break
@@ -158,7 +157,7 @@ func (c *Client) IncomingMessages() <-chan Message {
 // seamlessly after the given duration of time. This prevents unnecessary
 // downtime during normal reconnections, which is useful in connections
 // where the disconnection time is known or coordinated in advance.
-func (c *Client) RefreshConnectionIn(d time.Duration) {
+func (c *Client) RefreshConnectionIn(ctx context.Context, d time.Duration) {
 	m := "starting timer to refresh WebSocket connection"
 	if c.refresh != nil {
 		c.refresh.Stop()
@@ -170,7 +169,7 @@ func (c *Client) RefreshConnectionIn(d time.Duration) {
 		c.logger.Trace().Msg("refreshing WebSocket connection")
 		c.refresh = nil
 
-		conn, err := c.newConn(c.url, c.opts...)
+		conn, err := c.newConn(ctx, c.url, c.opts...)
 		if err != nil {
 			c.logger.Err(err).Msg("failed to refresh WebSocket connection")
 			return
