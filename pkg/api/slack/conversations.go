@@ -122,6 +122,9 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 	}
 
 	if !resp.OK {
+		if resp.Error == "already_in_channel" { // Let the caller decide how to handle this error.
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

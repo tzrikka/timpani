@@ -102,7 +102,7 @@ func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req slack.Timpan
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		TaskQueue:           info.TaskQueueName,
 		StartToCloseTimeout: 5 * time.Second,
-		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 3},
+		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 5},
 	})
 
 	fut1 := workflow.ExecuteActivity(actx, slack.ChatPostMessageActivityName, slack.ChatPostMessageRequest{
