@@ -20,7 +20,7 @@ func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
 	r.URL.Host = s.thrippyURL.Host
 
 	// Construct the proxy request.
-	ctx, cancel := context.WithTimeout(r.Context(), timeout)
+	ctx, cancel := context.WithTimeout(r.Context(), Timeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, r.Method, r.URL.String(), r.Body)

@@ -1,5 +1,5 @@
 // Package client provides a simple, generic HTTP client
-// for sending GET and POST requests to external APIs,
+// for sending GET and POST requests to external services,
 // which is used by other packages under [pkg/api].
 //
 // [pkg/api]: https://pkg.go.dev/github.com/tzrikka/timpani/pkg/api
@@ -20,13 +20,13 @@ import (
 )
 
 const (
-	timeout = 3 * time.Second
-	maxSize = 4 << 20 // 4 MiB.
+	Timeout = 3 * time.Second
+	MaxSize = 4 << 20 // 4 MiB.
 
 	AcceptJSON = "application/json"
 )
 
-// HTTPRequest sends an HTTP GET or POST request to an external API.
+// HTTPRequest sends an HTTP GET or POST request to an external API service.
 //
 // For GET requests, the queryOrJSONBody parameter is expected to be
 // [url.Values]. For other request methods (e.g. POST), it should be
@@ -49,7 +49,7 @@ func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, q
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxSize))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxSize))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
@@ -77,7 +77,7 @@ func constructRequest(ctx context.Context, method, u, token, accept string, quer
 		return nil, nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, Timeout)
 	req, err := http.NewRequestWithContext(ctx, method, u, b)
 	if err != nil {
 		cancel()

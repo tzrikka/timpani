@@ -28,7 +28,7 @@ func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[s
 	defer conn.Close()
 
 	c := thrippypb.NewThrippyServiceClient(conn)
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, Timeout)
 	defer cancel()
 
 	// Template.

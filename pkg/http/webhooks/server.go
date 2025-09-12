@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	timeout = 3 * time.Second
-	maxSize = 10 << 20 // 10 MiB.
+	Timeout = 3 * time.Second
+	MaxSize = 10 << 20 // 10 MiB.
 )
 
 type httpServer struct {
@@ -111,8 +111,8 @@ func (s *httpServer) Run() {
 
 	server := &http.Server{
 		Addr:         net.JoinHostPort("", strconv.Itoa(s.httpPort)),
-		ReadTimeout:  timeout,
-		WriteTimeout: timeout,
+		ReadTimeout:  Timeout,
+		WriteTimeout: Timeout,
 	}
 
 	log.Info().Msgf("HTTP server listening on port %d", s.httpPort)
@@ -217,7 +217,7 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 		return nil, nil, nil
 	}
 
-	raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxSize))
+	raw, err := io.ReadAll(http.MaxBytesReader(w, r.Body, MaxSize))
 	if err != nil {
 		return nil, nil, err
 	}

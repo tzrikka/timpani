@@ -19,7 +19,7 @@ func (a *API) WorkspacesListMembersActivity(ctx context.Context, req bitbucket.W
 	}
 
 	resp := new(bitbucket.WorkspacesListMembersResponse)
-	if err := a.httpGet(ctx, path, query, resp); err != nil {
+	if err := a.httpGet(ctx, "", path, query, resp); err != nil {
 		return nil, err
 	}
 

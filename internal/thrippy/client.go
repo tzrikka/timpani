@@ -40,11 +40,20 @@ func NewLinkClient(id string, cmd *cli.Command) LinkClient {
 // function does not distinguish between "not found" and other gRPC errors. The
 // output must not be cached as it may change at any time, e.g. OAuth access tokens.
 func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
-	l := activity.GetLogger(ctx)
+	return t.CustomLinkCreds(ctx, t.LinkID)
+}
+
+// CustomLinkCreds returns the saved secrets of the given Thrippy link. This
+// function does not distinguish between "not found" and other gRPC errors. The
+// output must not be cached as it may change at any time, e.g. OAuth access tokens.
+func (t *LinkClient) CustomLinkCreds(ctx context.Context, linkID string) (map[string]string, error) {
+	if linkID == "" {
+		linkID = t.LinkID
+	}
 
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
 	if err != nil {
-		l.Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
+		activity.GetLogger(ctx).Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
 		return nil, err
 	}
 	defer conn.Close()
@@ -54,10 +63,10 @@ func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
 	defer cancel()
 
 	resp, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{
-		LinkId: proto.String(t.LinkID),
+		LinkId: proto.String(linkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetCredentials error", "error", err, "link_id", t.LinkID)
+		activity.GetLogger(ctx).Error("Thrippy GetCredentials error", "error", err, "link_id", linkID)
 		return nil, err
 	}
 
