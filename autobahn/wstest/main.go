@@ -1,4 +1,4 @@
-// wstest tests Timpani's [WebSocket client] against
+// Wstest tests Timpani's [WebSocket client] against
 // the fuzzing server of the [Autobahn Testsuite].
 //
 // [WebSocket client]: https://pkg.go.dev/github.com/tzrikka/timpani/pkg/websocket
@@ -28,8 +28,8 @@ func main() {
 	log.Logger.Info().Int("n", n+1).Msg("case count")
 
 	// Not implemented in Timpani (so excluded in "config/fuzzingserver.json"):
-	// - 6.4.*: Fail-fast on invalid UTF-8 frames
-	// - 12.* and 13.*: WebSocket compression
+	//   - 6.4.*: Fail-fast on invalid UTF-8 frames,
+	//   - 12.* and 13.*: WebSocket compression.
 	for i := range n {
 		runCase(i + 1)
 	}
