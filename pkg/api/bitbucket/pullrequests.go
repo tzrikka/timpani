@@ -9,10 +9,15 @@ import (
 
 type prCreateCommentBody struct {
 	Content prCreateCommentContent `json:"content"`
+	Parent  *prCreateCommentParent `json:"parent,omitempty"`
 }
 
 type prCreateCommentContent struct {
 	Raw string `json:"raw"`
+}
+
+type prCreateCommentParent struct {
+	ID string `json:"id"`
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-post
@@ -23,6 +28,12 @@ func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbuck
 		Content: prCreateCommentContent{
 			Raw: req.Markdown,
 		},
+	}
+
+	if req.ParentID != "" {
+		body.Parent = &prCreateCommentParent{
+			ID: req.ParentID,
+		}
 	}
 
 	resp := new(bitbucket.PullRequestsCreateCommentResponse)
