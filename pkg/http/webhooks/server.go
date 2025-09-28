@@ -98,6 +98,10 @@ func baseURL(addr string) *url.URL {
 
 // Run starts an HTTP server to expose webhooks, and blocks forever.
 func (s *httpServer) Run() {
+	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	http.HandleFunc("GET /webhook/{id...}", s.webhookHandler)
 	http.HandleFunc("POST /webhook/{id...}", s.webhookHandler)
 
