@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v5 # https://github.com/marketplace/actions/checkout
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6 # https://github.com/marketplace/actions/setup-go-environment
         with:
           go-version-file: go.mod
       - name: Install gotestsum
@@ -27,7 +27,7 @@ jobs:
       - name: Test
         run: gotestsum -f github-actions
       - name: Lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v8 # https://github.com/marketplace/actions/golangci-lint
         with:
-          version: v2.4.0     # https://github.com/golangci/golangci-lint/releases
+          version: v2.5.0     # https://github.com/golangci/golangci-lint/releases
           args: --timeout=5m  # https://github.com/golangci/golangci-lint-action/issues/308
