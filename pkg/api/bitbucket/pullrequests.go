@@ -3,6 +3,9 @@ package bitbucket
 import (
 	"context"
 	"fmt"
+	"strconv"
+
+	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
 )
@@ -17,23 +20,20 @@ type prCreateCommentContent struct {
 }
 
 type prCreateCommentParent struct {
-	ID string `json:"id"`
+	ID int `json:"id"`
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-post
 func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbucket.PullRequestsCreateCommentRequest) (*bitbucket.PullRequestsCreateCommentResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments", req.Workspace, req.RepoSlug, req.PullRequestID)
 
-	body := &prCreateCommentBody{
-		Content: prCreateCommentContent{
-			Raw: req.Markdown,
-		},
-	}
-
+	body := &prCreateCommentBody{Content: prCreateCommentContent{Raw: req.Markdown}}
 	if req.ParentID != "" {
-		body.Parent = &prCreateCommentParent{
-			ID: req.ParentID,
+		id, err := strconv.Atoi(req.ParentID)
+		if err != nil {
+			return nil, temporal.NewNonRetryableApplicationError("invalid parent ID", fmt.Sprintf("%T", err), err, req.ParentID)
 		}
+		body.Parent = &prCreateCommentParent{ID: id}
 	}
 
 	resp := new(bitbucket.PullRequestsCreateCommentResponse)
