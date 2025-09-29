@@ -18,6 +18,11 @@ const (
 	BaseURL = "https://api.bitbucket.org/2.0"
 )
 
+// httpDelete is a Bitbucket-specific HTTP DELETE wrapper for [client.HTTPRequest].
+func (a *API) httpDelete(ctx context.Context, linkID, path string, query url.Values) error {
+	return a.httpRequest(ctx, linkID, path, http.MethodDelete, query, nil)
+}
+
 // httpGet is a Bitbucket-specific HTTP GET wrapper for [client.HTTPRequest].
 func (a *API) httpGet(ctx context.Context, linkID, path string, query url.Values, jsonResp any) error {
 	return a.httpRequest(ctx, linkID, path, http.MethodGet, query, jsonResp)
@@ -26,6 +31,11 @@ func (a *API) httpGet(ctx context.Context, linkID, path string, query url.Values
 // httpPost is a Bitbucket-specific HTTP POST wrapper for [client.HTTPRequest].
 func (a *API) httpPost(ctx context.Context, linkID, path string, jsonBody, jsonResp any) error {
 	return a.httpRequest(ctx, linkID, path, http.MethodPost, jsonBody, jsonResp)
+}
+
+// httpPut is a Bitbucket-specific HTTP PUT wrapper for [client.HTTPRequest].
+func (a *API) httpPut(ctx context.Context, linkID, path string, jsonBody, jsonResp any) error {
+	return a.httpRequest(ctx, linkID, path, http.MethodPut, jsonBody, jsonResp)
 }
 
 func (a *API) httpRequest(ctx context.Context, linkID, path, method string, queryOrJSONBody, jsonResp any) error {

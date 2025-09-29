@@ -62,6 +62,8 @@ github.com/tzrikka/thrippy-api v1.2.0 h1:9HPL60ViKDwgmCq2YWX+OYsf348NoE1bCcSMfQ2
 github.com/tzrikka/thrippy-api v1.2.0/go.mod h1:Av68B6hXZlkx3m9hKhz28PRYl3DmniKeZHVzCwSLjjk=
 github.com/tzrikka/timpani-api v0.1.4 h1:+yIAAcLEZ5kTLlDTWaCZf2VGy9OB9mN7nU4hCoEFpOQ=
 github.com/tzrikka/timpani-api v0.1.4/go.mod h1:/lBq5jpGxlLEKPkotcsMm1XEpuElBAkyKW7JUafiRII=
+github.com/tzrikka/timpani-api v0.2.0 h1:b4HJQ7SFjxmwR0XFwgXh/wxyauvIqqQnnlEUChBoiZg=
+github.com/tzrikka/timpani-api v0.2.0/go.mod h1:+iPZN0Q60gyiBWFCLdHwSIVDO4t2y5wNBm3VAQzVhbU=
 github.com/tzrikka/xdg v1.3.0 h1:zMFZpPWvYKmPZBYVsIhp25xhEy9YlJXV8RCVk+mgJWY=
 github.com/tzrikka/xdg v1.3.0/go.mod h1:5Wi4Z820ecs4NKIAnQv1hhQMOftLeSf/NM9GdtOX+VA=
 github.com/urfave/cli-altsrc/v3 v3.0.1 h1:v+gHk59syLk8ao9rYybZs43+D5ut/gzj0omqQ1XYl8k=

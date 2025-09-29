@@ -24,6 +24,8 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
 	registerActivity(w, a.PullRequestsCreateCommentActivity, bitbucket.PullRequestsCreateCommentActivityName)
+	registerActivity(w, a.PullRequestsDeleteCommentActivity, bitbucket.PullRequestsDeleteCommentActivityName)
+	registerActivity(w, a.PullRequestsUpdateCommentActivity, bitbucket.PullRequestsUpdateCommentActivityName)
 
 	registerActivity(w, a.UsersGetActivity, bitbucket.UsersGetActivityName)
 

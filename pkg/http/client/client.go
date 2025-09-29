@@ -66,7 +66,7 @@ func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, q
 }
 
 func constructRequest(ctx context.Context, method, u, token, accept string, queryOrJSONBody any) (*http.Request, context.CancelFunc, error) {
-	if method == http.MethodGet {
+	if method == http.MethodGet || method != http.MethodDelete {
 		if query, ok := queryOrJSONBody.(url.Values); ok && len(query) > 0 {
 			u = fmt.Sprintf("%s?%s", u, query.Encode())
 		}
@@ -95,11 +95,11 @@ func constructRequest(ctx context.Context, method, u, token, accept string, quer
 }
 
 func requestBody(method string, queryOrJSONBody any) (io.Reader, error) {
-	if method == http.MethodGet {
+	if method == http.MethodGet || method == http.MethodDelete {
 		return http.NoBody, nil
 	}
 
-	// HTTP POST.
+	// HTTP POST or PUT.
 	b, err := json.Marshal(queryOrJSONBody)
 	if err != nil {
 		msg := "failed to encode HTTP request's JSON body: " + err.Error()
