@@ -50,6 +50,11 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 		return err
 	}
 
+	l.Info("sent HTTP request", "link_id", a.thrippy.LinkID, "method", method, "url", apiURL)
+	if jsonResp == nil {
+		return nil
+	}
+
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
 		l.Error(msg, "error", err, "url", apiURL)
@@ -57,7 +62,6 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("sent HTTP request", "link_id", a.thrippy.LinkID, "method", method, "url", apiURL)
 	return nil
 }
 
