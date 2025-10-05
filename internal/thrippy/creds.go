@@ -54,7 +54,7 @@ func SecureCreds(cmd *cli.Command) credentials.TransportCredentials {
 	// If all 3 are specified, we use mTLS.
 	msg := "server CA cert file for gRPC client with mTLS"
 	ca := x509.NewCertPool()
-	pem, err := os.ReadFile(caPath) //gosec:disable G304 -- user-specified file by design
+	pem, err := os.ReadFile(caPath) //gosec:disable G304 -- specified by admin by design
 	if err != nil {
 		log.Fatal().Err(err).Str("path", caPath).Msg("failed to read " + msg)
 	}
