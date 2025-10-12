@@ -2,11 +2,12 @@ package slack
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"math/rand/v2"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -122,8 +123,7 @@ func clientEventLoop(ctx context.Context, tc listeners.TemporalConfig, c *websoc
 		// https://docs.slack.dev/apis/events-api/using-socket-mode#connect
 		case "hello":
 			t := msg.DebugInfo.ApproximateConnectionTime
-			// 63-72 seconds before the actual timeout.
-			t -= 63 + rand.IntN(10) //gosec:disable G404 -- no need for crypto/rand
+			t -= 63 + randomInt(10) // 63-72 seconds before the actual timeout.
 			c.RefreshConnectionIn(ctx, time.Duration(t)*time.Second)
 			continue
 
@@ -160,6 +160,15 @@ func clientEventLoop(ctx context.Context, tc listeners.TemporalConfig, c *websoc
 			continue
 		}
 	}
+}
+
+func randomInt(maxValue int64) int {
+	n, err := rand.Int(rand.Reader, big.NewInt(maxValue))
+	if err != nil {
+		return 0
+	}
+
+	return int(n.Int64())
 }
 
 // https://docs.slack.dev/apis/events-api/using-socket-mode
