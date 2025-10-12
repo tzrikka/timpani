@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"slices"
@@ -30,6 +31,11 @@ const (
 	// See https://docs.slack.dev/authentication/verifying-requests-from-slack.
 	slackSigVersion = "v0"
 )
+
+type slashCommandResponse struct {
+	ResponseType string `json:"response_type"`
+	Text         string `json:"text"`
+}
 
 func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.RequestData) int {
 	l := zerolog.Ctx(ctx).With().Str("link_type", "slack").Str("link_medium", "webhook").Logger()
@@ -68,9 +74,14 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	if sc := r.WebForm.Get("command"); sc != "" {
 		l.Debug().Str("event_type", "slash_command").Msg("replied to Slack slash command")
 		w.Header().Add(contentTypeHeader, "application/json; charset=utf-8")
-		resp := "{\"response_type\": \"ephemeral\", \"text\": \"Your command: `%s %s`\"}"
-		_, _ = fmt.Fprintf(w, resp, sc, r.WebForm.Get("text"))
-		statusCode = 0 // [http.StatusOK] already written by "w.Write" ("fmt.Fprintf(w)").
+
+		text := fmt.Sprintf("Your command: `%s %s`", sc, r.WebForm.Get("text"))
+		resp := slashCommandResponse{ResponseType: "ephemeral", Text: text}
+		if err := json.NewEncoder(w).Encode(resp); err != nil {
+			l.Err(err).Msg("failed to encode JSON response")
+		}
+
+		statusCode = 0 // [http.StatusOK] already written by "w.Write".
 	}
 
 	// Dispatch the event notification, based on its type.
