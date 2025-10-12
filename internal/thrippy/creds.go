@@ -43,36 +43,43 @@ func SecureCreds(cmd *cli.Command) credentials.TransportCredentials {
 
 	// If both of them are missing, we use TLS.
 	if certPath == "" && keyPath == "" {
-		creds, err := credentials.NewClientTLSFromFile(caPath, nameOverride)
-		if err != nil {
-			log.Fatal().Err(err).Str("path", caPath).
-				Msg("error in server CA cert for gRPC client with TLS")
-		}
-		return creds
+		return newClientTLSFromFile(caPath, nameOverride, nil)
 	}
 
 	// If all 3 are specified, we use mTLS.
-	msg := "server CA cert file for gRPC client with mTLS"
-	ca := x509.NewCertPool()
-	pem, err := os.ReadFile(caPath) //gosec:disable G304 -- specified by admin by design
-	if err != nil {
-		log.Fatal().Err(err).Str("path", caPath).Msg("failed to read " + msg)
-	}
-	if ok := ca.AppendCertsFromPEM(pem); !ok {
-		log.Fatal().Err(err).Str("path", caPath).Msg("failed to parse " + msg)
-	}
-
-	msg = "gRPC client with mTLS"
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
 		log.Fatal().Err(err).Str("cert", certPath).Str("key", keyPath).
-			Msg("failed to load client PEM key pair for " + msg)
+			Msg("failed to load client PEM key pair for gRPC client with mTLS")
 	}
 
-	return credentials.NewTLS(&tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      ca,
-		ServerName:   nameOverride,
-		MinVersion:   tls.VersionTLS13,
-	})
+	return newClientTLSFromFile(caPath, nameOverride, []tls.Certificate{cert})
+}
+
+// newClientTLSFromFile constructs TLS credentials from the provided root
+// certificate authority certificate file(s) to validate server connections.
+//
+// This function is based on [credentials.NewClientTLSFromFile], but uses
+// TLS 1.3 as the minimum version (instead of 1.2), and support mTLS too.
+func newClientTLSFromFile(caPath, serverNameOverride string, certs []tls.Certificate) credentials.TransportCredentials {
+	b, err := os.ReadFile(caPath) //gosec:disable G304 -- specified by admin by design
+	if err != nil {
+		log.Fatal().Err(err).Str("path", caPath).Msg("failed to read server CA cert file for gRPC client")
+	}
+
+	cp := x509.NewCertPool()
+	if !cp.AppendCertsFromPEM(b) {
+		log.Fatal().Str("path", caPath).Msg("failed to parse server CA cert file for gRPC client")
+	}
+
+	cfg := &tls.Config{
+		RootCAs:    cp,
+		ServerName: serverNameOverride,
+		MinVersion: tls.VersionTLS13,
+	}
+	if len(certs) > 0 {
+		cfg.Certificates = certs
+	}
+
+	return credentials.NewTLS(cfg)
 }
