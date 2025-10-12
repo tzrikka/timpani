@@ -24,6 +24,8 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
+	registerActivity(w, a.AuthTestActivity, slack.AuthTestActivityName)
+
 	registerActivity(w, a.BookmarksAddActivity, slack.BookmarksAddActivityName)
 	registerActivity(w, a.BookmarksEditActivity, slack.BookmarksEditActivityName)
 	registerActivity(w, a.BookmarksListActivity, slack.BookmarksListActivityName)
