@@ -9,6 +9,7 @@ package temporal
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -138,6 +139,7 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 	// https://docs.temporal.io/list-filter
 	// https://docs.temporal.io/search-attribute
 	// https://docs.temporal.io/develop/go/observability#visibility
+	name = sanitizeSignalName(l, name)
 	list, err := c.ListWorkflow(ctx, &workflowservice.ListWorkflowExecutionsRequest{
 		Query: fmt.Sprintf("WaitingForSignals IN ('%s') AND ExecutionStatus = '%s'", name, "Running"),
 	})
@@ -155,4 +157,22 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 	}
 
 	return nil
+}
+
+var ForbiddenSignalNameChars = regexp.MustCompile("[^0-9A-Za-z_.]")
+
+// sanitizeSignalName ensures that signal names (generated from incoming events)
+// cannot manipulate Timpani's Temporal query in the [Signal] function.
+func sanitizeSignalName(l *zerolog.Logger, name string) string {
+	safeName := ForbiddenSignalNameChars.ReplaceAllString(name, "_")
+	if len(safeName) > 100 {
+		safeName = safeName[:100]
+	}
+
+	if name != safeName {
+		l.Warn().Str("original", name).Str("sanitized", safeName).
+			Msg("signal name contained forbidden characters")
+	}
+
+	return safeName
 }
