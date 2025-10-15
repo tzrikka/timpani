@@ -41,8 +41,8 @@ github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/
 github.com/mattn/go-isatty v0.0.19/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
-github.com/nexus-rpc/sdk-go v0.4.0 h1:A/IjWWAiWecnYnt7uI0Cw6ci6zJwaM9Ma3q4hDDxUVc=
-github.com/nexus-rpc/sdk-go v0.4.0/go.mod h1:TpfkM2Cw0Rlk9drGkoiSMpFqflKTiQLWUNyKJjF8mKQ=
+github.com/nexus-rpc/sdk-go v0.5.1 h1:UFYYfoHlQc+Pn9gQpmn9QE7xluewAn2AO1OSkAh7YFU=
+github.com/nexus-rpc/sdk-go v0.5.1/go.mod h1:FHdPfVQwRuJFZFTF0Y2GOAxCrbIBNrcPna9slkGKPYk=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
@@ -62,6 +62,8 @@ github.com/tzrikka/thrippy-api v1.2.1 h1:0AHEwbO3zDTcKmjMvSrWe3GVmXAI9ihS6sX4hy8
 github.com/tzrikka/thrippy-api v1.2.1/go.mod h1:yCSc7D0aeF+y8K13mWtIywGCq3C6Qs0W/WixK9GnoB8=
 github.com/tzrikka/timpani-api v0.3.0 h1:vWuV75XFVhT2Ow1lOJNE0cnHIiF3AsGlLmHAyM9kiDs=
 github.com/tzrikka/timpani-api v0.3.0/go.mod h1:5HKB3tO1UZTHQpr4dAM8huRq6AC8vP0IOXCvGx7w8QI=
+github.com/tzrikka/timpani-api v0.4.0 h1:UKJfJnWU2I9RUmc75eLAFoO5wgiKSTfIEYGKp3qVIoc=
+github.com/tzrikka/timpani-api v0.4.0/go.mod h1:VhcwRfRGHWoHnwERtdmLw3bLMCE4Nl6CJhsZ10x+bYE=
 github.com/tzrikka/xdg v1.3.1 h1:KUD9Tpgt4QSMIvjEUMqB+JP1Y9OXrNDI63NM5RQR7dA=
 github.com/tzrikka/xdg v1.3.1/go.mod h1:tUEmU2u9hUERexokBBvky85LFtv8H2YvUeJwOgFt9rY=
 github.com/urfave/cli-altsrc/v3 v3.1.0 h1:6E5+kXeAWmRxXlPgdEVf9VqVoTJ2MJci0UMpUi/w/bA=
@@ -135,10 +137,10 @@ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.16.0 h1:5+ul4Swaf3ESvrOnidPp4GZbzf0mxVQpDCYUQE7OJfk=
 gonum.org/v1/gonum v0.16.0/go.mod h1:fef3am4MQ93R2HHpKnLk4/Tbh/s0+wqD5nfa6Pnwy4E=
-google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff h1:8Zg5TdmcbU8A7CXGjGXF1Slqu/nIFCRaR3S5gT2plIA=
-google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff/go.mod h1:dbWfpVPvW/RqafStmRWBUpMN14puDezDMHxNYiRfQu0=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20251007200510-49b9836ed3ff h1:A90eA31Wq6HOMIQlLfzFwzqGKBTuaVztYu/g8sn+8Zc=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20251007200510-49b9836ed3ff/go.mod h1:7i2o+ce6H/6BluujYR+kqX3GKH+dChPTQU19wjRPiGk=
+google.golang.org/genproto/googleapis/api v0.0.0-20251014184007-4626949a642f h1:OiFuztEyBivVKDvguQJYWq1yDcfAHIID/FVrPR4oiI0=
+google.golang.org/genproto/googleapis/api v0.0.0-20251014184007-4626949a642f/go.mod h1:kprOiu9Tr0JYyD6DORrc4Hfyk3RFXqkQ3ctHEum3ZbM=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20251014184007-4626949a642f h1:1FTH6cpXFsENbPR5Bu8NQddPSaUUE6NA2XdZdDSAJK4=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20251014184007-4626949a642f/go.mod h1:7i2o+ce6H/6BluujYR+kqX3GKH+dChPTQU19wjRPiGk=
 google.golang.org/grpc v1.76.0 h1:UnVkv1+uMLYXoIz6o7chp59WfQUYA2ex/BXQ9rHZu7A=
 google.golang.org/grpc v1.76.0/go.mod h1:Ju12QI8M6iQJtbcsV+awF5a4hfJMLi4X0JLo94ULZ6c=
 google.golang.org/protobuf v1.36.10 h1:AYd7cD/uASjIL6Q9LiTjz8JLcrh/88q5UObnmY3aOOE=
