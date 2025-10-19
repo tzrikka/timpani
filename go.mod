@@ -6,12 +6,12 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/rs/zerolog v1.34.0
-	github.com/tzrikka/thrippy-api v1.2.1
+	github.com/tzrikka/thrippy-api v1.3.0
 	github.com/tzrikka/timpani-api v0.4.0
 	github.com/tzrikka/xdg v1.3.1
 	github.com/urfave/cli-altsrc/v3 v3.1.0
 	github.com/urfave/cli/v3 v3.4.1
-	go.temporal.io/api v1.54.0
+	go.temporal.io/api v1.55.0
 	go.temporal.io/sdk v1.37.0
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10

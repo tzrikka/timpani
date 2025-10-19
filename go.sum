@@ -60,6 +60,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tzrikka/thrippy-api v1.2.1 h1:0AHEwbO3zDTcKmjMvSrWe3GVmXAI9ihS6sX4hy8CiCg=
 github.com/tzrikka/thrippy-api v1.2.1/go.mod h1:yCSc7D0aeF+y8K13mWtIywGCq3C6Qs0W/WixK9GnoB8=
+github.com/tzrikka/thrippy-api v1.3.0 h1:L5ZrnQz9JQSIqWpJ9kDoESZmO8WExD4nuhlN9nicWvo=
+github.com/tzrikka/thrippy-api v1.3.0/go.mod h1:T6dfucCk3ymmzvgsCYOaOzjUaIJS8z80nTu+yQtjiRM=
 github.com/tzrikka/timpani-api v0.3.0 h1:vWuV75XFVhT2Ow1lOJNE0cnHIiF3AsGlLmHAyM9kiDs=
 github.com/tzrikka/timpani-api v0.3.0/go.mod h1:5HKB3tO1UZTHQpr4dAM8huRq6AC8vP0IOXCvGx7w8QI=
 github.com/tzrikka/timpani-api v0.4.0 h1:UKJfJnWU2I9RUmc75eLAFoO5wgiKSTfIEYGKp3qVIoc=
@@ -87,6 +89,8 @@ go.opentelemetry.io/otel/trace v1.37.0 h1:HLdcFNbRQBE2imdSEgm/kwqmQj1Or1l/7bW6mx
 go.opentelemetry.io/otel/trace v1.37.0/go.mod h1:TlgrlQ+PtQO5XFerSPUYG0JSgGyryXewPGyayAWSBS0=
 go.temporal.io/api v1.54.0 h1:/sy8rYZEykgmXRjeiv1PkFHLXIus5n6FqGhRtCl7Pc0=
 go.temporal.io/api v1.54.0/go.mod h1:iaxoP/9OXMJcQkETTECfwYq4cw/bj4nwov8b3ZLVnXM=
+go.temporal.io/api v1.55.0 h1:bnMyQuVTwZKjzyz+gtlzOC6O0ZRJ9UOzxtHzq0XJAOk=
+go.temporal.io/api v1.55.0/go.mod h1:iaxoP/9OXMJcQkETTECfwYq4cw/bj4nwov8b3ZLVnXM=
 go.temporal.io/sdk v1.37.0 h1:RbwCkUQuqY4rfCzdrDZF9lgT7QWG/pHlxfZFq0NPpDQ=
 go.temporal.io/sdk v1.37.0/go.mod h1:tOy6vGonfAjrpCl6Bbw/8slTgQMiqvoyegRv2ZHPm5M=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
