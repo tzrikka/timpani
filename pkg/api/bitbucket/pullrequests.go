@@ -51,6 +51,26 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 	return a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
 }
 
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-commits-get
+func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket.PullRequestsListCommitsRequest) (*bitbucket.PullRequestsListCommitsResponse, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/commits", req.Workspace, req.RepoSlug, req.PullRequestID)
+
+	query := url.Values{}
+	if req.Page > 0 {
+		query.Set("page", strconv.Itoa(req.Page))
+	}
+	if req.Pagelen >= 0 {
+		query.Set("pagelen", strconv.Itoa(req.Pagelen))
+	}
+
+	resp := new(bitbucket.PullRequestsListCommitsResponse)
+	if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-put
 func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbucket.PullRequestsUpdateCommentRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)

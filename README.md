@@ -20,4 +20,4 @@ For example:
 
 - [Temporal](https://temporal.io/)
 - [Thrippy](https://github.com/tzrikka/thrippy)
-- Secrets manager, e.g. [HashiCorp Vault](https://developer.hashicorp.com/vault)
+  (preferably with a secrets manager, e.g. [HashiCorp Vault](https://developer.hashicorp.com/vault))
