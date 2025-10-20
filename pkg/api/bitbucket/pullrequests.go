@@ -56,16 +56,40 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/commits", req.Workspace, req.RepoSlug, req.PullRequestID)
 
 	query := url.Values{}
-	if req.Page > 0 {
-		query.Set("page", strconv.Itoa(req.Page))
+	query.Set("pagelen", "100") // Default = 10, but we prefer to minimize number of API calls.
+	if req.PageLen != "" {
+		query.Set("pagelen", req.PageLen)
 	}
-	if req.Pagelen >= 0 {
-		query.Set("pagelen", strconv.Itoa(req.Pagelen))
+	if req.Page != "" {
+		query.Set("page", req.Page)
 	}
 
-	resp := new(bitbucket.PullRequestsListCommitsResponse)
-	if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
-		return nil, err
+	var resp *bitbucket.PullRequestsListCommitsResponse
+	commits := []bitbucket.Commit{}
+	next := "start"
+
+	for next != "" {
+		resp = new(bitbucket.PullRequestsListCommitsResponse)
+		if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
+			return nil, err
+		}
+
+		if req.AllPages {
+			commits = append(commits, resp.Values...)
+			next = resp.Next
+			if next != "" {
+				u, err := url.Parse(next)
+				if err != nil {
+					return nil, fmt.Errorf("invalid next page URL %q: %w", next, err)
+				}
+				path = u.Path
+				query = u.Query()
+			}
+		}
+	}
+
+	if req.AllPages {
+		resp.Values = commits
 	}
 
 	return resp, nil
