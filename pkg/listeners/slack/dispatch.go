@@ -13,21 +13,21 @@ import (
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
-func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) error {
+func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) (string, error) {
 	l := zerolog.Ctx(ctx)
 
 	signalName, payload, err := parsePayload(r.JSONPayload, r.WebForm)
 	if err != nil {
 		l.Err(err).Msg("failed to decode event payload")
-		return err
+		return "", err
 	}
 
 	if err := temporal.Signal(ctx, r.Temporal, signalName, payload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
-		return err
+		return "", err
 	}
 
-	return nil
+	return signalName, nil
 }
 
 func dispatchFromWebSocket(ctx context.Context, tc listeners.TemporalConfig, payload map[string]any) error {

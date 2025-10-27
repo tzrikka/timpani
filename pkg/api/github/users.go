@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
+
+	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 const (
@@ -34,11 +37,14 @@ func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[st
 	}
 	path = fmt.Sprintf("%s/%s%s", path, req.AccountID, req.Username)
 
+	t := time.Now().UTC()
 	resp := map[string]any{}
 	err := a.httpGet(ctx, path, nil, &resp)
 	if err != nil {
+		metrics.CountAPICall(t, UsersGetName, err)
 		return nil, err
 	}
+	metrics.CountAPICall(t, UsersGetName, nil)
 	return resp, nil
 }
 
@@ -58,10 +64,13 @@ func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) ([]ma
 		query.Set("per_page", strconv.Itoa(req.PerPage))
 	}
 
+	t := time.Now().UTC()
 	resp := []map[string]any{}
 	err := a.httpGet(ctx, "/users/list", query, &resp)
 	if err != nil {
+		metrics.CountAPICall(t, UsersListName, err)
 		return nil, err
 	}
+	metrics.CountAPICall(t, UsersListName, nil)
 	return resp, nil
 }

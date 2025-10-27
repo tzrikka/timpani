@@ -5,21 +5,27 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
+	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 // https://docs.slack.dev/reference/methods/reactions.add/
 func (a *API) ReactionsAddActivity(ctx context.Context, req slack.ReactionsAddRequest) (*slack.ReactionsAddResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ReactionsAddResponse)
 	if err := a.httpPost(ctx, slack.ReactionsAddActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ReactionsAddActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ReactionsAddActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ReactionsAddActivityName, nil)
 	return resp, nil
 }
 
@@ -42,15 +48,19 @@ func (a *API) ReactionsGetActivity(ctx context.Context, req slack.ReactionsGetRe
 		query.Set("full", "true")
 	}
 
+	t := time.Now().UTC()
 	resp := new(slack.ReactionsGetResponse)
 	if err := a.httpGet(ctx, slack.ReactionsGetActivityName, query, resp); err != nil {
+		metrics.CountAPICall(t, slack.ReactionsGetActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ReactionsGetActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ReactionsGetActivityName, nil)
 	return resp, nil
 }
 
@@ -79,28 +89,36 @@ func (a *API) ReactionsListActivity(ctx context.Context, req slack.ReactionsList
 		query.Set("team_id", req.TeamID)
 	}
 
+	t := time.Now().UTC()
 	resp := new(slack.ReactionsListResponse)
 	if err := a.httpGet(ctx, slack.ReactionsListActivityName, query, resp); err != nil {
+		metrics.CountAPICall(t, slack.ReactionsListActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ReactionsListActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ReactionsListActivityName, nil)
 	return resp, nil
 }
 
 // https://docs.slack.dev/reference/methods/reactions.remove/
 func (a *API) ReactionsRemoveActivity(ctx context.Context, req slack.ReactionsRemoveRequest) (*slack.ReactionsRemoveResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ReactionsRemoveResponse)
 	if err := a.httpPost(ctx, slack.ReactionsRemoveActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, nil)
 	return resp, nil
 }

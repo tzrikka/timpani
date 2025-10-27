@@ -11,10 +11,12 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/metrics"
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
@@ -26,12 +28,13 @@ const (
 
 func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.RequestData) int {
 	l := zerolog.Ctx(ctx).With().Str("link_type", "github").Str("link_medium", "webhook").Logger()
+	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
-		return statusCode
+		return metrics.CountWebhookEvent(l, t, "", statusCode)
 	}
 	if statusCode := CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-		return statusCode
+		return metrics.CountWebhookEvent(l, t, "", statusCode)
 	}
 
 	// If the payload is a web form, convert it to JSON.
@@ -39,7 +42,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 		reader := strings.NewReader(r.WebForm.Get("payload"))
 		if err := json.NewDecoder(reader).Decode(&r.JSONPayload); err != nil {
 			l.Err(err).Msg("failed to extract and decode JSON payload from form data")
-			return http.StatusInternalServerError
+			return metrics.CountWebhookEvent(l, t, "", http.StatusInternalServerError)
 		}
 	}
 
@@ -47,10 +50,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	signalName := "github.events." + r.Headers.Get(eventHeader)
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
-		return http.StatusInternalServerError
+		return metrics.CountWebhookEvent(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return http.StatusOK
+	return metrics.CountWebhookEvent(l, t, signalName, http.StatusOK)
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {

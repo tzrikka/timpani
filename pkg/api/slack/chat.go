@@ -13,19 +13,24 @@ import (
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 // https://docs.slack.dev/reference/methods/chat.delete/
 func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteRequest) (*slack.ChatDeleteResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ChatDeleteResponse)
 	if err := a.httpPost(ctx, slack.ChatDeleteActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ChatDeleteActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ChatDeleteActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ChatDeleteActivityName, nil)
 	return resp, nil
 }
 
@@ -35,57 +40,73 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 	query.Set("channel", req.Channel)
 	query.Set("message_ts", req.MessageTS)
 
+	t := time.Now().UTC()
 	resp := new(slack.ChatGetPermalinkResponse)
 	if err := a.httpGet(ctx, slack.ChatGetPermalinkActivityName, query, resp); err != nil {
+		metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, nil)
 	return resp, nil
 }
 
 // https://docs.slack.dev/reference/methods/chat.postEphemeral/
 func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ChatPostEphemeralResponse)
 	if err := a.httpPost(ctx, slack.ChatPostEphemeralActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, nil)
 	return resp, nil
 }
 
 // https://docs.slack.dev/reference/methods/chat.postMessage/
 func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ChatPostMessageResponse)
 	if err := a.httpPost(ctx, slack.ChatPostMessageActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ChatPostMessageActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ChatPostMessageActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ChatPostMessageActivityName, nil)
 	return resp, nil
 }
 
 // https://docs.slack.dev/reference/methods/chat.update/
 func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
+	t := time.Now().UTC()
 	resp := new(slack.ChatUpdateResponse)
 	if err := a.httpPost(ctx, slack.ChatUpdateActivityName, req, resp); err != nil {
+		metrics.CountAPICall(t, slack.ChatUpdateActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
+		metrics.CountAPICall(t, slack.ChatUpdateActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
+	metrics.CountAPICall(t, slack.ChatUpdateActivityName, nil)
 	return resp, nil
 }
 

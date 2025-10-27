@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 
 	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
+	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 type prCommentBody struct {
@@ -27,11 +29,13 @@ type prCreateCommentParent struct {
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-post
 func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbucket.PullRequestsCreateCommentRequest) (*bitbucket.PullRequestsCreateCommentResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments", req.Workspace, req.RepoSlug, req.PullRequestID)
+	t := time.Now().UTC()
 
 	body := &prCommentBody{Content: prCommentContent{Raw: req.Markdown}}
 	if req.ParentID != "" {
 		id, err := strconv.Atoi(req.ParentID)
 		if err != nil {
+			metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 			return nil, temporal.NewNonRetryableApplicationError("invalid parent ID", fmt.Sprintf("%T", err), err, req.ParentID)
 		}
 		body.Parent = &prCreateCommentParent{ID: id}
@@ -39,16 +43,23 @@ func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbuck
 
 	resp := new(bitbucket.PullRequestsCreateCommentResponse)
 	if err := a.httpPost(ctx, req.ThrippyLinkID, path, body, resp); err != nil {
+		metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 		return nil, err
 	}
 
+	metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, nil)
 	return resp, nil
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-delete
 func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbucket.PullRequestsDeleteCommentRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)
-	return a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
+	t := time.Now().UTC()
+
+	err := a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
+
+	metrics.CountAPICall(t, bitbucket.PullRequestsDeleteCommentActivityName, err)
+	return err
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-commits-get
@@ -69,8 +80,10 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 	next := "start"
 
 	for next != "" {
+		t := time.Now().UTC()
 		resp = new(bitbucket.PullRequestsListCommitsResponse)
 		if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
+			metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, err)
 			return nil, err
 		}
 
@@ -80,12 +93,15 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 			if next != "" {
 				u, err := url.Parse(next)
 				if err != nil {
+					metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, err)
 					return nil, fmt.Errorf("invalid next page URL %q: %w", next, err)
 				}
 				path = u.Path
 				query = u.Query()
 			}
 		}
+
+		metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, nil)
 	}
 
 	if req.AllPages {
@@ -95,9 +111,13 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 	return resp, nil
 }
 
-// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-put
 func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbucket.PullRequestsUpdateCommentRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)
+	t := time.Now().UTC()
+
 	body := &prCommentBody{Content: prCommentContent{Raw: req.Markdown}}
-	return a.httpPut(ctx, req.ThrippyLinkID, path, body, nil)
+	err := a.httpPut(ctx, req.ThrippyLinkID, path, body, nil)
+
+	metrics.CountAPICall(t, bitbucket.PullRequestsUpdateCommentActivityName, err)
+	return err
 }

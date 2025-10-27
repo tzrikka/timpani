@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 const (
@@ -39,15 +40,16 @@ type slashCommandResponse struct {
 
 func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.RequestData) int {
 	l := zerolog.Ctx(ctx).With().Str("link_type", "slack").Str("link_medium", "webhook").Logger()
+	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
-		return statusCode
+		return metrics.CountWebhookEvent(l, t, "", statusCode)
 	}
 	if statusCode := checkTimestampHeader(l, r); statusCode != http.StatusOK {
-		return statusCode
+		return metrics.CountWebhookEvent(l, t, "", statusCode)
 	}
 	if statusCode := checkSignatureHeader(l, r); statusCode != http.StatusOK {
-		return statusCode
+		return metrics.CountWebhookEvent(l, t, "", statusCode)
 	}
 
 	// Special handling for some events.
@@ -58,13 +60,15 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 			Msg("replied to Slack URL verification event")
 		w.Header().Add(contentTypeHeader, "text/plain")
 		_, _ = fmt.Fprint(w, r.JSONPayload["challenge"])
+
+		metrics.CountWebhookEvent(l, t, "slack.events.url_verification", http.StatusOK)
 		return 0 // [http.StatusOK] already written by "w.Write" ("fmt.Fprint(w)").
 	}
 
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#command_payload_descriptions
 	// (the informational note under the payload info table).
 	if r.WebForm.Get("ssl_check") != "" {
-		return http.StatusOK
+		return metrics.CountWebhookEvent(l, t, "slack.events.ssl_check", http.StatusOK)
 	}
 
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#responding_to_commands
@@ -85,11 +89,12 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	}
 
 	// Dispatch the event notification, based on its type.
-	if err := dispatchFromWebhook(l.WithContext(ctx), r); err != nil {
-		return http.StatusInternalServerError
+	signalName, err := dispatchFromWebhook(l.WithContext(ctx), r)
+	if err != nil {
+		return metrics.CountWebhookEvent(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return statusCode
+	return metrics.CountWebhookEvent(l, t, signalName, statusCode)
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
