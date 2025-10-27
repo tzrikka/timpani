@@ -27,19 +27,19 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
 		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", contentTypeJSON).
 			Msg("bad request: unexpected header value")
-		return metrics.CountWebhookEvent(l, t, "", http.StatusBadRequest)
+		return metrics.CountWebhookEvent(t, "", http.StatusBadRequest)
 	}
 
 	if statusCode := github.CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-		return metrics.CountWebhookEvent(l, t, "", statusCode)
+		return metrics.CountWebhookEvent(t, "", statusCode)
 	}
 
 	// Dispatch the event notification as a Temporal signal.
 	signalName := "bitbucket.events." + strings.ReplaceAll(r.Headers.Get(eventHeader), ":", ".")
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
-		return metrics.CountWebhookEvent(l, t, signalName, http.StatusInternalServerError)
+		return metrics.CountWebhookEvent(t, signalName, http.StatusInternalServerError)
 	}
 
-	return metrics.CountWebhookEvent(l, t, signalName, http.StatusOK)
+	return metrics.CountWebhookEvent(t, signalName, http.StatusOK)
 }
