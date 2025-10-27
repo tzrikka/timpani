@@ -23,8 +23,6 @@ jobs:
         uses: actions/setup-go@v6 # https://github.com/marketplace/actions/setup-go-environment
         with:
           go-version-file: go.mod
-      - name: Git Diff
-        run: git --no-pager diff
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6 # https://github.com/marketplace/actions/goreleaser-action
         with:
