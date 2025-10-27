@@ -49,7 +49,7 @@ func CountAPICall(t time.Time, method string, err error) {
 }
 
 func writeLineToFile(l *zerolog.Logger, filename string, record []string) {
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600) //gosec:disable G304 -- filename not controlled by user
 	if err != nil {
 		if l != nil {
 			l.Error().Err(err).Msg("failed to open metrics file")
