@@ -30,8 +30,14 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 		return metrics.CountWebhookEvent(t, "", http.StatusBadRequest)
 	}
 
-	if statusCode := github.CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-		return metrics.CountWebhookEvent(t, "", statusCode)
+	// Note 1: Bitbucket uses the exact same signature checking method as GitHub.
+	// Note 2: Some large customers of Bitbnucket use proxies to fan-out webhook
+	// events instead of using many webhook registrations, in order to avoid
+	// hitting rate limits. In such cases, the webhook secret may be blank.
+	if r.LinkSecrets["webhook_secret"] != "" {
+		if statusCode := github.CheckSignatureHeader(l, r); statusCode != http.StatusOK {
+			return metrics.CountWebhookEvent(t, "", statusCode)
+		}
 	}
 
 	// Dispatch the event notification as a Temporal signal.
