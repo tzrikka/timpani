@@ -21,7 +21,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	t := time.Now().UTC()
 
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
-		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", contentTypeJSON).
+		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Str("want", contentTypeJSON).
 			Msg("bad request: unexpected header value")
 		return metrics.CountWebhookEvent(t, "", http.StatusBadRequest)
 	}
