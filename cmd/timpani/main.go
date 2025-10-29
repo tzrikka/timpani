@@ -26,6 +26,7 @@ const (
 var services = []string{
 	"Bitbucket",
 	"GitHub",
+	"Jira",
 	"Slack",
 }
 

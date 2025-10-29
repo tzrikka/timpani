@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -85,8 +86,12 @@ func constructRequest(ctx context.Context, method, u, token, accept string, quer
 		return nil, nil, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
 	}
 
+	if !strings.HasPrefix(token, "Basic ") {
+		token = "Bearer " + token
+	}
+
 	req.Header.Set("Accept", accept)
-	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Authorization", token)
 	if method != http.MethodGet {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	}
