@@ -4,6 +4,7 @@ import (
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/pkg/listeners/bitbucket"
 	"github.com/tzrikka/timpani/pkg/listeners/github"
+	"github.com/tzrikka/timpani/pkg/listeners/jira"
 	"github.com/tzrikka/timpani/pkg/listeners/slack"
 )
 
@@ -15,6 +16,8 @@ var WebhookHandlers = map[string]listeners.WebhookHandlerFunc{
 	"github-app-jwt":       github.WebhookHandler,
 	"github-user-pat":      github.WebhookHandler,
 	"github-webhook":       github.WebhookHandler,
+	"jira-app-oauth":       jira.WebhookHandler,
+	"jira-user-token":      jira.WebhookHandler,
 	"slack-bot-token":      slack.WebhookHandler,
 	"slack-oauth":          slack.WebhookHandler,
 	"slack-oauth-gov":      slack.WebhookHandler,

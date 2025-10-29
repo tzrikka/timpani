@@ -56,8 +56,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 
 	// https://docs.slack.dev/reference/events/url_verification
 	if r.JSONPayload["type"] == "url_verification" {
-		l.Debug().Str("event_type", "url_verification").
-			Msg("replied to Slack URL verification event")
+		l.Debug().Str("event_type", "url_verification").Msg("replied to Slack URL verification event")
 		w.Header().Add(contentTypeHeader, "text/plain")
 		_, _ = fmt.Fprint(w, r.JSONPayload["challenge"])
 
@@ -119,15 +118,13 @@ func checkTimestampHeader(l zerolog.Logger, r listeners.RequestData) int {
 
 	secs, err := strconv.ParseInt(ts, 10, 64)
 	if err != nil {
-		l.Warn().Str("header", timestampHeader).Str("got", ts).
-			Msg("bad request: invalid header value")
+		l.Warn().Str("header", timestampHeader).Str("got", ts).Msg("bad request: invalid header value")
 		return http.StatusBadRequest
 	}
 
 	d := time.Since(time.Unix(secs, 0))
 	if d.Abs() > maxDifference {
-		l.Warn().Str("header", timestampHeader).Dur("difference", d).
-			Msg("bad request: stale header value")
+		l.Warn().Str("header", timestampHeader).Dur("difference", d).Msg("bad request: stale header value")
 		return http.StatusBadRequest
 	}
 
@@ -149,8 +146,7 @@ func checkSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
 
 	ts := r.Headers.Get(timestampHeader)
 	if !verifySignature(l, secret, ts, sig, r.RawPayload) {
-		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").
-			Msg("signature verification failed")
+		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").Msg("signature verification failed")
 		return http.StatusForbidden
 	}
 
