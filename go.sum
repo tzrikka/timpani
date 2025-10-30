@@ -60,10 +60,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tzrikka/thrippy-api v1.4.0 h1:hFAFMSo/hfLA2ydHuMcR5X6ot4dNZ3sQmZ+k81USWQc=
 github.com/tzrikka/thrippy-api v1.4.0/go.mod h1:Jw1Gh9PMkUtVCJHhHzzIla8m+rXvZNufg5q7Wxbh0ZM=
-github.com/tzrikka/timpani-api v0.7.0 h1:QR6h7ZXGJDcHu4UTjLXIzYK3CCCLhRvVWDxDiUYyjDg=
-github.com/tzrikka/timpani-api v0.7.0/go.mod h1:k8EAAccL2MYXBWuiONONDLRFe6vIC9BuUoo6wi+DiBs=
-github.com/tzrikka/timpani-api v0.7.1 h1:ZcA5nt+3BE29bJJ9K7mr6tUX+8es8FdkoOXKI9WG//Y=
-github.com/tzrikka/timpani-api v0.7.1/go.mod h1:k8EAAccL2MYXBWuiONONDLRFe6vIC9BuUoo6wi+DiBs=
+github.com/tzrikka/timpani-api v0.7.4 h1:TtKEHhUm8i0WGPt2jdQIyeIopUmfZqWw6Z8ohb8k4do=
+github.com/tzrikka/timpani-api v0.7.4/go.mod h1:k8EAAccL2MYXBWuiONONDLRFe6vIC9BuUoo6wi+DiBs=
 github.com/tzrikka/xdg v1.3.1 h1:KUD9Tpgt4QSMIvjEUMqB+JP1Y9OXrNDI63NM5RQR7dA=
 github.com/tzrikka/xdg v1.3.1/go.mod h1:tUEmU2u9hUERexokBBvky85LFtv8H2YvUeJwOgFt9rY=
 github.com/urfave/cli-altsrc/v3 v3.1.0 h1:6E5+kXeAWmRxXlPgdEVf9VqVoTJ2MJci0UMpUi/w/bA=
@@ -137,12 +135,8 @@ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.16.0 h1:5+ul4Swaf3ESvrOnidPp4GZbzf0mxVQpDCYUQE7OJfk=
 gonum.org/v1/gonum v0.16.0/go.mod h1:fef3am4MQ93R2HHpKnLk4/Tbh/s0+wqD5nfa6Pnwy4E=
-google.golang.org/genproto/googleapis/api v0.0.0-20251022142026-3a174f9686a8 h1:mepRgnBZa07I4TRuomDE4sTIYieg/osKmzIf4USdWS4=
-google.golang.org/genproto/googleapis/api v0.0.0-20251022142026-3a174f9686a8/go.mod h1:fDMmzKV90WSg1NbozdqrE64fkuTv6mlq2zxo9ad+3yo=
 google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda h1:+2XxjfsAu6vqFxwGBRcHiMaDCuZiqXGDUDVWVtrFAnE=
 google.golang.org/genproto/googleapis/api v0.0.0-20251029180050-ab9386a59fda/go.mod h1:fDMmzKV90WSg1NbozdqrE64fkuTv6mlq2zxo9ad+3yo=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 h1:M1rk8KBnUsBDg1oPGHNCxG4vc1f49epmTO7xscSajMk=
-google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8/go.mod h1:7i2o+ce6H/6BluujYR+kqX3GKH+dChPTQU19wjRPiGk=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda h1:i/Q+bfisr7gq6feoJnS/DlpdwEL4ihp41fvRiM3Ork0=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda/go.mod h1:7i2o+ce6H/6BluujYR+kqX3GKH+dChPTQU19wjRPiGk=
 google.golang.org/grpc v1.76.0 h1:UnVkv1+uMLYXoIz6o7chp59WfQUYA2ex/BXQ9rHZu7A=

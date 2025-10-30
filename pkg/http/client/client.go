@@ -86,12 +86,15 @@ func constructRequest(ctx context.Context, method, u, token, accept string, quer
 		return nil, nil, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
 	}
 
-	if !strings.HasPrefix(token, "Basic ") {
-		token = "Bearer " + token
+	if pair, found := strings.CutPrefix(token, "Basic "); found {
+		if user, pass, found := strings.Cut(pair, ":"); found {
+			req.SetBasicAuth(user, pass)
+		}
+	} else if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	req.Header.Set("Accept", accept)
-	req.Header.Set("Authorization", token)
 	if method != http.MethodGet {
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	}
