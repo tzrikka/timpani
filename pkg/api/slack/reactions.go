@@ -16,16 +16,16 @@ func (a *API) ReactionsAddActivity(ctx context.Context, req slack.ReactionsAddRe
 	t := time.Now().UTC()
 	resp := new(slack.ReactionsAddResponse)
 	if err := a.httpPost(ctx, slack.ReactionsAddActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ReactionsAddActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ReactionsAddActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ReactionsAddActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsAddActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ReactionsAddActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ReactionsAddActivityName, nil)
 	return resp, nil
 }
 
@@ -51,16 +51,16 @@ func (a *API) ReactionsGetActivity(ctx context.Context, req slack.ReactionsGetRe
 	t := time.Now().UTC()
 	resp := new(slack.ReactionsGetResponse)
 	if err := a.httpGet(ctx, slack.ReactionsGetActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ReactionsGetActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ReactionsGetActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ReactionsGetActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsGetActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ReactionsGetActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ReactionsGetActivityName, nil)
 	return resp, nil
 }
 
@@ -92,16 +92,16 @@ func (a *API) ReactionsListActivity(ctx context.Context, req slack.ReactionsList
 	t := time.Now().UTC()
 	resp := new(slack.ReactionsListResponse)
 	if err := a.httpGet(ctx, slack.ReactionsListActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ReactionsListActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ReactionsListActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ReactionsListActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsListActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ReactionsListActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ReactionsListActivityName, nil)
 	return resp, nil
 }
 
@@ -110,15 +110,15 @@ func (a *API) ReactionsRemoveActivity(ctx context.Context, req slack.ReactionsRe
 	t := time.Now().UTC()
 	resp := new(slack.ReactionsRemoveResponse)
 	if err := a.httpPost(ctx, slack.ReactionsRemoveActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ReactionsRemoveActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsRemoveActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ReactionsRemoveActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ReactionsRemoveActivityName, nil)
 	return resp, nil
 }

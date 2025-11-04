@@ -35,7 +35,7 @@ func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbuck
 	if req.ParentID != "" {
 		id, err := strconv.Atoi(req.ParentID)
 		if err != nil {
-			metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, err)
+			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 			return nil, temporal.NewNonRetryableApplicationError("invalid parent ID", fmt.Sprintf("%T", err), err, req.ParentID)
 		}
 		body.Parent = &prCreateCommentParent{ID: id}
@@ -43,11 +43,11 @@ func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbuck
 
 	resp := new(bitbucket.PullRequestsCreateCommentResponse)
 	if err := a.httpPost(ctx, req.ThrippyLinkID, path, body, resp); err != nil {
-		metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, err)
+		metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 		return nil, err
 	}
 
-	metrics.CountAPICall(t, bitbucket.PullRequestsCreateCommentActivityName, nil)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, nil)
 	return resp, nil
 }
 
@@ -58,7 +58,7 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
 
-	metrics.CountAPICall(t, bitbucket.PullRequestsDeleteCommentActivityName, err)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDeleteCommentActivityName, err)
 	return err
 }
 
@@ -83,7 +83,7 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 		t := time.Now().UTC()
 		resp = new(bitbucket.PullRequestsListCommitsResponse)
 		if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
-			metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, err)
+			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
 			return nil, err
 		}
 
@@ -93,7 +93,7 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 			if next != "" {
 				u, err := url.Parse(next)
 				if err != nil {
-					metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, err)
+					metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
 					return nil, fmt.Errorf("invalid next page URL %q: %w", next, err)
 				}
 				path = u.Path
@@ -101,7 +101,7 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 			}
 		}
 
-		metrics.CountAPICall(t, bitbucket.PullRequestsListCommitsActivityName, nil)
+		metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, nil)
 	}
 
 	if req.AllPages {
@@ -118,6 +118,6 @@ func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbuck
 	body := &prCommentBody{Content: prCommentContent{Raw: req.Markdown}}
 	err := a.httpPut(ctx, req.ThrippyLinkID, path, body, nil)
 
-	metrics.CountAPICall(t, bitbucket.PullRequestsUpdateCommentActivityName, err)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateCommentActivityName, err)
 	return err
 }

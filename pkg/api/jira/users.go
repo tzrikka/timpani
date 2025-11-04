@@ -17,11 +17,11 @@ func (a *API) UsersGetActivity(ctx context.Context, req jira.UsersGetRequest) (*
 
 	resp := new(jira.UsersGetResponse)
 	if err := a.httpGet(ctx, "user", query, resp); err != nil {
-		metrics.CountAPICall(t, jira.UsersGetActivityName, err)
+		metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, err)
 		return nil, err
 	}
 
-	metrics.CountAPICall(t, jira.UsersGetActivityName, nil)
+	metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, nil)
 	return resp, nil
 }
 
@@ -33,10 +33,10 @@ func (a *API) UsersSearchActivity(ctx context.Context, req jira.UsersSearchReque
 
 	var resp []jira.User
 	if err := a.httpGet(ctx, "user/search", query, &resp); err != nil {
-		metrics.CountAPICall(t, jira.UsersSearchActivityName, err)
+		metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, err)
 		return nil, err
 	}
 
-	metrics.CountAPICall(t, jira.UsersSearchActivityName, nil)
+	metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, nil)
 	return resp, nil
 }

@@ -41,10 +41,10 @@ func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[st
 	resp := map[string]any{}
 	err := a.httpGet(ctx, path, nil, &resp)
 	if err != nil {
-		metrics.CountAPICall(t, UsersGetName, err)
+		metrics.IncrementAPICallCounter(t, UsersGetName, err)
 		return nil, err
 	}
-	metrics.CountAPICall(t, UsersGetName, nil)
+	metrics.IncrementAPICallCounter(t, UsersGetName, nil)
 	return resp, nil
 }
 
@@ -68,9 +68,9 @@ func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) ([]ma
 	resp := []map[string]any{}
 	err := a.httpGet(ctx, "/users/list", query, &resp)
 	if err != nil {
-		metrics.CountAPICall(t, UsersListName, err)
+		metrics.IncrementAPICallCounter(t, UsersListName, err)
 		return nil, err
 	}
-	metrics.CountAPICall(t, UsersListName, nil)
+	metrics.IncrementAPICallCounter(t, UsersListName, nil)
 	return resp, nil
 }

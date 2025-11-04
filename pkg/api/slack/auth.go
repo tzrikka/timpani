@@ -14,15 +14,15 @@ func (a *API) AuthTestActivity(ctx context.Context) (*slack.AuthTestResponse, er
 	t := time.Now().UTC()
 	resp := new(slack.AuthTestResponse)
 	if err := a.httpPost(ctx, slack.AuthTestActivityName, nil, resp); err != nil {
-		metrics.CountAPICall(t, slack.AuthTestActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.AuthTestActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.AuthTestActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.AuthTestActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.AuthTestActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.AuthTestActivityName, nil)
 	return resp, nil
 }

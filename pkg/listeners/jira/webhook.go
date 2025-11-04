@@ -21,12 +21,11 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	t := time.Now().UTC()
 
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
-		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Str("want", contentTypeJSON).
-			Msg("bad request: unexpected header value")
-		return metrics.CountWebhookEvent(t, "", http.StatusBadRequest)
+		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Str("want", contentTypeJSON).Msg("bad request: unexpected header value")
+		return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
 	}
 
 	l.Warn().Msg("received Jira webhook event - processing not implemented yet")
 
-	return metrics.CountWebhookEvent(t, "", http.StatusOK)
+	return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusOK)
 }

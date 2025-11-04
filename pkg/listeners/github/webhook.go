@@ -31,10 +31,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
-		return metrics.CountWebhookEvent(t, "", statusCode)
+		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 	if statusCode := CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-		return metrics.CountWebhookEvent(t, "", statusCode)
+		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 
 	// If the payload is a web form, convert it to JSON.
@@ -42,7 +42,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 		reader := strings.NewReader(r.WebForm.Get("payload"))
 		if err := json.NewDecoder(reader).Decode(&r.JSONPayload); err != nil {
 			l.Err(err).Msg("failed to extract and decode JSON payload from form data")
-			return metrics.CountWebhookEvent(t, "", http.StatusInternalServerError)
+			return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusInternalServerError)
 		}
 	}
 
@@ -50,10 +50,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	signalName := "github.events." + r.Headers.Get(eventHeader)
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
-		return metrics.CountWebhookEvent(t, signalName, http.StatusInternalServerError)
+		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return metrics.CountWebhookEvent(t, signalName, http.StatusOK)
+	return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
@@ -84,8 +84,7 @@ func CheckSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
 	}
 
 	if !verifySignature(l, secret, sig, r.RawPayload) {
-		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").
-			Msg("signature verification failed")
+		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").Msg("signature verification failed")
 		return http.StatusForbidden
 	}
 

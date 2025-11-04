@@ -23,10 +23,10 @@ func (a *API) WorkspacesListMembersActivity(ctx context.Context, req bitbucket.W
 
 	resp := new(bitbucket.WorkspacesListMembersResponse)
 	if err := a.httpGet(ctx, "", path, query, resp); err != nil {
-		metrics.CountAPICall(t, bitbucket.WorkspacesListMembersActivityName, err)
+		metrics.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, err)
 		return nil, err
 	}
 
-	metrics.CountAPICall(t, bitbucket.WorkspacesListMembersActivityName, nil)
+	metrics.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, nil)
 	return resp, nil
 }

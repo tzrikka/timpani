@@ -21,16 +21,16 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 	t := time.Now().UTC()
 	resp := new(slack.ChatDeleteResponse)
 	if err := a.httpPost(ctx, slack.ChatDeleteActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ChatDeleteActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ChatDeleteActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ChatDeleteActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, nil)
 	return resp, nil
 }
 
@@ -43,16 +43,16 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 	t := time.Now().UTC()
 	resp := new(slack.ChatGetPermalinkResponse)
 	if err := a.httpGet(ctx, slack.ChatGetPermalinkActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ChatGetPermalinkActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, nil)
 	return resp, nil
 }
 
@@ -61,16 +61,16 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	t := time.Now().UTC()
 	resp := new(slack.ChatPostEphemeralResponse)
 	if err := a.httpPost(ctx, slack.ChatPostEphemeralActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ChatPostEphemeralActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, nil)
 	return resp, nil
 }
 
@@ -79,16 +79,16 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 	t := time.Now().UTC()
 	resp := new(slack.ChatPostMessageResponse)
 	if err := a.httpPost(ctx, slack.ChatPostMessageActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ChatPostMessageActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ChatPostMessageActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ChatPostMessageActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, nil)
 	return resp, nil
 }
 
@@ -97,16 +97,16 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 	t := time.Now().UTC()
 	resp := new(slack.ChatUpdateResponse)
 	if err := a.httpPost(ctx, slack.ChatUpdateActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ChatUpdateActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ChatUpdateActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ChatUpdateActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, nil)
 	return resp, nil
 }
 

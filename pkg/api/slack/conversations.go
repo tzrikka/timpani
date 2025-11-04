@@ -18,16 +18,16 @@ func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.Conver
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsArchiveResponse)
 	if err := a.httpPost(ctx, slack.ConversationsArchiveActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsArchiveActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsArchiveActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsArchiveActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsArchiveActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsArchiveActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsArchiveActivityName, nil)
 	return resp, nil
 }
 
@@ -36,16 +36,16 @@ func (a *API) ConversationsCloseActivity(ctx context.Context, req slack.Conversa
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsCloseResponse)
 	if err := a.httpPost(ctx, slack.ConversationsCloseActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsCloseActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsCloseActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsCloseActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsCloseActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsCloseActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsCloseActivityName, nil)
 	return resp, nil
 }
 
@@ -54,20 +54,20 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsCreateResponse)
 	if err := a.httpPost(ctx, slack.ConversationsCreateActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsCreateActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
 		if resp.Error == "name_taken" { // Let the caller decide how to handle this error.
-			metrics.CountAPICall(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
+			metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
 		}
-		metrics.CountAPICall(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsCreateActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, nil)
 	return resp, nil
 }
 
@@ -97,16 +97,16 @@ func (a *API) ConversationsHistoryActivity(ctx context.Context, req slack.Conver
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsHistoryResponse)
 	if err := a.httpGet(ctx, slack.ConversationsHistoryActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsHistoryActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsHistoryActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsHistoryActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsHistoryActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsHistoryActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsHistoryActivityName, nil)
 	return resp, nil
 }
 
@@ -124,16 +124,16 @@ func (a *API) ConversationsInfoActivity(ctx context.Context, req slack.Conversat
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsInfoResponse)
 	if err := a.httpGet(ctx, slack.ConversationsInfoActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsInfoActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsInfoActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsInfoActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsInfoActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsInfoActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsInfoActivityName, nil)
 	return resp, nil
 }
 
@@ -142,21 +142,21 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsInviteResponse)
 	if err := a.httpPost(ctx, slack.ConversationsInviteActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsInviteActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
 		if resp.Error == "already_in_channel" { // Let the caller decide how to handle this error.
-			metrics.CountAPICall(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
+			metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 		}
 
-		metrics.CountAPICall(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsInviteActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, nil)
 	return resp, nil
 }
 
@@ -165,16 +165,16 @@ func (a *API) ConversationsJoinActivity(ctx context.Context, req slack.Conversat
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsJoinResponse)
 	if err := a.httpPost(ctx, slack.ConversationsJoinActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsJoinActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsJoinActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsJoinActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsJoinActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsJoinActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsJoinActivityName, nil)
 	return resp, nil
 }
 
@@ -183,16 +183,16 @@ func (a *API) ConversationsKickActivity(ctx context.Context, req slack.Conversat
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsKickResponse)
 	if err := a.httpPost(ctx, slack.ConversationsKickActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsKickActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsKickActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsKickActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsKickActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsKickActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsKickActivityName, nil)
 	return resp, nil
 }
 
@@ -201,16 +201,16 @@ func (a *API) ConversationsLeaveActivity(ctx context.Context, req slack.Conversa
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsLeaveResponse)
 	if err := a.httpPost(ctx, slack.ConversationsLeaveActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsLeaveActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsLeaveActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsLeaveActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsLeaveActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsLeaveActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsLeaveActivityName, nil)
 	return resp, nil
 }
 
@@ -236,16 +236,16 @@ func (a *API) ConversationsListActivity(ctx context.Context, req slack.Conversat
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsListResponse)
 	if err := a.httpGet(ctx, slack.ConversationsListActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsListActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsListActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsListActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsListActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsListActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsListActivityName, nil)
 	return resp, nil
 }
 
@@ -263,16 +263,16 @@ func (a *API) ConversationsMembersActivity(ctx context.Context, req slack.Conver
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsMembersResponse)
 	if err := a.httpGet(ctx, slack.ConversationsMembersActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsMembersActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsMembersActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsMembersActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsMembersActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsMembersActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsMembersActivityName, nil)
 	return resp, nil
 }
 
@@ -281,16 +281,16 @@ func (a *API) ConversationsOpenActivity(ctx context.Context, req slack.Conversat
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsOpenResponse)
 	if err := a.httpPost(ctx, slack.ConversationsOpenActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsOpenActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsOpenActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsOpenActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsOpenActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsOpenActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsOpenActivityName, nil)
 	return resp, nil
 }
 
@@ -299,16 +299,16 @@ func (a *API) ConversationsRenameActivity(ctx context.Context, req slack.Convers
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsRenameResponse)
 	if err := a.httpPost(ctx, slack.ConversationsRenameActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsRenameActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsRenameActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsRenameActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsRenameActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsRenameActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsRenameActivityName, nil)
 	return resp, nil
 }
 
@@ -339,16 +339,16 @@ func (a *API) ConversationsRepliesActivity(ctx context.Context, req slack.Conver
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsRepliesResponse)
 	if err := a.httpGet(ctx, slack.ConversationsRepliesActivityName, query, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsRepliesActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsRepliesActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsRepliesActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsRepliesActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsRepliesActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsRepliesActivityName, nil)
 	return resp, nil
 }
 
@@ -357,16 +357,16 @@ func (a *API) ConversationsSetPurposeActivity(ctx context.Context, req slack.Con
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsSetPurposeResponse)
 	if err := a.httpPost(ctx, slack.ConversationsSetPurposeActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsSetPurposeActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsSetPurposeActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsSetPurposeActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsSetPurposeActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsSetPurposeActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsSetPurposeActivityName, nil)
 	return resp, nil
 }
 
@@ -375,15 +375,15 @@ func (a *API) ConversationsSetTopicActivity(ctx context.Context, req slack.Conve
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsSetTopicResponse)
 	if err := a.httpPost(ctx, slack.ConversationsSetTopicActivityName, req, resp); err != nil {
-		metrics.CountAPICall(t, slack.ConversationsSetTopicActivityName, err)
+		metrics.IncrementAPICallCounter(t, slack.ConversationsSetTopicActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.CountAPICall(t, slack.ConversationsSetTopicActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ConversationsSetTopicActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
-	metrics.CountAPICall(t, slack.ConversationsSetTopicActivityName, nil)
+	metrics.IncrementAPICallCounter(t, slack.ConversationsSetTopicActivityName, nil)
 	return resp, nil
 }
