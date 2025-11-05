@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -96,7 +97,7 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 					metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
 					return nil, fmt.Errorf("invalid next page URL %q: %w", next, err)
 				}
-				path = u.Path
+				path = strings.TrimPrefix(u.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
 				query = u.Query()
 			}
 		}
