@@ -5,6 +5,7 @@ package metrics
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	DefaultMetricsFileIn  = "timpani_metrics_in.csv"
-	DefaultMetricsFileOut = "timpani_metrics_out.csv"
+	DefaultMetricsFileIn  = "timpani_metrics_in_%s.csv"
+	DefaultMetricsFileOut = "timpani_metrics_out_%s.csv"
 
 	fileFlags = os.O_APPEND | os.O_CREATE | os.O_WRONLY
 	filePerms = xdg.NewFilePermissions
@@ -35,7 +36,7 @@ func IncrementWebhookEventCounter(l zerolog.Logger, t time.Time, event string, s
 	defer muIn.Unlock()
 
 	record := []string{t.Format(time.RFC3339), event, strconv.Itoa(statusCode)}
-	if err := appendToCSVFile(DefaultMetricsFileIn, record); err != nil {
+	if err := appendToCSVFile(DefaultMetricsFileIn, t, record); err != nil {
 		l.Err(err).Str("event", event).Int("status", statusCode).Msg("metrics error: failed to increment signal counter")
 	}
 
@@ -52,10 +53,11 @@ func IncrementAPICallCounter(t time.Time, method string, err error) {
 		errMsg = err.Error()
 	}
 
-	_ = appendToCSVFile(DefaultMetricsFileOut, []string{t.Format(time.RFC3339), method, errMsg})
+	_ = appendToCSVFile(DefaultMetricsFileOut, t, []string{t.Format(time.RFC3339), method, errMsg})
 }
 
-func appendToCSVFile(filename string, record []string) error {
+func appendToCSVFile(filename string, t time.Time, record []string) error {
+	filename = fmt.Sprintf(filename, t.Format(time.DateOnly))
 	f, err := os.OpenFile(filename, fileFlags, filePerms) //gosec:disable G304 -- hardcoded filename
 	if err != nil {
 		return err
