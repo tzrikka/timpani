@@ -59,11 +59,11 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 	}
 
 	if !resp.OK {
+		metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
+
 		if resp.Error == "name_taken" { // Let the caller decide how to handle this error.
-			metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
 		}
-		metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -147,12 +147,11 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 	}
 
 	if !resp.OK {
+		metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
+
 		if resp.Error == "already_in_channel" { // Let the caller decide how to handle this error.
-			metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 		}
-
-		metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, errors.New(resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

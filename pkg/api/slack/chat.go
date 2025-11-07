@@ -67,6 +67,10 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
+
+		if resp.Error == "channel_not_found" { // Let the caller decide how to handle this error.
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -85,6 +89,10 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, errors.New(resp.Error))
+
+		if resp.Error == "channel_not_found" { // Let the caller decide how to handle this error.
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.Username)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
