@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"go.temporal.io/sdk/temporal"
+
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
@@ -142,6 +144,10 @@ func (a *API) UsersLookupByEmailActivity(ctx context.Context, req slack.UsersLoo
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.UsersLookupByEmailActivityName, errors.New(resp.Error))
+
+		if resp.Error == "users_not_found" { // Let the caller decide how to handle this error.
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Email)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

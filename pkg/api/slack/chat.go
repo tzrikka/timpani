@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -68,7 +69,7 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
 
-		if resp.Error == "channel_not_found" { // Let the caller decide how to handle this error.
+		if resp.Error == "channel_not_found" || strings.HasSuffix(resp.Error, "not_in_channel") {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
