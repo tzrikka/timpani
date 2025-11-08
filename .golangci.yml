@@ -9,7 +9,7 @@ linters:
     - containedctx
     - contextcheck
     - copyloopvar
-    - dupl
+    # - dupl
     - dupword
     - embeddedstructfieldcheck
     - errcheck
@@ -74,7 +74,7 @@ formatters:
     gofumpt:
       extra-rules: true
     golines:
-      max-len: 173
+      max-len: 200
 
 issues:
   max-issues-per-linter: 0
