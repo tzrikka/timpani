@@ -1,4 +1,4 @@
-package client
+package client_test
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/tzrikka/timpani/pkg/http/client"
 )
 
 func TestHTTPRequest(t *testing.T) {
@@ -21,20 +23,20 @@ func TestHTTPRequest(t *testing.T) {
 			name:        "get",
 			startServer: true,
 			httpMethod:  http.MethodGet,
-			accept:      AcceptJSON,
+			accept:      client.AcceptJSON,
 			body:        url.Values{},
 		},
 		{
 			name:        "post",
 			startServer: true,
 			httpMethod:  http.MethodPost,
-			accept:      AcceptJSON,
+			accept:      client.AcceptJSON,
 			body:        "body",
 		},
 		{
 			name:       "server_not_responding",
 			httpMethod: http.MethodPost,
-			accept:     AcceptJSON,
+			accept:     client.AcceptJSON,
 			body:       "body",
 			wantErr:    true,
 		},
@@ -49,7 +51,7 @@ func TestHTTPRequest(t *testing.T) {
 			}
 			defer s.Close()
 
-			got, err := HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.body)
+			got, err := client.HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.body)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTTPRequest() error = %v, wantErr %v", err, tt.wantErr)
 				return
