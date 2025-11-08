@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	DefaultMetricsFileIn  = "timpani_metrics_in_%s.csv"
-	DefaultMetricsFileOut = "timpani_metrics_out_%s.csv"
+	DefaultMetricsFileIn  = "metrics/timpani_in_%s.csv"
+	DefaultMetricsFileOut = "metrics/timpani_out_%s.csv"
 
 	fileFlags = os.O_APPEND | os.O_CREATE | os.O_WRONLY
 	filePerms = xdg.NewFilePermissions
@@ -58,7 +58,7 @@ func IncrementAPICallCounter(t time.Time, method string, err error) {
 
 func appendToCSVFile(filename string, t time.Time, record []string) error {
 	filename = fmt.Sprintf(filename, t.Format(time.DateOnly))
-	f, err := os.OpenFile(filename, fileFlags, filePerms) //gosec:disable G304 -- hardcoded filename
+	f, err := os.OpenFile(filename, fileFlags, filePerms) //gosec:disable G304 -- hardcoded path
 	if err != nil {
 		return err
 	}
