@@ -24,7 +24,7 @@ func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) (string, 
 
 	if err := temporal.Signal(ctx, r.Temporal, signalName, payload); err != nil {
 		l.Err(err).Msg("failed to send Temporal signal")
-		return "", err
+		return signalName, err // Return signal name for monitoring & debugging purposes.
 	}
 
 	return signalName, nil
