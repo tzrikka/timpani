@@ -19,7 +19,7 @@ func (a *API) AuthTestActivity(ctx context.Context) (*slack.AuthTestResponse, er
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.AuthTestActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.AuthTestActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

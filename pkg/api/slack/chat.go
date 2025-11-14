@@ -27,7 +27,7 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -49,7 +49,7 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -67,7 +67,7 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, slackAPIError(resp, resp.Error))
 
 		if resp.Error == "channel_not_found" || strings.HasSuffix(resp.Error, "not_in_channel") {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
@@ -89,7 +89,7 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, slackAPIError(resp, resp.Error))
 
 		if resp.Error == "channel_not_found" || resp.Error == "is_archived" {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.Username)
@@ -111,7 +111,7 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

@@ -43,7 +43,7 @@ func (a *API) UsersConversationsActivity(ctx context.Context, req slack.UsersCon
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersConversationsActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersConversationsActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -66,7 +66,7 @@ func (a *API) UsersGetPresenceActivity(ctx context.Context, req slack.UsersGetPr
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersGetPresenceActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersGetPresenceActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -90,7 +90,7 @@ func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest)
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersInfoActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersInfoActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -122,7 +122,7 @@ func (a *API) UsersListActivity(ctx context.Context, req slack.UsersListRequest)
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersListActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersListActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -143,7 +143,7 @@ func (a *API) UsersLookupByEmailActivity(ctx context.Context, req slack.UsersLoo
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersLookupByEmailActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersLookupByEmailActivityName, slackAPIError(resp, resp.Error))
 
 		if resp.Error == "users_not_found" { // Let the caller decide how to handle this error.
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Email)
@@ -173,7 +173,7 @@ func (a *API) UsersProfileGetActivity(ctx context.Context, req slack.UsersProfil
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UsersProfileGetActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.UsersProfileGetActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

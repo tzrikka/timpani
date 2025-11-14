@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"go.temporal.io/sdk/temporal"
+
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
@@ -19,7 +21,7 @@ func (a *API) BookmarksAddActivity(ctx context.Context, req slack.BookmarksAddRe
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.BookmarksAddActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.BookmarksAddActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -37,7 +39,11 @@ func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEdit
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.BookmarksEditActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.BookmarksEditActivityName, slackAPIError(resp, resp.Error))
+
+		if resp.Error == "permission_denied" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.ChannelID, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -55,7 +61,7 @@ func (a *API) BookmarksListActivity(ctx context.Context, req slack.BookmarksList
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.BookmarksListActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.BookmarksListActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -73,7 +79,7 @@ func (a *API) BookmarksRemoveActivity(ctx context.Context, req slack.BookmarksRe
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.BookmarksRemoveActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.BookmarksRemoveActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

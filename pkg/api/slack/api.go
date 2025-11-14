@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -103,4 +104,13 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 
 	l.Info("sent HTTP POST request", "link_id", a.thrippy.LinkID, "url", apiURL)
 	return nil
+}
+
+// slackAPIError serializes a Slack API error response into an error.
+func slackAPIError(resp any, errCode string) error {
+	sb := new(strings.Builder)
+	if err := json.NewEncoder(sb).Encode(resp); err != nil {
+		return errors.New(errCode)
+	}
+	return errors.New(strings.TrimSpace(sb.String()))
 }

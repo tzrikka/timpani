@@ -26,7 +26,7 @@ func (a *API) BotsInfoActivity(ctx context.Context, req slack.BotsInfoRequest) (
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.BotsInfoActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.BotsInfoActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

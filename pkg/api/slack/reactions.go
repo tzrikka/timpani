@@ -21,7 +21,7 @@ func (a *API) ReactionsAddActivity(ctx context.Context, req slack.ReactionsAddRe
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ReactionsAddActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsAddActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -56,7 +56,7 @@ func (a *API) ReactionsGetActivity(ctx context.Context, req slack.ReactionsGetRe
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ReactionsGetActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsGetActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -97,7 +97,7 @@ func (a *API) ReactionsListActivity(ctx context.Context, req slack.ReactionsList
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ReactionsListActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsListActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -115,7 +115,7 @@ func (a *API) ReactionsRemoveActivity(ctx context.Context, req slack.ReactionsRe
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ReactionsRemoveActivityName, errors.New(resp.Error))
+		metrics.IncrementAPICallCounter(t, slack.ReactionsRemoveActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
