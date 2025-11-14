@@ -61,7 +61,10 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
 	if err != nil {
 		l.Error("HTTP GET request error", "error", err, "url", apiURL)
-		return err
+		if !strings.HasPrefix(err.Error(), "429 Too Many Requests") {
+			return err
+		}
+		return temporal.NewNonRetryableApplicationError(err.Error(), "error", err)
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
@@ -85,7 +88,10 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 	resp, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
 	if err != nil {
 		l.Error("HTTP POST request error", "error", err, "url", apiURL)
-		return err
+		if !strings.HasPrefix(err.Error(), "429 Too Many Requests") {
+			return err
+		}
+		return temporal.NewNonRetryableApplicationError(err.Error(), "error", err)
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
