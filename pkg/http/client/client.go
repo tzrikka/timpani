@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,34 +37,29 @@ const (
 // Some errors (failure to construct a request or decode a response body)
 // are returned as non-retryable [temporal.ApplicationError]s.
 //
+// On HTTP 429 (Too Many Requests) responses, the second return value
+// contains the number of seconds to wait before retrying the request.
+//
 // [temporal.ApplicationError]: https://pkg.go.dev/go.temporal.io/temporal#ApplicationError
-func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, queryOrJSONBody any) ([]byte, error) {
+func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, queryOrJSONBody any) ([]byte, int, error) {
 	req, cancel, err := constructRequest(ctx, httpMethod, u, authToken, accept, queryOrJSONBody)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer cancel()
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to send HTTP request: %w", err)
+		return nil, 0, fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxSize))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read HTTP response body: %w", err)
+		return nil, 0, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		msg := resp.Status
-		if len(body) > 0 {
-			msg = fmt.Sprintf("%s: %s", msg, string(body))
-		}
-		return nil, errors.New(msg)
-	}
-
-	return body, nil
+	return parseResponse(resp, body)
 }
 
 func constructRequest(ctx context.Context, method, u, token, accept string, queryOrJSONBody any) (*http.Request, context.CancelFunc, error) {
@@ -115,4 +111,26 @@ func requestBody(method string, queryOrJSONBody any) (io.Reader, error) {
 	}
 
 	return bytes.NewReader(b), nil
+}
+
+func parseResponse(resp *http.Response, body []byte) ([]byte, int, error) {
+	if resp.StatusCode < http.StatusBadRequest {
+		return body, 0, nil
+	}
+
+	retryAfter := 0
+	msg := resp.Status
+
+	if resp.StatusCode == http.StatusTooManyRequests {
+		retryAfter, _ = strconv.Atoi(resp.Header.Get("Retry-After"))
+		if retryAfter > 0 {
+			msg += fmt.Sprintf(" (retry after %s seconds)", resp.Header.Get("Retry-After"))
+		}
+	}
+
+	if len(body) > 0 {
+		msg += fmt.Sprintf(": %s", string(body))
+	}
+
+	return nil, retryAfter, errors.New(msg)
 }

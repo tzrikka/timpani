@@ -113,7 +113,7 @@ func (a *API) httpGet(ctx context.Context, path string, query url.Values, jsonRe
 		return err
 	}
 
-	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, query)
+	resp, _, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, query)
 	if err != nil {
 		l.Error("HTTP GET request error", "error", err, "url", apiURL)
 		return err

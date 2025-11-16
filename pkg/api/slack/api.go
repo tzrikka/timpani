@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/log"
@@ -59,13 +60,15 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		return err
 	}
 
-	resp, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
+	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
 	if err != nil {
-		l.Error("HTTP GET request error", "error", err, "url", apiURL)
-		if !strings.HasPrefix(err.Error(), "429 Too Many Requests") {
-			return err
+		if retryAfter > 0 {
+			l.Warn("throttling HTTP GET request", "retry_after", retryAfter, "url", apiURL)
+			opts := temporal.ApplicationErrorOptions{NextRetryDelay: time.Second * time.Duration(retryAfter)}
+			return temporal.NewApplicationErrorWithOptions(err.Error(), "RateLimitError", opts)
 		}
-		return temporal.NewNonRetryableApplicationError(err.Error(), "error", err)
+		l.Error("HTTP GET request error", "error", err, "url", apiURL)
+		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
@@ -86,13 +89,15 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		return err
 	}
 
-	resp, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
+	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
 	if err != nil {
-		l.Error("HTTP POST request error", "error", err, "url", apiURL)
-		if !strings.HasPrefix(err.Error(), "429 Too Many Requests") {
-			return err
+		if retryAfter > 0 {
+			l.Warn("throttling HTTP POST request", "retry_after", retryAfter, "url", apiURL)
+			opts := temporal.ApplicationErrorOptions{NextRetryDelay: time.Second * time.Duration(retryAfter)}
+			return temporal.NewApplicationErrorWithOptions(err.Error(), "RateLimitError", opts)
 		}
-		return temporal.NewNonRetryableApplicationError(err.Error(), "error", err)
+		l.Error("HTTP POST request error", "error", err, "url", apiURL)
+		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
