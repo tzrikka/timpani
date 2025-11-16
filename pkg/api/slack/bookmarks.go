@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -43,6 +44,9 @@ func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEdit
 
 		if resp.Error == "permission_denied" {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.ChannelID, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}

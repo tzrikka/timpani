@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -188,6 +189,14 @@ func (a *API) ConversationsKickActivity(ctx context.Context, req slack.Conversat
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ConversationsKickActivityName, slackAPIError(resp, resp.Error))
+
+		switch resp.Error {
+		case "channel_not_found", "not_in_channel":
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 

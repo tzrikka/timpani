@@ -69,8 +69,12 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, slackAPIError(resp, resp.Error))
 
-		if resp.Error == "channel_not_found" || strings.HasSuffix(resp.Error, "not_in_channel") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
+		switch resp.Error {
+		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
@@ -91,8 +95,12 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, slackAPIError(resp, resp.Error))
 
-		if resp.Error == "channel_not_found" || resp.Error == "is_archived" {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.Username)
+		switch resp.Error {
+		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
