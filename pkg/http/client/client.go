@@ -26,6 +26,7 @@ const (
 	MaxSize = 4 << 20 // 4 MiB.
 
 	AcceptJSON = "application/json"
+	AcceptText = "text/plain"
 )
 
 // HTTPRequest sends an HTTP GET or POST request to an external API service.

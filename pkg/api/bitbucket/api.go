@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/log"
@@ -28,6 +29,16 @@ func (a *API) httpGet(ctx context.Context, linkID, path string, query url.Values
 	return a.httpRequest(ctx, linkID, path, http.MethodGet, query, jsonResp)
 }
 
+// httpGetText is a Bitbucket-specific HTTP GET wrapper for [client.HTTPRequest].
+// Unlike [httpGet], it expects a plaintext response body and returns it unparsed.
+func (a *API) httpGetText(ctx context.Context, linkID, path string, query url.Values) (*strings.Builder, error) {
+	resp := new(strings.Builder)
+	if err := a.httpRequest(ctx, linkID, path, http.MethodGet, query, resp); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // httpPost is a Bitbucket-specific HTTP POST wrapper for [client.HTTPRequest].
 func (a *API) httpPost(ctx context.Context, linkID, path string, jsonBody, jsonResp any) error {
 	return a.httpRequest(ctx, linkID, path, http.MethodPost, jsonBody, jsonResp)
@@ -38,24 +49,36 @@ func (a *API) httpPut(ctx context.Context, linkID, path string, jsonBody, jsonRe
 	return a.httpRequest(ctx, linkID, path, http.MethodPut, jsonBody, jsonResp)
 }
 
-func (a *API) httpRequest(ctx context.Context, linkID, path, method string, queryOrJSONBody, jsonResp any) error {
+func (a *API) httpRequest(ctx context.Context, linkID, path, method string, queryOrJSONBody, parsedResp any) error {
 	l, apiURL, auth, err := a.httpRequestPrep(ctx, linkID, path)
 	if err != nil {
 		return err
 	}
 
-	resp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, client.AcceptJSON, queryOrJSONBody)
+	accept := client.AcceptJSON
+	_, ok := parsedResp.(*strings.Builder)
+	if ok {
+		accept = client.AcceptText
+	}
+
+	rawResp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, queryOrJSONBody)
 	if err != nil {
 		l.Error("HTTP request error", "method", method, "error", err, "url", apiURL)
 		return err
 	}
 
 	l.Info("sent HTTP request", "link_id", a.thrippy.LinkID, "method", method, "url", apiURL)
-	if jsonResp == nil {
-		return nil
+
+	if parsedResp == nil {
+		return nil // No response body expected.
 	}
 
-	if err := json.Unmarshal(resp, jsonResp); err != nil {
+	if ok {
+		_, err := parsedResp.(*strings.Builder).Write(rawResp) // Unparsed plaintext.
+		return err
+	}
+
+	if err := json.Unmarshal(rawResp, parsedResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
 		l.Error(msg, "error", err, "url", apiURL)
 		msg = fmt.Sprintf("%s: %v", msg, err)
