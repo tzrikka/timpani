@@ -25,6 +25,13 @@ func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.Conver
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ConversationsArchiveActivityName, slackAPIError(resp, resp.Error))
+
+		if resp.Error == "already_archived" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
@@ -62,8 +69,11 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ConversationsCreateActivityName, slackAPIError(resp, resp.Error))
 
-		if resp.Error == "name_taken" { // Let the caller decide how to handle this error.
+		if resp.Error == "name_taken" {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
@@ -150,7 +160,10 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ConversationsInviteActivityName, slackAPIError(resp, resp.Error))
 
-		if resp.Error == "already_in_channel" { // Let the caller decide how to handle this error.
+		if resp.Error == "already_in_channel" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
@@ -195,7 +208,7 @@ func (a *API) ConversationsKickActivity(ctx context.Context, req slack.Conversat
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
 		}
 		if strings.Contains(resp.Error, "invalid") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
