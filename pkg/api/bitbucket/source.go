@@ -16,10 +16,10 @@ func (a *API) SourceGetFileActivity(ctx context.Context, req bitbucket.SourceGet
 	t := time.Now().UTC()
 
 	query := url.Values{}
-	if len(req.Filter) > 0 {
+	if req.Filter != "" {
 		query.Set("q", req.Filter)
 	}
-	if len(req.Sort) > 0 {
+	if req.Sort != "" {
 		query.Set("sort", req.Sort)
 	}
 

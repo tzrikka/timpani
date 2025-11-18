@@ -3,6 +3,7 @@ package bitbucket
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
@@ -14,7 +15,12 @@ func (a *API) CommitsDiffActivity(ctx context.Context, req bitbucket.CommitsDiff
 	path := fmt.Sprintf("/repositories/%s/%s/diff/%s", req.Workspace, req.RepoSlug, req.Spec)
 	t := time.Now().UTC()
 
-	resp, err := a.httpGetText(ctx, req.ThrippyLinkID, path, nil)
+	query := url.Values{}
+	if req.Path != "" {
+		query.Set("path", req.Path)
+	}
+
+	resp, err := a.httpGetText(ctx, req.ThrippyLinkID, path, query)
 	if err != nil {
 		metrics.IncrementAPICallCounter(t, bitbucket.CommitsDiffActivityName, err)
 		return "", err
