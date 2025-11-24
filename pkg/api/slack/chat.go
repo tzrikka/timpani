@@ -29,8 +29,7 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, slackAPIError(resp, resp.Error))
 
-		switch resp.Error {
-		case "cant_delete_message":
+		if resp.Error == "cant_delete_message" {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
 		}
 		if strings.Contains(resp.Error, "invalid") {
