@@ -14,6 +14,7 @@ func TestHTTPRequest(t *testing.T) {
 		startServer bool
 		httpMethod  string
 		accept      string
+		contentType string
 		body        any
 		wantErr     bool
 	}{
@@ -22,6 +23,7 @@ func TestHTTPRequest(t *testing.T) {
 			startServer: true,
 			httpMethod:  http.MethodGet,
 			accept:      AcceptJSON,
+			contentType: ContentJSON,
 			body:        url.Values{},
 		},
 		{
@@ -29,14 +31,16 @@ func TestHTTPRequest(t *testing.T) {
 			startServer: true,
 			httpMethod:  http.MethodPost,
 			accept:      AcceptJSON,
+			contentType: ContentJSON,
 			body:        "body",
 		},
 		{
-			name:       "server_not_responding",
-			httpMethod: http.MethodPost,
-			accept:     AcceptJSON,
-			body:       "body",
-			wantErr:    true,
+			name:        "server_not_responding",
+			httpMethod:  http.MethodPost,
+			accept:      AcceptJSON,
+			contentType: ContentJSON,
+			body:        "body",
+			wantErr:     true,
 		},
 	}
 
@@ -49,9 +53,9 @@ func TestHTTPRequest(t *testing.T) {
 			}
 			defer s.Close()
 
-			got, _, err := HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.body)
+			got, _, err := HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.contentType, tt.body)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTTPRequest() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HTTPRequest() error = %v, want %v", err, tt.wantErr)
 				return
 			}
 			if tt.startServer && string(got) != want {

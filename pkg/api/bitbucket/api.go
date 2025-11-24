@@ -61,7 +61,7 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 		accept = client.AcceptText
 	}
 
-	rawResp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, queryOrJSONBody)
+	rawResp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, client.ContentJSON, queryOrJSONBody)
 	if err != nil {
 		l.Error("HTTP request error", "method", method, "error", err, "url", apiURL)
 		return err

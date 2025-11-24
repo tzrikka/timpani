@@ -23,17 +23,19 @@ import (
 
 const (
 	Timeout = 3 * time.Second
-	MaxSize = 4 << 20 // 4 MiB.
+	MaxSize = 3 << 20 // 3 MiB.
 
 	AcceptJSON = "application/json"
 	AcceptText = "text/plain"
+
+	ContentForm = "application/x-www-form-urlencoded"
+	ContentJSON = "application/json; charset=utf-8"
 )
 
 // HTTPRequest sends an HTTP GET or POST request to an external API service.
 //
-// For GET requests, the queryOrJSONBody parameter is expected to be
-// [url.Values]. For other request methods (e.g. POST), it should be
-// any struct that can be encoded as JSON.
+// For GET requests, the queryOrBody parameter is expected to be [url.Values]. For other
+// request methods (e.g. POST), it should be any struct that can be encoded as JSON.
 //
 // Some errors (failure to construct a request or decode a response body)
 // are returned as non-retryable [temporal.ApplicationError]s.
@@ -42,76 +44,75 @@ const (
 // contains the number of seconds to wait before retrying the request.
 //
 // [temporal.ApplicationError]: https://pkg.go.dev/go.temporal.io/temporal#ApplicationError
-func HTTPRequest(ctx context.Context, httpMethod, u, authToken, accept string, queryOrJSONBody any) ([]byte, int, error) {
-	req, cancel, err := constructRequest(ctx, httpMethod, u, authToken, accept, queryOrJSONBody)
+func HTTPRequest(ctx context.Context, method, apiURL, authToken, accept, contentType string, queryOrBody any) ([]byte, int, error) {
+	// Construct the request.
+	if method == http.MethodGet || method == http.MethodDelete {
+		if query, ok := queryOrBody.(url.Values); ok && len(query) > 0 {
+			apiURL = fmt.Sprintf("%s?%s", apiURL, query.Encode())
+		}
+	}
+
+	reqBody, err := requestBody(method, queryOrBody)
 	if err != nil {
 		return nil, 0, err
 	}
+
+	ctx, cancel := context.WithTimeout(ctx, Timeout)
 	defer cancel()
 
+	req, err := http.NewRequestWithContext(ctx, method, apiURL, reqBody)
+	if err != nil {
+		msg := "failed to construct HTTP request: " + err.Error()
+		return nil, 0, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
+	}
+
+	if pair, found := strings.CutPrefix(authToken, "Basic "); found {
+		if user, pass, found := strings.Cut(pair, ":"); found {
+			req.SetBasicAuth(user, pass)
+		}
+	} else if authToken != "" {
+		req.Header.Set("Authorization", "Bearer "+authToken)
+	}
+
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+	}
+	if method != http.MethodGet && method != http.MethodDelete {
+		req.Header.Set("Content-Type", contentType)
+	}
+
+	// Send the request, and read the response.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to send HTTP request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxSize))
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, MaxSize))
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to read HTTP response body: %w", err)
 	}
 
-	return parseResponse(resp, body)
+	return parseResponse(resp, respBody)
 }
 
-func constructRequest(ctx context.Context, method, u, token, accept string, queryOrJSONBody any) (*http.Request, context.CancelFunc, error) {
-	if method == http.MethodGet || method != http.MethodDelete {
-		if query, ok := queryOrJSONBody.(url.Values); ok && len(query) > 0 {
-			u = fmt.Sprintf("%s?%s", u, query.Encode())
-		}
-	}
-
-	b, err := requestBody(method, queryOrJSONBody)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, Timeout)
-	req, err := http.NewRequestWithContext(ctx, method, u, b)
-	if err != nil {
-		cancel()
-		msg := "failed to construct HTTP request: " + err.Error()
-		return nil, nil, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
-	}
-
-	if pair, found := strings.CutPrefix(token, "Basic "); found {
-		if user, pass, found := strings.Cut(pair, ":"); found {
-			req.SetBasicAuth(user, pass)
-		}
-	} else if token != "" {
-		req.Header.Set("Authorization", "Bearer "+token)
-	}
-
-	req.Header.Set("Accept", accept)
-	if method != http.MethodGet {
-		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	}
-
-	return req, cancel, nil
-}
-
-func requestBody(method string, queryOrJSONBody any) (io.Reader, error) {
+func requestBody(method string, queryOrBody any) (io.Reader, error) {
 	if method == http.MethodGet || method == http.MethodDelete {
 		return http.NoBody, nil
 	}
 
-	// HTTP POST or PUT.
-	b, err := json.Marshal(queryOrJSONBody)
+	if rawBytes, ok := queryOrBody.([]byte); ok {
+		return bytes.NewReader(rawBytes), nil
+	}
+
+	// HTTP POST or PUT with a JSON body.
+	jsonBody, err := json.Marshal(queryOrBody)
 	if err != nil {
 		msg := "failed to encode HTTP request's JSON body: " + err.Error()
 		return nil, temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err)
 	}
 
-	return bytes.NewReader(b), nil
+	return bytes.NewReader(jsonBody), nil
 }
 
 func parseResponse(resp *http.Response, body []byte) ([]byte, int, error) {

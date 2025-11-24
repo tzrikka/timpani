@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/http/client"
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
@@ -97,7 +98,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
-	expected := []string{"application/json", "application/x-www-form-urlencoded"}
+	expected := []string{"application/json", client.ContentForm}
 	ct := r.Headers.Get(contentTypeHeader)
 
 	if !slices.Contains(expected, ct) {

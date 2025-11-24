@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/pkg/http/client"
 	"github.com/tzrikka/timpani/pkg/metrics"
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
@@ -38,7 +39,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	}
 
 	// If the payload is a web form, convert it to JSON.
-	if r.Headers.Get(contentTypeHeader) == "application/x-www-form-urlencoded" {
+	if r.Headers.Get(contentTypeHeader) == client.ContentForm {
 		reader := strings.NewReader(r.WebForm.Get("payload"))
 		if err := json.NewDecoder(reader).Decode(&r.JSONPayload); err != nil {
 			l.Err(err).Msg("failed to extract and decode JSON payload from form data")
@@ -57,7 +58,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 }
 
 func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
-	expected := []string{"application/json", "application/x-www-form-urlencoded"}
+	expected := []string{"application/json", client.ContentForm}
 	ct := r.Headers.Get(contentTypeHeader)
 
 	if !slices.Contains(expected, ct) {

@@ -60,7 +60,7 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		return err
 	}
 
-	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, query)
+	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, "", query)
 	if err != nil {
 		if retryAfter > 0 {
 			l.Warn("throttling HTTP GET request", "retry_after", retryAfter, "url", apiURL)
@@ -89,7 +89,7 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		return err
 	}
 
-	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, jsonBody)
+	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, client.ContentJSON, jsonBody)
 	if err != nil {
 		if retryAfter > 0 {
 			l.Warn("throttling HTTP POST request", "retry_after", retryAfter, "url", apiURL)
@@ -108,6 +108,19 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 	}
 
 	l.Info("sent HTTP POST request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	return nil
+}
+
+// httpPostFile is an HTTP POST wrapper of [client.HTTPRequest] for uploading files to Slack.
+func (a *API) httpPostFile(ctx context.Context, uploadURL, contentType string, content []byte) error {
+	l := activity.GetLogger(ctx)
+
+	if resp, _, err := client.HTTPRequest(ctx, http.MethodPost, uploadURL, "", "", contentType, content); err != nil {
+		l.Error("HTTP POST request error", "error", err, "url", uploadURL, "content_type", contentType, "response", string(resp))
+		return err
+	}
+
+	l.Info("sent HTTP POST request", "url", uploadURL, "content_type", contentType, "length", len(content))
 	return nil
 }
 
