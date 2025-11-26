@@ -92,6 +92,49 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 	return err
 }
 
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-diffstat-get
+func (a *API) PullRequestsDiffStatActivity(ctx context.Context, req bitbucket.PullRequestsDiffStatRequest) (*bitbucket.PullRequestsDiffStatResponse, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/diffstat", req.Workspace, req.RepoSlug, req.PullRequestID)
+	query := paginatedQuery(req.PageLen, req.Page)
+
+	var resp *bitbucket.PullRequestsDiffStatResponse
+	diffstats := []bitbucket.DiffStat{}
+	next := "start"
+
+	for next != "" {
+		t := time.Now().UTC()
+		resp = new(bitbucket.PullRequestsDiffStatResponse)
+		if err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp); err != nil {
+			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffStatActivityName, err)
+			return nil, err
+		}
+
+		if req.AllPages {
+			diffstats = append(diffstats, resp.Values...)
+			next = resp.Next
+			if next != "" {
+				u, err := url.Parse(next)
+				if err != nil {
+					metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffStatActivityName, err)
+					return nil, fmt.Errorf("invalid next page URL %q: %w", next, err)
+				}
+				path = strings.TrimPrefix(u.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
+				query = u.Query()
+			}
+		} else {
+			next = ""
+		}
+
+		metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffStatActivityName, nil)
+	}
+
+	if req.AllPages {
+		resp.Values = diffstats
+	}
+
+	return resp, nil
+}
+
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-activity-get
 func (a *API) PullRequestsListActivityLogActivity(ctx context.Context, req bitbucket.PullRequestsListActivityLogRequest) (*bitbucket.PullRequestsListActivityLogResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/activity", req.Workspace, req.RepoSlug, req.PullRequestID)
