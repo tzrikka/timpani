@@ -9,34 +9,36 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// UsersGetActivity is based on:
 // https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get
 func (a *API) UsersGetActivity(ctx context.Context, req jira.UsersGetRequest) (*jira.UsersGetResponse, error) {
-	t := time.Now().UTC()
 	query := url.Values{}
 	query.Set("accountId", req.AccountID)
 
+	t := time.Now().UTC()
 	resp := new(jira.UsersGetResponse)
-	if err := a.httpGet(ctx, "user", query, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, err)
+	err := a.httpGet(ctx, "user", query, resp)
+	metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, err)
+
+	if err != nil {
 		return nil, err
 	}
-
-	metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, nil)
 	return resp, nil
 }
 
+// UsersSearchActivity is based on:
 // https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get
 func (a *API) UsersSearchActivity(ctx context.Context, req jira.UsersSearchRequest) ([]jira.User, error) {
-	t := time.Now().UTC()
 	query := url.Values{}
 	query.Set("query", req.Query)
 
+	t := time.Now().UTC()
 	var resp []jira.User
-	if err := a.httpGet(ctx, "user/search", query, &resp); err != nil {
-		metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, err)
+	err := a.httpGet(ctx, "user/search", query, &resp)
+	metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, err)
+
+	if err != nil {
 		return nil, err
 	}
-
-	metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, nil)
 	return resp, nil
 }

@@ -24,13 +24,13 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
 
 	registerActivity(w, a.CommitsDiffActivity, bitbucket.CommitsDiffActivityName)
-	registerActivity(w, a.CommitsDiffStatActivity, bitbucket.CommitsDiffStatActivityName)
+	registerActivity(w, a.CommitsDiffstatActivity, bitbucket.CommitsDiffstatActivityName)
 
 	registerActivity(w, a.PullRequestsApproveActivity, bitbucket.PullRequestsApproveActivityName)
 	registerActivity(w, a.PullRequestsCreateCommentActivity, bitbucket.PullRequestsCreateCommentActivityName)
 	registerActivity(w, a.PullRequestsDeclineActivity, bitbucket.PullRequestsDeclineActivityName)
 	registerActivity(w, a.PullRequestsDeleteCommentActivity, bitbucket.PullRequestsDeleteCommentActivityName)
-	registerActivity(w, a.PullRequestsDiffStatActivity, bitbucket.PullRequestsDiffStatActivityName)
+	registerActivity(w, a.PullRequestsDiffstatActivity, bitbucket.PullRequestsDiffstatActivityName)
 	registerActivity(w, a.PullRequestsListActivityLogActivity, bitbucket.PullRequestsListActivityLogActivityName)
 	registerActivity(w, a.PullRequestsListCommitsActivity, bitbucket.PullRequestsListCommitsActivityName)
 	registerActivity(w, a.PullRequestsListForCommitActivity, bitbucket.PullRequestsListForCommitActivityName)

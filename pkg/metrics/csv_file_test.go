@@ -32,7 +32,7 @@ func TestIncrementWebhookEventCounter(t *testing.T) {
 	}
 
 	got2 := string(f)
-	want2 := fmt.Sprintf("%s,event,200\n", now.Format(time.RFC3339))
+	want2 := now.Format(time.RFC3339) + ",event,200\n"
 	if got2 != want2 {
 		t.Errorf("file content = %q, want %q", got2, want2)
 	}

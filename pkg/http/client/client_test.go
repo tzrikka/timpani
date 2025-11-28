@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"testing"
 )
 
@@ -140,7 +141,7 @@ func TestParseResponse(t *testing.T) {
 			}
 			if tt.retryAfter > 0 {
 				resp.Header = make(http.Header)
-				resp.Header.Set("Retry-After", fmt.Sprintf("%d", tt.retryAfter))
+				resp.Header.Set("Retry-After", strconv.Itoa(tt.retryAfter))
 			}
 
 			_, gotWait, err := parseResponse(resp, tt.body)

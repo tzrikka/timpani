@@ -131,7 +131,7 @@ func parseResponse(resp *http.Response, body []byte) ([]byte, int, error) {
 	}
 
 	if len(body) > 0 {
-		msg += fmt.Sprintf(": %s", string(body))
+		msg += ": " + string(body)
 	}
 
 	return nil, retryAfter, errors.New(msg)

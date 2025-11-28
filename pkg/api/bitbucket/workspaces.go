@@ -11,22 +11,23 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// WorkspacesListMembersActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
 func (a *API) WorkspacesListMembersActivity(ctx context.Context, req bitbucket.WorkspacesListMembersRequest) (*bitbucket.WorkspacesListMembersResponse, error) {
 	path := fmt.Sprintf("/workspaces/%s/members", req.Workspace)
-	t := time.Now().UTC()
 
 	query := url.Values{}
 	if len(req.EmailsFilter) > 0 {
 		query.Set("q", fmt.Sprintf(`user.email IN ("%s")`, strings.Join(req.EmailsFilter, `","`)))
 	}
 
+	t := time.Now().UTC()
 	resp := new(bitbucket.WorkspacesListMembersResponse)
-	if err := a.httpGet(ctx, "", path, query, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, err)
+	err := a.httpGet(ctx, "", path, query, resp)
+	metrics.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, err)
+
+	if err != nil {
 		return nil, err
 	}
-
-	metrics.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, nil)
 	return resp, nil
 }
