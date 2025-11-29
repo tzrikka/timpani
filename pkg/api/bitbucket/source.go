@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
+
+	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
 	"github.com/tzrikka/timpani/pkg/metrics"
@@ -27,6 +30,9 @@ func (a *API) SourceGetFileActivity(ctx context.Context, req bitbucket.SourceGet
 	metrics.IncrementAPICallCounter(t, bitbucket.SourceGetFileActivityName, err)
 
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "404 Not Found") {
+			return "", temporal.NewNonRetryableApplicationError(err.Error(), "BitbucketAPIError", err, req)
+		}
 		return "", err
 	}
 	return resp.String(), nil
