@@ -7,7 +7,7 @@ require (
 	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/rs/zerolog v1.34.0
 	github.com/tzrikka/thrippy-api v1.4.2
-	github.com/tzrikka/timpani-api v1.5.0
+	github.com/tzrikka/timpani-api v1.5.1
 	github.com/tzrikka/xdg v1.3.3
 	github.com/urfave/cli-altsrc/v3 v3.1.0
 	github.com/urfave/cli/v3 v3.6.1
