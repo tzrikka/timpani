@@ -92,6 +92,13 @@ func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest)
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.UsersInfoActivityName, slackAPIError(resp, resp.Error))
+
+		if resp.Error == "user_not_found" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.User, resp)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.User, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
