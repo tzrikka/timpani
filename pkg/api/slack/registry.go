@@ -57,6 +57,7 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	registerActivity(w, a.ConversationsSetTopicActivity, slack.ConversationsSetTopicActivityName)
 
 	registerActivity(w, a.FilesCompleteUploadExternalActivity, slack.FilesCompleteUploadExternalActivityName)
+	registerActivity(w, a.FilesDeleteActivity, slack.FilesDeleteActivityName)
 	registerActivity(w, a.FilesGetUploadURLExternalActivity, slack.FilesGetUploadURLExternalActivityName)
 	registerActivity(w, a.TimpaniUploadExternalActivity, slack.TimpaniUploadExternalActivityName)
 

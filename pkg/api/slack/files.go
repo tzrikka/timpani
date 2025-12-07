@@ -68,3 +68,21 @@ func (a *API) FilesCompleteUploadExternalActivity(ctx context.Context, req slack
 	metrics.IncrementAPICallCounter(t, slack.FilesCompleteUploadExternalActivityName, nil)
 	return resp, nil
 }
+
+// https://docs.slack.dev/reference/methods/files.delete/
+func (a *API) FilesDeleteActivity(ctx context.Context, req slack.FilesDeleteRequest) (*slack.FilesDeleteResponse, error) {
+	t := time.Now().UTC()
+	resp := new(slack.FilesDeleteResponse)
+	if err := a.httpPost(ctx, slack.FilesDeleteActivityName, req, resp); err != nil {
+		metrics.IncrementAPICallCounter(t, slack.FilesDeleteActivityName, err)
+		return nil, err
+	}
+
+	if !resp.OK {
+		metrics.IncrementAPICallCounter(t, slack.FilesDeleteActivityName, slackAPIError(resp, resp.Error))
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+
+	metrics.IncrementAPICallCounter(t, slack.FilesDeleteActivityName, nil)
+	return resp, nil
+}
