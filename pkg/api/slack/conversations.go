@@ -374,7 +374,10 @@ func (a *API) ConversationsRepliesActivity(ctx context.Context, req slack.Conver
 }
 
 // https://docs.slack.dev/reference/methods/conversations.setPurpose/
-func (a *API) ConversationsSetPurposeActivity(ctx context.Context, req slack.ConversationsSetPurposeRequest) (*slack.ConversationsSetPurposeResponse, error) {
+func (a *API) ConversationsSetPurposeActivity(
+	ctx context.Context,
+	req slack.ConversationsSetPurposeRequest,
+) (*slack.ConversationsSetPurposeResponse, error) {
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsSetPurposeResponse)
 	if err := a.httpPost(ctx, slack.ConversationsSetPurposeActivityName, req, resp); err != nil {
@@ -392,7 +395,10 @@ func (a *API) ConversationsSetPurposeActivity(ctx context.Context, req slack.Con
 }
 
 // https://docs.slack.dev/reference/methods/conversations.setTopic/
-func (a *API) ConversationsSetTopicActivity(ctx context.Context, req slack.ConversationsSetTopicRequest) (*slack.ConversationsSetTopicResponse, error) {
+func (a *API) ConversationsSetTopicActivity(
+	ctx context.Context,
+	req slack.ConversationsSetTopicRequest,
+) (*slack.ConversationsSetTopicResponse, error) {
 	t := time.Now().UTC()
 	resp := new(slack.ConversationsSetTopicResponse)
 	if err := a.httpPost(ctx, slack.ConversationsSetTopicActivityName, req, resp); err != nil {

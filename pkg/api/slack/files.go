@@ -15,7 +15,10 @@ import (
 //
 // Note: according to Slack documentation, this should be an HTTP POST request, but
 // that doesn't work in tests ("invalid_arguments" API error), so using GET instead.
-func (a *API) FilesGetUploadURLExternalActivity(ctx context.Context, req slack.FilesGetUploadURLExternalRequest) (*slack.FilesGetUploadURLExternalResponse, error) {
+func (a *API) FilesGetUploadURLExternalActivity(
+	ctx context.Context,
+	req slack.FilesGetUploadURLExternalRequest,
+) (*slack.FilesGetUploadURLExternalResponse, error) {
 	query := url.Values{}
 	query.Set("length", strconv.Itoa(req.Length))
 	query.Set("filename", req.Filename)
@@ -52,7 +55,10 @@ func (a *API) TimpaniUploadExternalActivity(ctx context.Context, req slack.Timpa
 }
 
 // https://docs.slack.dev/reference/methods/files.completeUploadExternal/
-func (a *API) FilesCompleteUploadExternalActivity(ctx context.Context, req slack.FilesCompleteUploadExternalRequest) (*slack.FilesCompleteUploadExternalResponse, error) {
+func (a *API) FilesCompleteUploadExternalActivity(
+	ctx context.Context,
+	req slack.FilesCompleteUploadExternalRequest,
+) (*slack.FilesCompleteUploadExternalResponse, error) {
 	t := time.Now().UTC()
 	resp := new(slack.FilesCompleteUploadExternalResponse)
 	if err := a.httpPost(ctx, slack.FilesCompleteUploadExternalActivityName, req, resp); err != nil {

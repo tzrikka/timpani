@@ -13,7 +13,10 @@ import (
 
 // WorkspacesListMembersActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-workspaces/#api-workspaces-workspace-members-get
-func (a *API) WorkspacesListMembersActivity(ctx context.Context, req bitbucket.WorkspacesListMembersRequest) (*bitbucket.WorkspacesListMembersResponse, error) {
+func (a *API) WorkspacesListMembersActivity(
+	ctx context.Context,
+	req bitbucket.WorkspacesListMembersRequest,
+) (*bitbucket.WorkspacesListMembersResponse, error) {
 	path := fmt.Sprintf("/workspaces/%s/members", req.Workspace)
 
 	query := url.Values{}

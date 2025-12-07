@@ -74,7 +74,7 @@ formatters:
     gofumpt:
       extra-rules: true
     golines:
-      max-len: 200
+      max-len: 150
 
 issues:
   max-issues-per-linter: 0

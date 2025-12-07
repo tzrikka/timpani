@@ -46,7 +46,10 @@ func (a *API) PullRequestsApproveActivity(ctx context.Context, req bitbucket.Pul
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-post
-func (a *API) PullRequestsCreateCommentActivity(ctx context.Context, req bitbucket.PullRequestsCreateCommentRequest) (*bitbucket.PullRequestsCreateCommentResponse, error) {
+func (a *API) PullRequestsCreateCommentActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsCreateCommentRequest,
+) (*bitbucket.PullRequestsCreateCommentResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments", req.Workspace, req.RepoSlug, req.PullRequestID)
 
 	t := time.Now().UTC()
@@ -93,7 +96,10 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-diffstat-get
-func (a *API) PullRequestsDiffstatActivity(ctx context.Context, req bitbucket.PullRequestsDiffstatRequest) (*bitbucket.PullRequestsDiffstatResponse, error) {
+func (a *API) PullRequestsDiffstatActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsDiffstatRequest,
+) (*bitbucket.PullRequestsDiffstatResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/diffstat", req.Workspace, req.RepoSlug, req.PullRequestID)
 	query := paginatedQuery(req.PageLen, req.Page)
 
@@ -121,7 +127,10 @@ func (a *API) PullRequestsDiffstatActivity(ctx context.Context, req bitbucket.Pu
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-activity-get
-func (a *API) PullRequestsListActivityLogActivity(ctx context.Context, req bitbucket.PullRequestsListActivityLogRequest) (*bitbucket.PullRequestsListActivityLogResponse, error) {
+func (a *API) PullRequestsListActivityLogActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsListActivityLogRequest,
+) (*bitbucket.PullRequestsListActivityLogResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/activity", req.Workspace, req.RepoSlug, req.PullRequestID)
 	query := paginatedQuery(req.PageLen, req.Page)
 
@@ -150,7 +159,10 @@ func (a *API) PullRequestsListActivityLogActivity(ctx context.Context, req bitbu
 
 // PullRequestsListCommitsActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-commits-get
-func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket.PullRequestsListCommitsRequest) (*bitbucket.PullRequestsListCommitsResponse, error) {
+func (a *API) PullRequestsListCommitsActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsListCommitsRequest,
+) (*bitbucket.PullRequestsListCommitsResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/commits", req.Workspace, req.RepoSlug, req.PullRequestID)
 	query := paginatedQuery(req.PageLen, req.Page)
 
@@ -178,7 +190,10 @@ func (a *API) PullRequestsListCommitsActivity(ctx context.Context, req bitbucket
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-commit-commit-pullrequests-get
-func (a *API) PullRequestsListForCommitActivity(ctx context.Context, req bitbucket.PullRequestsListForCommitRequest) (*bitbucket.PullRequestsListForCommitResponse, error) {
+func (a *API) PullRequestsListForCommitActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsListForCommitRequest,
+) (*bitbucket.PullRequestsListForCommitResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/commit/%s/pullrequests", req.Workspace, req.RepoSlug, req.Commit)
 	query := paginatedQuery(req.PageLen, req.Page)
 
