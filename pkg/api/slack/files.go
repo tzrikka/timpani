@@ -5,7 +5,10 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
+
+	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/pkg/metrics"
@@ -86,6 +89,13 @@ func (a *API) FilesDeleteActivity(ctx context.Context, req slack.FilesDeleteRequ
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.FilesDeleteActivityName, slackAPIError(resp, resp.Error))
+
+		if resp.Error == "file_not_found" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.File)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
