@@ -118,6 +118,10 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 
 // https://docs.slack.dev/reference/methods/chat.update/
 func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
+	if len(req.Text) > 4000 {
+		req.Text = req.Text[:4000] // Prevent "msg_too_long" error.
+	}
+
 	t := time.Now().UTC()
 	resp := new(slack.ChatUpdateResponse)
 	if err := a.httpPost(ctx, slack.ChatUpdateActivityName, req, resp); err != nil {
