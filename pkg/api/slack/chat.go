@@ -30,7 +30,7 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, slackAPIError(resp, resp.Error))
 
 		if resp.Error == "cant_delete_message" {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
 		}
 		if strings.Contains(resp.Error, "invalid") {
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
@@ -131,6 +131,13 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 
 	if !resp.OK {
 		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, slackAPIError(resp, resp.Error))
+
+		if resp.Error == "cant_update_message" {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
+		}
+		if strings.Contains(resp.Error, "invalid") {
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
+		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 
