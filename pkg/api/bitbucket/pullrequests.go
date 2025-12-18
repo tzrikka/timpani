@@ -126,6 +126,21 @@ func (a *API) PullRequestsDiffstatActivity(
 	return resp, nil
 }
 
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-get
+func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullRequestsGetRequest) (map[string]any, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s", req.Workspace, req.RepoSlug, req.PullRequestID)
+
+	t := time.Now().UTC()
+	resp := map[string]any{}
+	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsGetActivityName, err)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-activity-get
 func (a *API) PullRequestsListActivityLogActivity(
 	ctx context.Context,
@@ -247,6 +262,21 @@ func (a *API) PullRequestsUnapproveActivity(ctx context.Context, req bitbucket.P
 	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUnapproveActivityName, err)
 
 	return err
+}
+
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-put
+func (a *API) PullRequestsUpdateActivity(ctx context.Context, req bitbucket.PullRequestsUpdateRequest) (map[string]any, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s", req.Workspace, req.RepoSlug, req.PullRequestID)
+
+	t := time.Now().UTC()
+	resp := map[string]any{}
+	err := a.httpPut(ctx, req.ThrippyLinkID, path, req.PullRequest, &resp)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateActivityName, err)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-put

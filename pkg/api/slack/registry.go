@@ -66,6 +66,9 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	registerActivity(w, a.ReactionsListActivity, slack.ReactionsListActivityName)
 	registerActivity(w, a.ReactionsRemoveActivity, slack.ReactionsRemoveActivityName)
 
+	registerActivity(w, a.UserGroupsListActivity, slack.UserGroupsListActivityName)
+	registerActivity(w, a.UserGroupsUsersListActivity, slack.UserGroupsUsersListActivityName)
+
 	registerActivity(w, a.UsersConversationsActivity, slack.UsersConversationsActivityName)
 	registerActivity(w, a.UsersGetPresenceActivity, slack.UsersGetPresenceActivityName)
 	registerActivity(w, a.UsersInfoActivity, slack.UsersInfoActivityName)

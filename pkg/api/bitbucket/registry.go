@@ -31,11 +31,13 @@ func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
 	registerActivity(w, a.PullRequestsDeclineActivity, bitbucket.PullRequestsDeclineActivityName)
 	registerActivity(w, a.PullRequestsDeleteCommentActivity, bitbucket.PullRequestsDeleteCommentActivityName)
 	registerActivity(w, a.PullRequestsDiffstatActivity, bitbucket.PullRequestsDiffstatActivityName)
+	registerActivity(w, a.PullRequestsGetActivity, bitbucket.PullRequestsGetActivityName)
 	registerActivity(w, a.PullRequestsListActivityLogActivity, bitbucket.PullRequestsListActivityLogActivityName)
 	registerActivity(w, a.PullRequestsListCommitsActivity, bitbucket.PullRequestsListCommitsActivityName)
 	registerActivity(w, a.PullRequestsListForCommitActivity, bitbucket.PullRequestsListForCommitActivityName)
 	registerActivity(w, a.PullRequestsMergeActivity, bitbucket.PullRequestsMergeActivityName)
 	registerActivity(w, a.PullRequestsUnapproveActivity, bitbucket.PullRequestsUnapproveActivityName)
+	registerActivity(w, a.PullRequestsUpdateActivity, bitbucket.PullRequestsUpdateActivityName)
 	registerActivity(w, a.PullRequestsUpdateCommentActivity, bitbucket.PullRequestsUpdateCommentActivityName)
 
 	registerActivity(w, a.SourceGetFileActivity, bitbucket.SourceGetFileActivityName)
