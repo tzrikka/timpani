@@ -58,6 +58,9 @@ linters:
       locale: US
     predeclared:
       qualified-name: true
+    sloglint:
+      attr-only: true
+      key-naming-case: snake
 
 formatters:
   enable:
