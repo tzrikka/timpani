@@ -103,7 +103,7 @@ func runCase(i int) {
 		}
 
 		if err != nil {
-			l.Error("echo error", slog.String("error", err.Error()))
+			l.Error("echo error", slog.Any("error", err))
 			conn.Close(websocket.StatusNormalClosure)
 		}
 	}
