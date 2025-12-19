@@ -6,9 +6,8 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"io"
+	"log/slog"
 	"testing"
-
-	"github.com/rs/zerolog"
 )
 
 type benchmark struct {
@@ -93,8 +92,7 @@ func BenchmarkReadMessage(b *testing.B) {
 		},
 	}
 
-	l := zerolog.Nop()
-	c := &Conn{logger: &l}
+	c := &Conn{logger: slog.Default()}
 
 	for _, bb := range benchmarks {
 		b.Run(bb.name, func(b *testing.B) {

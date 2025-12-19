@@ -4,26 +4,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"strings"
 
-	"github.com/rs/zerolog"
-
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
 func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) (string, error) {
-	l := zerolog.Ctx(ctx)
+	l := logger.FromContext(ctx)
 
 	signalName, payload, err := parsePayload(r.JSONPayload, r.WebForm)
 	if err != nil {
-		l.Err(err).Msg("failed to decode event payload")
+		l.Error("failed to decode event payload", slog.Any("error", err))
 		return "", err
 	}
 
 	if err := temporal.Signal(ctx, r.Temporal, signalName, payload); err != nil {
-		l.Err(err).Msg("failed to send Temporal signal")
+		l.Error("failed to send Temporal signal", slog.Any("error", err))
 		return signalName, err // Return signal name for monitoring & debugging purposes.
 	}
 
@@ -31,14 +31,16 @@ func dispatchFromWebhook(ctx context.Context, r listeners.RequestData) (string, 
 }
 
 func dispatchFromWebSocket(ctx context.Context, tc listeners.TemporalConfig, payload map[string]any) error {
+	l := logger.FromContext(ctx)
+
 	signalName, payload, err := parsePayload(payload, nil)
 	if err != nil {
-		zerolog.Ctx(ctx).Err(err).Msg("failed to decode event payload")
+		l.Error("failed to decode event payload", slog.Any("error", err))
 		return err
 	}
 
 	if err := temporal.Signal(ctx, tc, signalName, payload); err != nil {
-		zerolog.Ctx(ctx).Err(err).Msg("failed to send Temporal signal")
+		l.Error("failed to send Temporal signal", slog.Any("error", err))
 		return err
 	}
 

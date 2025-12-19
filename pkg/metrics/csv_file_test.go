@@ -3,11 +3,10 @@ package metrics_test
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"testing"
 	"time"
-
-	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
@@ -21,7 +20,7 @@ func TestIncrementWebhookEventCounter(t *testing.T) {
 	}
 
 	want1 := 200
-	got1 := metrics.IncrementWebhookEventCounter(zerolog.Nop(), now, "event", want1)
+	got1 := metrics.IncrementWebhookEventCounter(slog.Default(), now, "event", want1)
 	if got1 != want1 {
 		t.Errorf("IncrementWebhookEventCounter() = %v, want %v", got1, want1)
 	}

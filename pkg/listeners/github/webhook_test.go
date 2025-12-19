@@ -1,10 +1,9 @@
 package github
 
 import (
+	"log/slog"
 	"net/http"
 	"testing"
-
-	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
 )
@@ -49,7 +48,7 @@ func TestCheckContentTypeHeader(t *testing.T) {
 				},
 			}
 
-			if got := checkContentTypeHeader(zerolog.Nop(), r); got != tt.want {
+			if got := checkContentTypeHeader(slog.Default(), r); got != tt.want {
 				t.Errorf("checkContentTypeHeader() = %d, want %d", got, tt.want)
 			}
 		})
@@ -98,7 +97,7 @@ func TestCheckSignatureHeader(t *testing.T) {
 				RawPayload: []byte("body"),
 			}
 
-			if got := CheckSignatureHeader(zerolog.Nop(), r); got != tt.want {
+			if got := CheckSignatureHeader(slog.Default(), r); got != tt.want {
 				t.Errorf("checkSignatureHeader() = %d, want %d", got, tt.want)
 			}
 		})

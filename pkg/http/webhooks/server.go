@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -14,12 +15,11 @@ import (
 	"time"
 
 	"github.com/lithammer/shortuuid/v4"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v3"
 	"google.golang.org/grpc/credentials"
 
 	intlis "github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/internal/thrippy"
 	"github.com/tzrikka/timpani/pkg/listeners"
 )
@@ -40,7 +40,7 @@ type httpServer struct {
 	temporal intlis.TemporalConfig // Destination for event notifications.
 }
 
-func NewHTTPServer(cmd *cli.Command) *httpServer {
+func NewHTTPServer(ctx context.Context, cmd *cli.Command) *httpServer {
 	// Enumerate all configured Thrippy links - see also the initialization
 	// of non-webhook connections in [httpServer.ConnectLinks].
 	links := map[string]bool{}
@@ -56,7 +56,7 @@ func NewHTTPServer(cmd *cli.Command) *httpServer {
 		thrippyURL:   baseURL(cmd.String("thrippy-http-address")),
 
 		thrippyGRPCAddr: cmd.String("thrippy-grpc-address"),
-		thrippyCreds:    thrippy.SecureCreds(cmd),
+		thrippyCreds:    thrippy.SecureCreds(ctx, cmd),
 
 		temporal: intlis.TemporalConfig{
 			HostPort:  cmd.String("temporal-address"),
@@ -106,7 +106,7 @@ func (s *httpServer) Run() {
 	http.HandleFunc("POST /webhook/{id...}", s.webhookHandler)
 
 	if s.thrippyURL != nil {
-		log.Info().Msgf("HTTP passthrough for Thrippy OAuth callbacks: %s", s.thrippyURL)
+		slog.Info("HTTP passthrough for Thrippy OAuth callbacks: " + s.thrippyURL.String())
 		http.HandleFunc("GET /callback", s.thrippyHandler)
 		http.HandleFunc("GET /start", s.thrippyHandler)
 		http.HandleFunc("POST /start", s.thrippyHandler)
@@ -119,27 +119,27 @@ func (s *httpServer) Run() {
 		WriteTimeout: Timeout,
 	}
 
-	log.Info().Msgf("HTTP server listening on port %d", s.httpPort)
+	slog.Info("HTTP server listening on port " + strconv.Itoa(s.httpPort))
 	_ = server.ListenAndServe()
 }
 
 // webhookHandler checks and processes incoming asynchronous
 // event notifications over HTTP from third-party services.
 func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
-	l := log.With().Str("http_method", r.Method).Str("url_path", r.URL.EscapedPath()).Logger()
+	l := slog.With(slog.String("http_method", r.Method), slog.String("url_path", r.URL.EscapedPath()))
 	if r.Method == http.MethodPost {
-		l = l.With().Str("content_type", r.Header.Get("Content-Type")).Logger()
+		l = l.With(slog.String("content_type", r.Header.Get("Content-Type")))
 	}
-	l.Info().Msg("received HTTP request")
+	l.Info("received HTTP request")
 
 	linkID, pathSuffix, statusCode := parseURL(l, r)
 	if statusCode != http.StatusOK {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	l = l.With().Str("link_id", linkID).Logger()
+	l = l.With(slog.String("link_id", linkID))
 	if pathSuffix != "" {
-		l = l.With().Str("path_suffix", pathSuffix).Logger()
+		l = l.With(slog.String("path_suffix", pathSuffix))
 	}
 
 	// Nuance: "configured, ok := ..." can return "false, true"
@@ -157,7 +157,7 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 
 	raw, decoded, err := parseBody(w, r)
 	if err != nil {
-		l.Warn().Err(err).Msg("bad request: JSON decoding error")
+		l.Warn("bad request: JSON decoding error", slog.Any("error", err))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -166,15 +166,15 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 	_ = r.ParseForm()
 
 	// Forward the request's data to a service-specific handler.
-	l = l.With().Str("template", template).Logger()
+	l = l.With(slog.String("template", template))
 	f, ok := listeners.WebhookHandlers[template]
 	if !ok {
-		l.Warn().Msg("bad request: unsupported link template for webhooks")
+		l.Warn("bad request: unsupported link template for webhooks")
 		w.WriteHeader(http.StatusNotImplemented)
 		return
 	}
 
-	statusCode = f(l.WithContext(r.Context()), w, intlis.RequestData{
+	statusCode = f(logger.InContext(r.Context(), l), w, intlis.RequestData{
 		PathSuffix:  pathSuffix,
 		Headers:     r.Header,
 		WebForm:     r.Form,
@@ -191,10 +191,10 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 // parseURL extracts the Thrippy link ID from the request's URL path.
 // The path may contain an opaque suffix after the ID, separated by a slash,
 // for third-party services that support/require multiple URLs per connection.
-func parseURL(l zerolog.Logger, r *http.Request) (string, string, int) {
+func parseURL(l *slog.Logger, r *http.Request) (string, string, int) {
 	id := r.PathValue("id")
 	if id == "" {
-		l.Warn().Msg("bad request: missing ID")
+		l.Warn("bad request: missing ID")
 		return "", "", http.StatusBadRequest
 	}
 
@@ -206,7 +206,7 @@ func parseURL(l zerolog.Logger, r *http.Request) (string, string, int) {
 	}
 
 	if _, err := shortuuid.DefaultEncoder.Decode(id); err != nil {
-		l.Warn().Err(err).Msg("bad request: ID is an invalid short UUID")
+		l.Warn("bad request: ID is an invalid short UUID", slog.Any("error", err))
 		return "", "", http.StatusNotFound
 	}
 
@@ -243,21 +243,21 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 func (s *httpServer) ConnectLinks(ctx context.Context, cmd *cli.Command) error {
 	for linkID := range s.webhookLinks {
 		template, secrets, err := s.linkData(ctx, linkID)
-		l := log.Logger.With().Str("link_id", linkID).Logger()
+		l := logger.FromContext(ctx).With(slog.String("link_id", linkID))
 		if checkLinkDataForConn(l, template, secrets, err) != nil {
 			return err
 		}
 
-		l = l.With().Str("template", template).Logger()
+		l = l.With(slog.String("template", template))
 		if _, ok := listeners.WebhookHandlers[template]; ok {
-			l.Info().Msg("enabled stateless webhook listener")
+			l.Info("enabled stateless webhook listener")
 			continue
 		}
 
 		f, ok := listeners.ConnectionHandlers[template]
 		if !ok {
 			err := errors.New("unsupported link template for listener connections")
-			l.Err(err).Send()
+			l.Error("unsupported link template for listener connections", slog.Any("error", err))
 			return err
 		}
 
@@ -265,11 +265,11 @@ func (s *httpServer) ConnectLinks(ctx context.Context, cmd *cli.Command) error {
 
 		data := intlis.LinkData{ID: linkID, Template: template, Secrets: secrets}
 		if err := f(ctx, s.temporal, data); err != nil {
-			l.Err(err).Msg("failed to initialize connection")
+			l.Error("failed to initialize connection", slog.Any("error", err))
 			return err
 		}
 
-		l.Info().Msg("enabled stateful connection listener")
+		l.Info("enabled stateful connection listener")
 	}
 
 	return nil

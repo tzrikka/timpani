@@ -3,17 +3,16 @@ package webhooks
 import (
 	"context"
 	"io"
+	"log/slog"
 	"net/http"
-
-	"github.com/rs/zerolog/log"
 )
 
 // thrippyHandler passes-through incoming HTTP requests (OAuth callbacks),
 // as a proxy, to a local Thrippy server. This allows Timpani and Thrippy to
 // share a single HTTP tunnel when running together in a local development setup.
 func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
-	l := log.With().Str("http_method", r.Method).Str("url_path", r.URL.EscapedPath()).Logger()
-	l.Info().Msg("passing-through HTTP request to Thrippy")
+	l := slog.With(slog.String("http_method", r.Method), slog.String("url_path", r.URL.EscapedPath()))
+	l.Info("passing-through HTTP request to Thrippy")
 
 	// Adjust the original URL to the Thrippy server's base URL.
 	r.URL.Scheme = s.thrippyURL.Scheme
@@ -25,7 +24,7 @@ func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequestWithContext(ctx, r.Method, r.URL.String(), r.Body)
 	if err != nil {
-		l.Err(err).Msg("failed to construct Thrippy proxy request")
+		l.Error("failed to construct Thrippy proxy request", slog.Any("error", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -40,7 +39,7 @@ func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		l.Err(err).Msg("failed to send Thrippy proxy request")
+		l.Error("failed to send Thrippy proxy request", slog.Any("error", err))
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -55,6 +54,6 @@ func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(resp.StatusCode)
 	if _, err := io.Copy(w, resp.Body); err != nil {
-		l.Err(err).Msg("failed to copy Thrippy response body")
+		l.Error("failed to copy Thrippy response body", slog.Any("error", err))
 	}
 }

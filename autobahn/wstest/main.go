@@ -8,12 +8,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/websocket"
 )
 
@@ -23,9 +22,8 @@ const (
 )
 
 func main() {
-	initZeroLog()
 	n := getCaseCount()
-	log.Logger.Info().Int("n", n+1).Msg("case count")
+	slog.Info("case count", slog.Int("n", n+1))
 
 	// Not implemented in Timpani (so excluded in "config/fuzzingserver.json"):
 	//   - 6.4.*: Fail-fast on invalid UTF-8 frames,
@@ -37,17 +35,8 @@ func main() {
 	updateReports()
 }
 
-func initZeroLog() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
-	zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	log.Logger = log.Output(zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: "15:04:05.000",
-	}).With().Caller().Logger()
-}
-
 func dial(url string) (*websocket.Conn, error) {
-	return websocket.Dial(log.Logger.WithContext(context.Background()), url)
+	return websocket.Dial(context.Background(), url)
 }
 
 // getCaseCount retrieves the number of enabled test cases from
@@ -55,18 +44,18 @@ func dial(url string) (*websocket.Conn, error) {
 func getCaseCount() int {
 	conn, err := dial(baseURL + "/getCaseCount")
 	if err != nil {
-		log.Logger.Fatal().Err(err).Msg("dial error")
+		logger.FatalError("dial error", err)
 	}
 
 	msg, ok := <-conn.IncomingMessages()
 	if !ok {
-		log.Logger.Debug().Msg("connection closed")
+		slog.Debug("connection closed")
 		return 0
 	}
 
 	n, err := strconv.Atoi(string(msg.Data))
 	if err != nil {
-		log.Logger.Fatal().Err(err).Msg("invalid test case count")
+		logger.FatalError("invalid test case count", err)
 	}
 
 	return n
@@ -75,33 +64,33 @@ func getCaseCount() int {
 // updateReports instructs the Autobahn fuzzing server to generate/update
 // all the HTML and JSON files for all the test-case results.
 func updateReports() {
-	log.Logger.Info().Msg("updating reports")
+	slog.Info("updating reports")
 
 	url := fmt.Sprintf("%s/updateReports?agent=%s", baseURL, agent)
 	if _, err := dial(url); err != nil {
-		log.Logger.Fatal().Err(err).Msg("dial error")
+		logger.FatalError("dial error", err)
 	}
 }
 
 func runCase(i int) {
-	l := log.Logger.With().Int("case", i).Logger()
-	l.Info().Msg("starting test")
+	l := slog.With(slog.Int("case", i))
+	l.Info("starting test")
 
 	conn, err := dial(fmt.Sprintf("%s/runCase?case=%d&agent=%s", baseURL, i, agent))
 	if err != nil {
-		l.Fatal().Err(err).Msg("dial error")
+		logger.FatalError("dial error", err)
 	}
 
 	// Echo loop.
 	for {
 		msg := <-conn.IncomingMessages()
 		if msg.Data == nil {
-			l.Debug().Msg("connection closed")
+			l.Debug("connection closed")
 			break
 		}
 
-		l = l.With().Str("opcode", msg.Opcode.String()).Logger()
-		l.Info().Int("length", len(msg.Data)).Msg("received message")
+		l = l.With(slog.String("opcode", msg.Opcode.String()))
+		l.Info("received message", slog.Int("length", len(msg.Data)))
 
 		switch msg.Opcode {
 		case websocket.OpcodeText:
@@ -109,11 +98,12 @@ func runCase(i int) {
 		case websocket.OpcodeBinary:
 			err = <-conn.SendBinaryMessage(msg.Data)
 		default:
-			l.Fatal().Msg("unexpected opcode in data message")
+			l.Error("unexpected opcode in data message")
+			os.Exit(1)
 		}
 
 		if err != nil {
-			l.Err(err).Msg("echo error")
+			l.Error("echo error", slog.String("error", err.Error()))
 			conn.Close(websocket.StatusNormalClosure)
 		}
 	}

@@ -7,14 +7,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strconv"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/http/client"
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
@@ -40,7 +40,7 @@ type slashCommandResponse struct {
 }
 
 func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.RequestData) int {
-	l := zerolog.Ctx(ctx).With().Str("link_type", "slack").Str("link_medium", "webhook").Logger()
+	l := logger.FromContext(ctx).With(slog.String("link_type", "slack"), slog.String("link_medium", "webhook"))
 	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
@@ -57,7 +57,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 
 	// https://docs.slack.dev/reference/events/url_verification
 	if r.JSONPayload["type"] == "url_verification" {
-		l.Debug().Str("event_type", "url_verification").Msg("replied to Slack URL verification event")
+		l.Debug("replied to Slack URL verification event", slog.String("event_type", "url_verification"))
 		w.Header().Add(contentTypeHeader, "text/plain")
 		_, _ = fmt.Fprint(w, r.JSONPayload["challenge"])
 
@@ -76,20 +76,20 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#best-practices
 	statusCode := http.StatusOK
 	if sc := r.WebForm.Get("command"); sc != "" {
-		l.Debug().Str("event_type", "slash_command").Msg("replied to Slack slash command")
+		l.Debug("replied to Slack slash command", slog.String("event_type", "slash_command"))
 		w.Header().Add(contentTypeHeader, "application/json; charset=utf-8")
 
 		text := fmt.Sprintf("Your command: `%s %s`", sc, r.WebForm.Get("text"))
 		resp := slashCommandResponse{ResponseType: "ephemeral", Text: text}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
-			l.Err(err).Msg("failed to encode JSON response")
+			l.Error("failed to encode JSON response", slog.Any("error", err))
 		}
 
 		statusCode = 0 // [http.StatusOK] already written by "w.Write".
 	}
 
 	// Dispatch the event notification, based on its type.
-	signalName, err := dispatchFromWebhook(l.WithContext(ctx), r)
+	signalName, err := dispatchFromWebhook(logger.InContext(ctx, l), r)
 	if err != nil {
 		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
@@ -97,57 +97,60 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	return metrics.IncrementWebhookEventCounter(l, t, signalName, statusCode)
 }
 
-func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
+func checkContentTypeHeader(l *slog.Logger, r listeners.RequestData) int {
 	expected := []string{"application/json", client.ContentForm}
 	ct := r.Headers.Get(contentTypeHeader)
 
 	if !slices.Contains(expected, ct) {
-		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", expected).
-			Msg("bad request: unexpected header value")
+		l.Warn("bad request: unexpected header value", slog.String("header", contentTypeHeader),
+			slog.String("got", ct), slog.Any("want", expected))
 		return http.StatusBadRequest
 	}
 
 	return http.StatusOK
 }
 
-func checkTimestampHeader(l zerolog.Logger, r listeners.RequestData) int {
+func checkTimestampHeader(l *slog.Logger, r listeners.RequestData) int {
 	ts := r.Headers.Get(timestampHeader)
 	if ts == "" {
-		l.Warn().Str("header", timestampHeader).Msg("bad request: missing header")
+		l.Warn("bad request: missing header", slog.String("header", timestampHeader))
 		return http.StatusBadRequest
 	}
 
 	secs, err := strconv.ParseInt(ts, 10, 64)
 	if err != nil {
-		l.Warn().Str("header", timestampHeader).Str("got", ts).Msg("bad request: invalid header value")
+		l.Warn("bad request: invalid header value", slog.String("header", timestampHeader),
+			slog.String("got", ts))
 		return http.StatusBadRequest
 	}
 
 	d := time.Since(time.Unix(secs, 0))
 	if d.Abs() > maxDifference {
-		l.Warn().Str("header", timestampHeader).Dur("difference", d).Msg("bad request: stale header value")
+		l.Warn("bad request: stale header value", slog.String("header", timestampHeader),
+			slog.Duration("difference", d))
 		return http.StatusBadRequest
 	}
 
 	return http.StatusOK
 }
 
-func checkSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
+func checkSignatureHeader(l *slog.Logger, r listeners.RequestData) int {
 	sig := r.Headers.Get(signatureHeader)
 	if sig == "" {
-		l.Warn().Str("header", signatureHeader).Msg("bad request: missing header")
+		l.Warn("bad request: missing header", slog.String("header", signatureHeader))
 		return http.StatusForbidden
 	}
 
 	secret := r.LinkSecrets["signing_secret"]
 	if secret == "" {
-		l.Warn().Msg("signing secret is not configured")
+		l.Warn("signing secret is not configured")
 		return http.StatusInternalServerError
 	}
 
 	ts := r.Headers.Get(timestampHeader)
 	if !verifySignature(l, secret, ts, sig, r.RawPayload) {
-		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").Msg("signature verification failed")
+		l.Warn("signature verification failed", slog.String("signature", sig),
+			slog.Bool("has_signing_secret", secret != ""))
 		return http.StatusForbidden
 	}
 
@@ -156,12 +159,12 @@ func checkSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
 
 // verifySignature implements
 // https://docs.slack.dev/authentication/verifying-requests-from-slack.
-func verifySignature(l zerolog.Logger, signingSecret, ts, want string, body []byte) bool {
+func verifySignature(l *slog.Logger, signingSecret, ts, want string, body []byte) bool {
 	mac := hmac.New(sha256.New, []byte(signingSecret))
 
 	n, err := mac.Write(fmt.Appendf(nil, "%s:%s:", slackSigVersion, ts))
 	if err != nil {
-		l.Err(err).Msg("HMAC write error")
+		l.Error("HMAC write error", slog.Any("error", err))
 		return false
 	}
 	if n != len(ts)+4 {

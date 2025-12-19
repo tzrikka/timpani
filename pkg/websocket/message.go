@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log/slog"
 	"unicode/utf8"
 )
 
@@ -31,31 +32,31 @@ func (c *Conn) readMessage() *internalMessage {
 		h, err := c.readFrameHeader()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				c.logger.Trace().Msg("WebSocket connection closed")
+				c.logger.Debug("WebSocket connection closed")
 				c.closeReceived = true
 				c.closeSent = true
 				return nil
 			}
-			c.logger.Err(err).Msg("failed to read WebSocket frame header")
+			c.logger.Error("failed to read WebSocket frame header", slog.Any("error", err))
 			c.sendCloseControlFrame(StatusInternalError, "frame header reading error")
 			return nil
 		}
 
-		c.logger.Trace().Bool("fin", h.fin).Str("opcode", h.opcode.String()).
-			Uint64("length", h.payloadLength).Msg("received WebSocket frame")
+		c.logger.Debug("received WebSocket frame", slog.Bool("fin", h.fin),
+			slog.String("opcode", h.opcode.String()), slog.Any("length", h.payloadLength))
 
 		var data []byte
 		if h.payloadLength > 0 {
 			data = make([]byte, h.payloadLength)
 			if _, err := io.ReadFull(c.bufio, data); err != nil {
-				c.logger.Err(err).Msg("failed to read WebSocket frame payload")
+				c.logger.Error("failed to read WebSocket frame payload", slog.Any("error", err))
 				c.sendCloseControlFrame(StatusInternalError, "frame payload reading error")
 				return nil
 			}
 		}
 
 		if reason, err := c.checkFrameHeader(h, op); err != nil {
-			c.logger.Err(err).Msg("protocol error due to invalid frame")
+			c.logger.Error("protocol error due to invalid frame", slog.Any("error", err))
 			c.sendCloseControlFrame(StatusProtocolError, reason)
 			return nil
 		}
@@ -71,7 +72,7 @@ func (c *Conn) readMessage() *internalMessage {
 			}
 			if h.payloadLength > 0 {
 				if _, err := msg.Write(data); err != nil {
-					c.logger.Err(err).Msg("failed to store WebSocket data frame payload")
+					c.logger.Error("failed to store WebSocket data frame payload", slog.Any("error", err))
 					c.sendCloseControlFrame(StatusInternalError, "data frame payload storing error")
 					return nil
 				}
@@ -89,7 +90,8 @@ func (c *Conn) readMessage() *internalMessage {
 		// frames in the middle of a fragmented message".
 		case opcodePing:
 			if err := <-c.sendControlFrame(opcodePong, data); err != nil {
-				c.logger.Err(err).Bytes("payload", data).Msg("failed to send WebSocket pong control frame")
+				c.logger.Error("failed to send WebSocket pong control frame",
+					slog.Any("error", err), slog.Any("payload", data))
 			}
 
 		case opcodePong:
@@ -108,15 +110,15 @@ func (c *Conn) finalizeMessage(op Opcode, data []byte) *internalMessage {
 		data = []byte{}
 	}
 
-	c.logger.Debug().Str("opcode", op.String()).Int("length", len(data)).
-		Msg("finished receiving WebSocket data message")
+	c.logger.Debug("finished receiving WebSocket data message",
+		slog.String("opcode", op.String()), slog.Int("length", len(data)))
 
 	// "When an endpoint is to interpret a byte stream as UTF-8 but finds
 	// that the byte stream is not, in fact, a valid UTF-8 stream, that
 	// endpoint MUST _Fail the WebSocket Connection_. This rule applies both
 	// during the opening handshake and during subsequent data exchange".
 	if op == OpcodeText && len(data) > 0 && !utf8.Valid(data) {
-		c.logger.Error().Msg("protocol error due to invalid UTF-8 text")
+		c.logger.Error("protocol error due to invalid UTF-8 text")
 		c.sendCloseControlFrame(StatusInvalidData, "invalid UTF-8 text")
 		return nil
 	}

@@ -5,10 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/tzrikka/timpani/internal/logger"
 )
 
 var clients = sync.Map{}
@@ -19,7 +20,7 @@ var clients = sync.Map{}
 // client automatically opens another [Conn] and switches to it seamlessly,
 // to prevent or at least minimize downtime during reconnections.
 type Client struct {
-	logger *zerolog.Logger
+	logger *slog.Logger
 	url    urlFunc
 	opts   []DialOpt
 
@@ -67,7 +68,7 @@ func newClient(ctx context.Context, f urlFunc, opts ...DialOpt) (*Client, error)
 	}
 
 	return &Client{
-		logger:  zerolog.Ctx(ctx),
+		logger:  logger.FromContext(ctx),
 		url:     f,
 		opts:    opts,
 		conns:   [2]*Conn{conn},
@@ -86,7 +87,7 @@ func newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
 }
 
 func (c *Client) newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
-	return newConn(c.logger.WithContext(ctx), f, opts...)
+	return newConn(logger.InContext(ctx, c.logger), f, opts...)
 }
 
 // deleteClient deletes a newly-created [Client] which is not needed anymore,
@@ -140,7 +141,7 @@ func (c *Client) replaceConn(ctx context.Context) {
 			break
 		}
 
-		c.logger.Err(err).Int("retry", i).Msg("failed to replace WebSocket connection")
+		c.logger.Error("failed to replace WebSocket connection", slog.Any("error", err), slog.Int("retry", i))
 		i++
 	}
 }
@@ -163,15 +164,15 @@ func (c *Client) RefreshConnectionIn(ctx context.Context, d time.Duration) {
 		c.refresh.Stop()
 		m = "re" + m
 	}
-	c.logger.Trace().Msg(m)
+	c.logger.Debug(m)
 
 	c.refresh = time.AfterFunc(d, func() {
-		c.logger.Trace().Msg("refreshing WebSocket connection")
+		c.logger.Debug("refreshing WebSocket connection")
 		c.refresh = nil
 
 		conn, err := c.newConn(ctx, c.url, c.opts...)
 		if err != nil {
-			c.logger.Err(err).Msg("failed to refresh WebSocket connection")
+			c.logger.Error("failed to refresh WebSocket connection", slog.Any("error", err))
 			return
 		}
 

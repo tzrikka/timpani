@@ -1,12 +1,11 @@
 package slack
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
 	"testing"
 	"time"
-
-	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/timpani/internal/listeners"
 )
@@ -49,7 +48,7 @@ func TestCheckContentTypeHeader(t *testing.T) {
 				Headers: http.Header{contentTypeHeader: []string{tt.ct}},
 			}
 
-			if got := checkContentTypeHeader(zerolog.Nop(), r); got != tt.want {
+			if got := checkContentTypeHeader(slog.Default(), r); got != tt.want {
 				t.Errorf("checkContentTypeHeader() = %d, want %d", got, tt.want)
 			}
 		})
@@ -93,7 +92,7 @@ func TestCheckTimestampHeader(t *testing.T) {
 				},
 			}
 
-			if got := checkTimestampHeader(zerolog.Nop(), r); got != tt.want {
+			if got := checkTimestampHeader(slog.Default(), r); got != tt.want {
 				t.Errorf("checkTimestampHeader() = %d, want %d", got, tt.want)
 			}
 		})
@@ -146,7 +145,7 @@ func TestCheckSignatureHeader(t *testing.T) {
 				RawPayload: []byte("body"),
 			}
 
-			if got := checkSignatureHeader(zerolog.Nop(), r); got != tt.want {
+			if got := checkSignatureHeader(slog.Default(), r); got != tt.want {
 				t.Errorf("checkSignatureHeader() = %d, want %d", got, tt.want)
 			}
 		})

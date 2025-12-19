@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -45,7 +46,8 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 
 	apiURL, err = url.JoinPath(baseURL, path)
 	if err != nil {
-		l.Error("failed to construct GitHub API URL", "error", err, "base_url", baseURL, "path", path)
+		l.Error("failed to construct GitHub API URL", slog.Any("error", err),
+			slog.String("base_url", baseURL), slog.String("path", path))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
@@ -58,7 +60,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 		token, err = generateJWT(secrets["client_id"], secrets["private_key"])
 		if err != nil {
 			msg := "failed to generate JWT for GitHub API call"
-			l.Warn(msg, "error", err, "link_id", a.thrippy.LinkID)
+			l.Warn(msg, slog.Any("error", err), slog.String("link_id", a.thrippy.LinkID))
 			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
 			return
 		}
@@ -115,17 +117,17 @@ func (a *API) httpGet(ctx context.Context, path string, query url.Values, jsonRe
 
 	resp, _, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, "", query)
 	if err != nil {
-		l.Error("HTTP GET request error", "error", err, "url", apiURL)
+		l.Error("HTTP GET request error", slog.Any("error", err), slog.String("url", apiURL))
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err, "url", apiURL)
+		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("sent HTTP GET request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	l.Info("sent HTTP GET request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
 	return nil
 }

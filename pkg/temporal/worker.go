@@ -9,18 +9,20 @@ package temporal
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/api/bitbucket"
 	"github.com/tzrikka/timpani/pkg/api/github"
 	"github.com/tzrikka/timpani/pkg/api/jira"
@@ -28,14 +30,14 @@ import (
 )
 
 // Run initializes the Temporal worker, and blocks to keep it running.
-func Run(l zerolog.Logger, cmd *cli.Command) error {
+func Run(ctx context.Context, cmd *cli.Command) error {
 	addr := cmd.String("temporal-address")
-	l.Info().Msgf("Temporal server address: %s", addr)
+	slog.Info("Temporal server address: " + addr)
 
 	c, err := client.Dial(client.Options{
 		HostPort:  addr,
 		Namespace: cmd.String("temporal-namespace"),
-		Logger:    LogAdapter{zerolog: l.With().CallerWithSkipFrameCount(4).Logger()},
+		Logger:    log.NewStructuredLogger(slog.Default()),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to dial Temporal: %w", err)
@@ -46,10 +48,10 @@ func Run(l zerolog.Logger, cmd *cli.Command) error {
 	w.RegisterWorkflowWithOptions(waitForEventWorkflow, workflow.RegisterOptions{
 		Name: listeners.WaitForEventWorkflow,
 	})
-	bitbucket.Register(l, cmd, w)
-	github.Register(l, cmd, w)
-	jira.Register(l, cmd, w)
-	slack.Register(l, cmd, w)
+	bitbucket.Register(ctx, cmd, w)
+	github.Register(ctx, cmd, w)
+	jira.Register(ctx, cmd, w)
+	slack.Register(ctx, cmd, w)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		return fmt.Errorf("failed to start Temporal worker: %w", err)
@@ -78,7 +80,8 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	selector := workflow.NewSelector(childCtx)
 	selector.AddReceive(ch, func(c workflow.ReceiveChannel, _ bool) {
 		c.Receive(ctx, &payload)
-		l.Debug("received signal", "signal", req.Signal, "duration", time.Since(startTime).String())
+		l.Debug("received signal", slog.String("signal", req.Signal),
+			slog.String("duration", time.Since(startTime).String()))
 	})
 
 	if req.Timeout == "" {
@@ -91,14 +94,15 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 
 	var timer workflow.Future
 	if timeout == 0 {
-		l.Debug("waiting for signal without timeout", "signal", req.Signal)
+		l.Debug("waiting for signal without timeout", slog.String("signal", req.Signal))
 	} else {
-		l.Debug("waiting for signal", "signal", req.Signal, "timeout", req.Timeout)
+		l.Debug("waiting for signal", slog.String("signal", req.Signal), slog.String("timeout", req.Timeout))
 
 		// Using a selector instead of ch.ReceiveWithTimeout() to support workflow cancellation.
 		timer = workflow.NewTimer(ctx, timeout)
 		selector.AddFuture(timer, func(_ workflow.Future) {
-			l.Debug("timeout while waiting for signal", "signal", req.Signal, "timeout", req.Timeout)
+			l.Debug("timeout while waiting for signal", slog.String("signal", req.Signal),
+				slog.String("timeout", req.Timeout))
 			err = fmt.Errorf("timeout (%s)", req.Timeout)
 		})
 	}
@@ -126,12 +130,12 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 //
 //	ctx = l.WithContext(ctx)
 func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payload map[string]any) error {
-	l := zerolog.Ctx(ctx)
+	l := logger.FromContext(ctx)
 
 	c, err := client.Dial(client.Options{
 		HostPort:  cfg.HostPort,
 		Namespace: cfg.Namespace,
-		Logger:    LogAdapter{zerolog: l.With().CallerWithSkipFrameCount(4).Logger()},
+		Logger:    log.NewStructuredLogger(l),
 	})
 	if err != nil {
 		return fmt.Errorf("client dial error: %w", err)
@@ -151,8 +155,8 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 
 	for _, info := range list.GetExecutions() {
 		wid, rid := info.Execution.WorkflowId, info.Execution.RunId
-		l.Info().Str("signal", name).Str("workflow_id", wid).Str("run_id", rid).
-			Msg("sending signal to Temporal workflow")
+		l.Info("sending signal to Temporal workflow", slog.String("signal", name),
+			slog.String("workflow_id", wid), slog.String("run_id", rid))
 		if err := c.SignalWorkflow(ctx, wid, rid, name, payload); err != nil {
 			return fmt.Errorf("signaling error: %w", err)
 		}
@@ -165,15 +169,15 @@ var ForbiddenSignalNameChars = regexp.MustCompile("[^0-9A-Za-z_.]")
 
 // sanitizeSignalName ensures that signal names (generated from incoming events)
 // cannot manipulate Timpani's Temporal query in the [Signal] function.
-func sanitizeSignalName(l *zerolog.Logger, name string) string {
+func sanitizeSignalName(l *slog.Logger, name string) string {
 	safeName := ForbiddenSignalNameChars.ReplaceAllString(name, "_")
 	if len(safeName) > 100 {
 		safeName = safeName[:100]
 	}
 
 	if name != safeName {
-		l.Warn().Str("original", name).Str("sanitized", safeName).
-			Msg("signal name contained forbidden characters")
+		l.Warn("signal name contained forbidden characters",
+			slog.String("original", name), slog.String("sanitized", safeName))
 	}
 
 	return safeName

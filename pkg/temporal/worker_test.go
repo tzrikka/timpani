@@ -1,9 +1,8 @@
 package temporal
 
 import (
+	"log/slog"
 	"testing"
-
-	"github.com/rs/zerolog"
 )
 
 func TestSanitizeSignalName(t *testing.T) {
@@ -34,10 +33,9 @@ func TestSanitizeSignalName(t *testing.T) {
 		},
 	}
 
-	l := zerolog.Nop()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := sanitizeSignalName(&l, tt.signal); got != tt.want {
+			if got := sanitizeSignalName(slog.Default(), tt.signal); got != tt.want {
 				t.Errorf("sanitizeSignalName() = %q, want %q", got, tt.want)
 			}
 		})

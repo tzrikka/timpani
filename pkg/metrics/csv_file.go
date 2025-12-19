@@ -6,12 +6,11 @@ package metrics
 import (
 	"encoding/csv"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/rs/zerolog"
 
 	"github.com/tzrikka/xdg"
 )
@@ -31,13 +30,14 @@ var (
 
 // IncrementWebhookEventCounter monitors incoming webhook events. It returns the HTTP
 // status code that was passed to it, in order to return it to the remote HTTP client.
-func IncrementWebhookEventCounter(l zerolog.Logger, t time.Time, event string, statusCode int) int {
+func IncrementWebhookEventCounter(l *slog.Logger, t time.Time, event string, statusCode int) int {
 	muIn.Lock()
 	defer muIn.Unlock()
 
 	record := []string{t.Format(time.RFC3339), event, strconv.Itoa(statusCode)}
 	if err := appendToCSVFile(DefaultMetricsFileIn, t, record); err != nil {
-		l.Err(err).Str("event", event).Int("status", statusCode).Msg("metrics error: failed to increment signal counter")
+		l.Error("metrics error: failed to increment signal counter", slog.Any("error", err),
+			slog.String("event", event), slog.Int("status", statusCode))
 	}
 
 	return statusCode

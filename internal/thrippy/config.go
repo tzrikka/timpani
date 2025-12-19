@@ -1,10 +1,10 @@
 package thrippy
 
 import (
+	"log/slog"
 	"strings"
 
 	"github.com/lithammer/shortuuid/v4"
-	"github.com/rs/zerolog"
 	altsrc "github.com/urfave/cli-altsrc/v3"
 	"github.com/urfave/cli-altsrc/v3/toml"
 	"github.com/urfave/cli/v3"
@@ -81,15 +81,15 @@ func LinkIDFlag(configFilePath altsrc.StringSourcer, service string) cli.Flag {
 }
 
 // LinkID extracts and checks the configured Thrippy link ID for the given third-party service.
-func LinkID(l zerolog.Logger, cmd *cli.Command, service string) (string, bool) {
+func LinkID(cmd *cli.Command, service string) (string, bool) {
 	id := cmd.String("thrippy-link-" + strings.ToLower(service))
 	if id == "" {
-		l.Warn().Msg("Thrippy link ID not configured for " + service)
+		slog.Warn("Thrippy link ID not configured for " + service)
 		return "", false
 	}
 
 	if _, err := shortuuid.DefaultEncoder.Decode(id); err != nil {
-		l.Error().Msg("invalid Thrippy link ID configured for " + service)
+		slog.Error("invalid Thrippy link ID configured for " + service)
 		return "", false
 	}
 

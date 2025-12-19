@@ -3,12 +3,12 @@ package webhooks
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net"
 	"net/http"
 	"reflect"
 	"testing"
 
-	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -148,7 +148,7 @@ func TestCheckLinkDataForWebhook(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := checkLinkDataForWebhook(zerolog.Nop(), tt.template, tt.secrets, tt.err); got != tt.want {
+			if got := checkLinkDataForWebhook(slog.Default(), tt.template, tt.secrets, tt.err); got != tt.want {
 				t.Errorf("checkLinkDataForWebhook() = %v, want %v", got, tt.want)
 			}
 		})
@@ -188,7 +188,7 @@ func TestCheckLinkDataForConn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := checkLinkDataForConn(zerolog.Nop(), tt.template, tt.secrets, tt.err); (got != nil) != tt.wantErr {
+			if got := checkLinkDataForConn(slog.Default(), tt.template, tt.secrets, tt.err); (got != nil) != tt.wantErr {
 				t.Errorf("checkLinkDataForConn() err = %v, want %v", got, tt.wantErr)
 			}
 		})

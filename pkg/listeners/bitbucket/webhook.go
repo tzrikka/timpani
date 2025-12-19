@@ -2,13 +2,13 @@ package bitbucket
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/listeners/github"
 	"github.com/tzrikka/timpani/pkg/metrics"
 	"github.com/tzrikka/timpani/pkg/temporal"
@@ -21,11 +21,12 @@ const (
 )
 
 func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.RequestData) int {
-	l := zerolog.Ctx(ctx).With().Str("link_type", "bitbucket").Str("link_medium", "webhook").Logger()
+	l := logger.FromContext(ctx).With(slog.String("link_type", "bitbucket"), slog.String("link_medium", "webhook"))
 	t := time.Now().UTC()
 
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
-		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Str("want", contentTypeJSON).Msg("bad request: unexpected header value")
+		l.Warn("bad request: unexpected header value", slog.String("header", contentTypeHeader),
+			slog.String("got", ct), slog.String("want", contentTypeJSON))
 		return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
 	}
 
@@ -42,7 +43,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	// Dispatch the event notification as a Temporal signal.
 	signalName := "bitbucket.events." + strings.ReplaceAll(r.Headers.Get(eventHeader), ":", ".")
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
-		l.Err(err).Msg("failed to send Temporal signal")
+		l.Error("failed to send Temporal signal", slog.Any("error", err))
 		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
