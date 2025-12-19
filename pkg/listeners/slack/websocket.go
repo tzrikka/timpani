@@ -7,13 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"math/big"
 	"net/http"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/websocket"
 )
 
@@ -24,20 +24,20 @@ const (
 )
 
 func ConnectionHandler(ctx context.Context, tc listeners.TemporalConfig, data listeners.LinkData) error {
-	l := log.Logger.With().Str("link_type", "slack").Str("link_medium", "websocket").Logger()
+	l := logger.FromContext(ctx).With(slog.String("link_type", "slack"), slog.String("link_medium", "websocket"))
 	t := data.Secrets["app_token"]
 	if t == "" {
-		l.Warn().Msg("Thrippy link missing required credentials")
+		l.Warn("Thrippy link missing required credentials")
 		return errors.New("forbidden")
 	}
 
 	c, err := websocket.NewOrCachedClient(ctx, urlFunc(t), t)
 	if err != nil {
-		l.Err(err).Msg("Slack Socket Mode connection error")
+		l.Error("Slack Socket Mode connection error", slog.Any("error", err))
 		return errors.New("internal server error")
 	}
 
-	go clientEventLoop(l.WithContext(ctx), tc, c)
+	go clientEventLoop(logger.InContext(ctx, l), tc, c)
 	return nil
 }
 
@@ -104,17 +104,17 @@ type apiResponse struct {
 // data messages. It also prevents downtime by informing the client when
 // to refresh its underlying WebSocket connection, before it times out.
 func clientEventLoop(ctx context.Context, tc listeners.TemporalConfig, c *websocket.Client) {
-	l := log.Ctx(ctx)
+	l := logger.FromContext(ctx)
 	for {
 		raw, ok := <-c.IncomingMessages()
 		if !ok {
-			l.Error().Msg("WebSocket client is closed")
+			l.Error("WebSocket client is closed")
 			return
 		}
 
 		msg := socketModeMessage{}
 		if err := json.Unmarshal(raw.Data, &msg); err != nil {
-			l.Err(err).Msg("JSON decoding error in incoming WebSocket message")
+			l.Error("JSON decoding error in incoming WebSocket message", slog.Any("error", err))
 			continue
 		}
 
@@ -146,13 +146,14 @@ func clientEventLoop(ctx context.Context, tc listeners.TemporalConfig, c *websoc
 			}
 		}
 
-		l.Info().Str("msg_type", msg.Type).Str("envelope_id", msg.EnvelopeID).
-			Bool("accepts_response_payload", msg.AcceptsResponsePayload).
-			Msg("received WebSocket message")
+		l.Info("received WebSocket message",
+			slog.String("msg_type", msg.Type),
+			slog.String("envelope_id", msg.EnvelopeID),
+			slog.Bool("accepts_response_payload", msg.AcceptsResponsePayload))
 
 		// https://docs.slack.dev/apis/events-api/using-socket-mode#acknowledge
 		if err := c.SendJSONMessage(resp); err != nil {
-			l.Err(err).Msg("failed to ack Slack Socket Mode event")
+			l.Error("failed to ack Slack Socket Mode event", slog.Any("error", err))
 		}
 
 		// Dispatch the event notification, based on its type.

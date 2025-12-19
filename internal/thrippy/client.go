@@ -7,6 +7,7 @@ package thrippy
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -28,32 +29,34 @@ type LinkClient struct {
 	creds    credentials.TransportCredentials
 }
 
-func NewLinkClient(id string, cmd *cli.Command) LinkClient {
+func NewLinkClient(ctx context.Context, id string, cmd *cli.Command) LinkClient {
 	return LinkClient{
 		LinkID:   id,
 		grpcAddr: cmd.String("thrippy-grpc-address"),
-		creds:    SecureCreds(cmd),
+		creds:    SecureCreds(ctx, cmd),
 	}
 }
 
-// LinkCreds returns the saved secrets of the receiver's Thrippy link. This
-// function does not distinguish between "not found" and other gRPC errors. The
-// output must not be cached as it may change at any time, e.g. OAuth access tokens.
+// LinkCreds returns the saved secrets of the receiver's Thrippy link.
+// This function does not distinguish between "not found" and other gRPC errors.
+// The output must not be cached as it may change at any time, e.g. OAuth access tokens.
 func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
 	return t.CustomLinkCreds(ctx, t.LinkID)
 }
 
-// CustomLinkCreds returns the saved secrets of the given Thrippy link. This
-// function does not distinguish between "not found" and other gRPC errors. The
-// output must not be cached as it may change at any time, e.g. OAuth access tokens.
+// CustomLinkCreds returns the saved secrets of the given Thrippy link.
+// This function does not distinguish between "not found" and other gRPC errors.
+// The output must not be cached as it may change at any time, e.g. OAuth access tokens.
 func (t *LinkClient) CustomLinkCreds(ctx context.Context, linkID string) (map[string]string, error) {
 	if linkID == "" {
 		linkID = t.LinkID
 	}
 
+	l := activity.GetLogger(ctx)
+
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
 	if err != nil {
-		activity.GetLogger(ctx).Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
+		l.Error("gRPC connection error", slog.Any("error", err), slog.String("grpc_addr", t.grpcAddr))
 		return nil, err
 	}
 	defer conn.Close()
@@ -66,7 +69,8 @@ func (t *LinkClient) CustomLinkCreds(ctx context.Context, linkID string) (map[st
 		LinkId: proto.String(linkID),
 	}.Build())
 	if err != nil {
-		activity.GetLogger(ctx).Error("Thrippy GetCredentials error", "error", err, "link_id", linkID)
+		l.Error("bad response from gRPC service", slog.Any("error", err),
+			slog.String("link_id", linkID), slog.String("client_method", "GetCredentials"))
 		return nil, err
 	}
 
@@ -81,7 +85,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 
 	conn, err := grpc.NewClient(t.grpcAddr, grpc.WithTransportCredentials(t.creds))
 	if err != nil {
-		l.Error("failed to create gRPC client connection", "error", err, "grpc_addr", t.grpcAddr)
+		l.Error("gRPC connection error", slog.Any("error", err), slog.String("grpc_addr", t.grpcAddr))
 		return "", nil, err
 	}
 	defer conn.Close()
@@ -95,7 +99,8 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 		LinkId: proto.String(t.LinkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetLink error", "error", err, "link_id", t.LinkID)
+		l.Error("bad response from gRPC service", slog.Any("error", err),
+			slog.String("link_id", t.LinkID), slog.String("client_method", "GetLink"))
 		return "", nil, err
 	}
 
@@ -104,7 +109,8 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 		LinkId: proto.String(t.LinkID),
 	}.Build())
 	if err != nil {
-		l.Error("Thrippy GetCredentials error", "error", err, "link_id", t.LinkID)
+		l.Error("bad response from gRPC service", slog.Any("error", err),
+			slog.String("link_id", t.LinkID), slog.String("client_method", "GetCredentials"))
 		return "", nil, err
 	}
 

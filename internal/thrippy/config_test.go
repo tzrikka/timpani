@@ -3,7 +3,6 @@ package thrippy
 import (
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/urfave/cli/v3"
 )
 
@@ -35,7 +34,7 @@ func TestLinkID(t *testing.T) {
 				Flags: []cli.Flag{&cli.StringFlag{Name: "thrippy-link-service"}},
 			}
 			_ = cmd.Set("thrippy-link-service", tt.flag)
-			got, gotOK := LinkID(zerolog.Nop(), cmd, "service")
+			got, gotOK := LinkID(cmd, "service")
 			if got != tt.want {
 				t.Errorf("LinkID() got = %v, want %v", got, tt.want)
 			}

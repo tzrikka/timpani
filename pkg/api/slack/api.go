@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -34,7 +35,8 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 
 	apiURL, err = url.JoinPath(baseURL, "api", strings.TrimPrefix(urlSuffix, "slack."))
 	if err != nil {
-		l.Error("failed to construct Slack API URL", "error", err, "base_url", baseURL, "url_suffix", urlSuffix)
+		l.Error("failed to construct Slack API URL", slog.Any("error", err),
+			slog.String("base_url", baseURL), slog.String("url_suffix", urlSuffix))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}
@@ -45,7 +47,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 	}
 	if botToken == "" {
 		msg := "Slack bot token not found in Thrippy link credentials"
-		l.Warn(msg, "link_id", a.thrippy.LinkID)
+		l.Warn(msg, slog.String("link_id", a.thrippy.LinkID))
 		err = temporal.NewNonRetryableApplicationError(msg, "error", nil, a.thrippy.LinkID)
 		return
 	}
@@ -63,22 +65,22 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, "", query)
 	if err != nil {
 		if retryAfter > 0 {
-			l.Warn("throttling HTTP GET request", "retry_after", retryAfter, "url", apiURL)
+			l.Warn("throttling HTTP GET request", slog.Int("retry_after", retryAfter), slog.String("url", apiURL))
 			opts := temporal.ApplicationErrorOptions{NextRetryDelay: time.Second * time.Duration(retryAfter)}
 			return temporal.NewApplicationErrorWithOptions(err.Error(), "RateLimitError", opts)
 		}
-		l.Error("HTTP GET request error", "error", err, "url", apiURL)
+		l.Error("HTTP GET request error", slog.Any("error", err), slog.String("url", apiURL))
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err, "url", apiURL)
+		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("sent HTTP GET request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	l.Info("sent HTTP GET request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
 	return nil
 }
 
@@ -92,22 +94,22 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, client.ContentJSON, jsonBody)
 	if err != nil {
 		if retryAfter > 0 {
-			l.Warn("throttling HTTP POST request", "retry_after", retryAfter, "url", apiURL)
+			l.Warn("throttling HTTP POST request", slog.Int("retry_after", retryAfter), slog.String("url", apiURL))
 			opts := temporal.ApplicationErrorOptions{NextRetryDelay: time.Second * time.Duration(retryAfter)}
 			return temporal.NewApplicationErrorWithOptions(err.Error(), "RateLimitError", opts)
 		}
-		l.Error("HTTP POST request error", "error", err, "url", apiURL)
+		l.Error("HTTP POST request error", slog.Any("error", err), slog.String("url", apiURL))
 		return err
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err, "url", apiURL)
+		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	l.Info("sent HTTP POST request", "link_id", a.thrippy.LinkID, "url", apiURL)
+	l.Info("sent HTTP POST request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
 	return nil
 }
 
@@ -116,11 +118,13 @@ func (a *API) httpPostFile(ctx context.Context, uploadURL, contentType string, c
 	l := activity.GetLogger(ctx)
 
 	if resp, _, err := client.HTTPRequest(ctx, http.MethodPost, uploadURL, "", "", contentType, content); err != nil {
-		l.Error("HTTP POST request error", "error", err, "url", uploadURL, "content_type", contentType, "response", string(resp))
+		l.Error("HTTP POST request error", slog.Any("error", err), slog.String("url", uploadURL),
+			slog.String("content_type", contentType), slog.String("response", string(resp)))
 		return err
 	}
 
-	l.Info("sent HTTP POST request", "url", uploadURL, "content_type", contentType, "length", len(content))
+	l.Info("sent HTTP POST request", slog.String("url", uploadURL),
+		slog.String("content_type", contentType), slog.Int("length", len(content)))
 	return nil
 }
 

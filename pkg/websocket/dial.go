@@ -13,7 +13,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/rs/zerolog"
+	"github.com/tzrikka/timpani/internal/logger"
 )
 
 type DialOpt func(*Conn)
@@ -55,7 +55,7 @@ func WithHTTPHeaders(hs http.Header) DialOpt {
 func Dial(ctx context.Context, wsURL string, opts ...DialOpt) (*Conn, error) {
 	// Initialize optional configuration details and internal helpers.
 	c := &Conn{
-		logger:   zerolog.Ctx(ctx),
+		logger:   logger.FromContext(ctx),
 		headers:  http.Header{},
 		nonceGen: rand.Reader,
 	}
@@ -101,7 +101,7 @@ func Dial(ctx context.Context, wsURL string, opts ...DialOpt) (*Conn, error) {
 	go c.readMessages()
 	go c.writeMessages()
 
-	c.logger.Debug().Msg("WebSocket connectionn initialized")
+	c.logger.Debug("WebSocket connection initialized")
 	return c, nil
 }
 

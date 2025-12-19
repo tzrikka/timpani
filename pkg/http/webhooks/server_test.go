@@ -2,14 +2,13 @@ package webhooks
 
 import (
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/rs/zerolog"
 )
 
 func TestBaseURL(t *testing.T) {
@@ -103,7 +102,7 @@ func TestParseURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mux := http.NewServeMux()
 			mux.HandleFunc("/webhook/{id...}", func(_ http.ResponseWriter, r *http.Request) {
-				id, suffix, status := parseURL(zerolog.Nop(), r)
+				id, suffix, status := parseURL(slog.Default(), r)
 				if id != tt.wantID {
 					t.Errorf("parseURL() ID: got = %q, want %q", id, tt.wantID)
 				}

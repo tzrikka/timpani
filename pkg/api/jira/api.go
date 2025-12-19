@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 
@@ -31,18 +32,21 @@ func (a *API) httpRequest(ctx context.Context, pathSuffix, method string, queryO
 
 	resp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, client.AcceptJSON, client.ContentJSON, queryOrJSONBody)
 	if err != nil {
-		l.Error("HTTP request error", "method", method, "error", err, "url", apiURL)
+		l.Error("HTTP request error", slog.Any("error", err),
+			slog.String("http_method", method), slog.String("url", apiURL))
 		return err
 	}
 
-	l.Info("sent HTTP request", "link_id", a.thrippy.LinkID, "method", method, "url", apiURL)
+	l.Info("sent HTTP request", slog.String("link_id", a.thrippy.LinkID),
+		slog.String("http_method", method), slog.String("url", apiURL))
+
 	if jsonResp == nil {
 		return nil
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
 		msg := "failed to decode HTTP response's JSON body"
-		l.Error(msg, "error", err, "url", apiURL)
+		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
@@ -61,7 +65,8 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 
 	apiURL, err = url.JoinPath(secrets["base_url"], URLPathPrefix, pathSuffix)
 	if err != nil {
-		l.Error("failed to construct Jira API URL", "error", err, "base_url", secrets["base_url"], "path", URLPathPrefix+pathSuffix)
+		l.Error("failed to construct Jira API URL", slog.Any("error", err),
+			slog.String("base_url", secrets["base_url"]), slog.String("path", URLPathPrefix+pathSuffix))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
 		return
 	}

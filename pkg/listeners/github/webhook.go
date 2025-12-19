@@ -8,14 +8,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/http/client"
 	"github.com/tzrikka/timpani/pkg/metrics"
 	"github.com/tzrikka/timpani/pkg/temporal"
@@ -28,7 +28,7 @@ const (
 )
 
 func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.RequestData) int {
-	l := zerolog.Ctx(ctx).With().Str("link_type", "github").Str("link_medium", "webhook").Logger()
+	l := logger.FromContext(ctx).With(slog.String("link_type", "github"), slog.String("link_medium", "webhook"))
 	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
@@ -42,7 +42,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	if r.Headers.Get(contentTypeHeader) == client.ContentForm {
 		reader := strings.NewReader(r.WebForm.Get("payload"))
 		if err := json.NewDecoder(reader).Decode(&r.JSONPayload); err != nil {
-			l.Err(err).Msg("failed to extract and decode JSON payload from form data")
+			l.Error("failed to extract and decode JSON payload from form data", slog.Any("error", err))
 			return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusInternalServerError)
 		}
 	}
@@ -50,20 +50,20 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	// Dispatch the event notification as a Temporal signal.
 	signalName := "github.events." + r.Headers.Get(eventHeader)
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
-		l.Err(err).Msg("failed to send Temporal signal")
+		l.Error("failed to send Temporal signal", slog.Any("error", err))
 		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
 	return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
 }
 
-func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
+func checkContentTypeHeader(l *slog.Logger, r listeners.RequestData) int {
 	expected := []string{"application/json", client.ContentForm}
 	ct := r.Headers.Get(contentTypeHeader)
 
 	if !slices.Contains(expected, ct) {
-		l.Warn().Str("header", contentTypeHeader).Str("got", ct).Any("want", expected).
-			Msg("bad request: unexpected header value")
+		l.Warn("bad request: unexpected header value", slog.String("header", contentTypeHeader),
+			slog.String("got", ct), slog.Any("want", expected))
 		return http.StatusBadRequest
 	}
 
@@ -71,21 +71,22 @@ func checkContentTypeHeader(l zerolog.Logger, r listeners.RequestData) int {
 }
 
 // CheckSignatureHeader is defined by and for GitHub, but also reused by Bitbucket.
-func CheckSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
+func CheckSignatureHeader(l *slog.Logger, r listeners.RequestData) int {
 	sig := r.Headers.Get(signatureHeader)
 	if sig == "" {
-		l.Warn().Str("header", signatureHeader).Msg("bad request: missing header")
+		l.Warn("bad request: missing header", slog.String("header", signatureHeader))
 		return http.StatusForbidden
 	}
 
 	secret := r.LinkSecrets["webhook_secret"]
 	if secret == "" {
-		l.Warn().Msg("webhook secret is not configured")
+		l.Warn("webhook secret is not configured")
 		return http.StatusInternalServerError
 	}
 
 	if !verifySignature(l, secret, sig, r.RawPayload) {
-		l.Warn().Str("signature", sig).Bool("has_signing_secret", secret != "").Msg("signature verification failed")
+		l.Warn("signature verification failed", slog.String("signature", sig),
+			slog.Bool("has_signing_secret", secret != ""))
 		return http.StatusForbidden
 	}
 
@@ -94,12 +95,12 @@ func CheckSignatureHeader(l zerolog.Logger, r listeners.RequestData) int {
 
 // verifySignature implements
 // https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries.
-func verifySignature(l zerolog.Logger, webhookSecret, want string, body []byte) bool {
+func verifySignature(l *slog.Logger, webhookSecret, want string, body []byte) bool {
 	mac := hmac.New(sha256.New, []byte(webhookSecret))
 
 	n, err := mac.Write(body)
 	if err != nil {
-		l.Err(err).Msg("HMAC write error")
+		l.Error("HMAC write error", slog.Any("error", err))
 		return false
 	}
 	if n != len(body) {

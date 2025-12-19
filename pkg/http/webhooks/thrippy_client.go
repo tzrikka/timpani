@@ -3,26 +3,27 @@ package webhooks
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
-	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
 	thrippypb "github.com/tzrikka/thrippy-api/thrippy/v1"
+	"github.com/tzrikka/timpani/internal/logger"
 )
 
 // linkData returns the template name and saved secrets of the given Thrippy link.
 // This function reports gRPC errors, but if the link is not found it returns nothing.
 // The output must not be cached as it may change at any time, e.g. OAuth access tokens.
 func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[string]string, error) {
-	l := zerolog.Ctx(ctx)
+	l := logger.FromContext(ctx).With(slog.String("link_id", linkID))
 
 	conn, err := grpc.NewClient(s.thrippyGRPCAddr, grpc.WithTransportCredentials(s.thrippyCreds))
 	if err != nil {
-		l.Error().Stack().Err(err).Send()
+		l.Error("gRPC connection error", slog.Any("error", err))
 		return "", nil, err
 	}
 	defer conn.Close()
@@ -37,7 +38,7 @@ func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[s
 	}.Build())
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
-			l.Error().Stack().Err(err).Send()
+			l.Error("bad response from gRPC service", slog.Any("error", err), slog.String("client_method", "GetLink"))
 			return "", nil, err
 		}
 		return "", nil, nil
@@ -48,45 +49,45 @@ func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[s
 		LinkId: proto.String(linkID),
 	}.Build())
 	if err != nil {
-		l.Error().Stack().Err(err).Send()
+		l.Error("bad response from gRPC service", slog.Any("error", err), slog.String("client_method", "GetCredentials"))
 		return "", nil, err
 	}
 
 	return resp1.GetTemplate(), resp2.GetCredentials(), nil
 }
 
-func checkLinkDataForWebhook(l zerolog.Logger, template string, secrets map[string]string, err error) int {
+func checkLinkDataForWebhook(l *slog.Logger, template string, secrets map[string]string, err error) int {
 	if err != nil {
-		l.Warn().Err(err).Msg("failed to get link secrets from Thrippy over gRPC")
+		l.Warn("failed to get link secrets from Thrippy over gRPC", slog.Any("error", err))
 		return http.StatusInternalServerError
 	}
 
 	if template == "" && secrets == nil {
-		l.Warn().Msg("bad request: link not found")
+		l.Warn("bad request: link not found")
 		return http.StatusNotFound
 	}
 
 	if template != "" && secrets == nil {
-		l.Warn().Msg("bad request: link not initialized")
+		l.Warn("bad request: link not initialized")
 		return http.StatusNotFound
 	}
 
 	return http.StatusOK
 }
 
-func checkLinkDataForConn(l zerolog.Logger, template string, secrets map[string]string, err error) error {
+func checkLinkDataForConn(l *slog.Logger, template string, secrets map[string]string, err error) error {
 	if err != nil {
-		l.Err(err).Msg("failed to get link secrets from Thrippy over gRPC")
+		l.Warn("failed to get link secrets from Thrippy over gRPC", slog.Any("error", err))
 		return err
 	}
 
 	if template == "" && secrets == nil {
-		l.Error().Msg("link ID not found in Thrippy")
+		l.Error("link ID not found in Thrippy")
 		return errors.New("configured link ID not found in Thrippy")
 	}
 
 	if template != "" && secrets == nil {
-		l.Error().Str("template", template).Msg("Thrippy link not initialized")
+		l.Error("Thrippy link not initialized", slog.String("template", template))
 		return errors.New("link not initialized in Thrippy")
 	}
 

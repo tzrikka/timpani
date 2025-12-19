@@ -1,7 +1,8 @@
 package bitbucket
 
 import (
-	"github.com/rs/zerolog"
+	"context"
+
 	"github.com/urfave/cli/v3"
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/worker"
@@ -15,13 +16,13 @@ type API struct {
 }
 
 // Register exposes Temporal activities and workflows via the Timpani worker.
-func Register(l zerolog.Logger, cmd *cli.Command, w worker.Worker) {
-	id, ok := thrippy.LinkID(l, cmd, "Bitbucket")
+func Register(ctx context.Context, cmd *cli.Command, w worker.Worker) {
+	id, ok := thrippy.LinkID(cmd, "Bitbucket")
 	if !ok {
 		return
 	}
 
-	a := API{thrippy: thrippy.NewLinkClient(id, cmd)}
+	a := API{thrippy: thrippy.NewLinkClient(ctx, id, cmd)}
 
 	registerActivity(w, a.CommitsDiffActivity, bitbucket.CommitsDiffActivityName)
 	registerActivity(w, a.CommitsDiffstatActivity, bitbucket.CommitsDiffstatActivityName)

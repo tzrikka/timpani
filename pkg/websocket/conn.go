@@ -3,17 +3,16 @@ package websocket
 import (
 	"bufio"
 	"io"
+	"log/slog"
 	"net/http"
 	"sync"
-
-	"github.com/rs/zerolog"
 )
 
 // Conn respresents the configuration and state of
 // an open client connection to a WebSocket server.
 type Conn struct {
 	// Initialized before the handshake.
-	logger  *zerolog.Logger
+	logger  *slog.Logger
 	client  *http.Client
 	headers http.Header
 

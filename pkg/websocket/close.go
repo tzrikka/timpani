@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/binary"
+	"log/slog"
 	"strconv"
 	"time"
 	"unicode/utf8"
@@ -126,8 +127,8 @@ const (
 func (c *Conn) parseClosePayload(payload []byte) (status StatusCode, reason string) {
 	switch len(payload) {
 	case 0:
-		c.logger.Trace().Str("close_status", StatusNotReceived.String()).
-			Msg("received WebSocket close control frame")
+		c.logger.Debug("received WebSocket close control frame",
+			slog.String("close_status", StatusNotReceived.String()))
 		status = StatusNormalClosure
 		return
 	case 1:
@@ -145,8 +146,8 @@ func (c *Conn) parseClosePayload(payload []byte) (status StatusCode, reason stri
 		reason = string(r)
 	}
 
-	c.logger.Trace().Str("close_status", status.String()).Str("close_reason", reason).
-		Msg("received WebSocket close control frame")
+	c.logger.Debug("received WebSocket close control frame",
+		slog.String("close_status", status.String()), slog.String("close_reason", reason))
 
 	return
 }
@@ -203,11 +204,11 @@ func (c *Conn) sendCloseControlFrame(status StatusCode, reason string) {
 	}
 
 	n := 2 + len(reason)
-	l := c.logger.With().Str("close_status", status.String()).Str("close_reason", reason).Logger()
+	l := c.logger.With(slog.String("close_status", status.String()), slog.String("close_reason", reason))
 	if err := <-c.sendControlFrame(opcodeClose, c.closeBuf[:n]); err != nil {
-		l.Err(err).Msg("failed to send WebSocket close control frame")
+		l.Error("failed to send WebSocket close control frame", slog.Any("error", err))
 	} else {
-		l.Trace().Msg("sent WebSocket close control frame")
+		l.Debug("sent WebSocket close control frame")
 	}
 
 	// Handle (or prepare for) the next step in the
