@@ -1,3 +1,4 @@
+// Package logger provides utilities for working with [slog] and [context.Context].
 package logger
 
 import (

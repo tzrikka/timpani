@@ -14,6 +14,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// FilesGetUploadURLExternalActivity is based on:
 // https://docs.slack.dev/reference/methods/files.getUploadURLExternal/
 //
 // Note: according to Slack documentation, this should be an HTTP POST request, but
@@ -57,6 +58,7 @@ func (a *API) TimpaniUploadExternalActivity(ctx context.Context, req slack.Timpa
 	return err
 }
 
+// FilesCompleteUploadExternalActivity is based on:
 // https://docs.slack.dev/reference/methods/files.completeUploadExternal/
 func (a *API) FilesCompleteUploadExternalActivity(
 	ctx context.Context,
@@ -78,6 +80,7 @@ func (a *API) FilesCompleteUploadExternalActivity(
 	return resp, nil
 }
 
+// FilesDeleteActivity is based on:
 // https://docs.slack.dev/reference/methods/files.delete/
 func (a *API) FilesDeleteActivity(ctx context.Context, req slack.FilesDeleteRequest) (*slack.FilesDeleteResponse, error) {
 	t := time.Now().UTC()

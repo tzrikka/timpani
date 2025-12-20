@@ -9,6 +9,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// AuthTestActivity is based on:
 // https://docs.slack.dev/reference/methods/auth.test/
 func (a *API) AuthTestActivity(ctx context.Context) (*slack.AuthTestResponse, error) {
 	t := time.Now().UTC()

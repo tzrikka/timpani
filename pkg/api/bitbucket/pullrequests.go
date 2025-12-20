@@ -34,6 +34,7 @@ type prMergeBody struct {
 	CloseSourceBranch bool   `json:"close_source_branch,omitempty"`
 }
 
+// PullRequestsApproveActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-approve-post
 func (a *API) PullRequestsApproveActivity(ctx context.Context, req bitbucket.PullRequestsApproveRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/approve", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -45,6 +46,7 @@ func (a *API) PullRequestsApproveActivity(ctx context.Context, req bitbucket.Pul
 	return err
 }
 
+// PullRequestsCreateCommentActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-post
 func (a *API) PullRequestsCreateCommentActivity(
 	ctx context.Context,
@@ -73,6 +75,7 @@ func (a *API) PullRequestsCreateCommentActivity(
 	return resp, nil
 }
 
+// PullRequestsDeclineActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-decline-post
 func (a *API) PullRequestsDeclineActivity(ctx context.Context, req bitbucket.PullRequestsDeclineRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/decline", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -84,6 +87,7 @@ func (a *API) PullRequestsDeclineActivity(ctx context.Context, req bitbucket.Pul
 	return err
 }
 
+// PullRequestsDeleteCommentActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-delete
 func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbucket.PullRequestsDeleteCommentRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)
@@ -95,6 +99,7 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 	return err
 }
 
+// PullRequestsDiffstatActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-diffstat-get
 func (a *API) PullRequestsDiffstatActivity(
 	ctx context.Context,
@@ -126,6 +131,7 @@ func (a *API) PullRequestsDiffstatActivity(
 	return resp, nil
 }
 
+// PullRequestsGetActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-get
 func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullRequestsGetRequest) (map[string]any, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -141,6 +147,7 @@ func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullReq
 	return resp, nil
 }
 
+// PullRequestsListActivityLogActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-activity-get
 func (a *API) PullRequestsListActivityLogActivity(
 	ctx context.Context,
@@ -204,6 +211,7 @@ func (a *API) PullRequestsListCommitsActivity(
 	return resp, nil
 }
 
+// PullRequestsListForCommitActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-commit-commit-pullrequests-get
 func (a *API) PullRequestsListForCommitActivity(
 	ctx context.Context,
@@ -235,6 +243,7 @@ func (a *API) PullRequestsListForCommitActivity(
 	return resp, nil
 }
 
+// PullRequestsMergeActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-merge-post
 func (a *API) PullRequestsMergeActivity(ctx context.Context, req bitbucket.PullRequestsMergeRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/merge", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -253,6 +262,7 @@ func (a *API) PullRequestsMergeActivity(ctx context.Context, req bitbucket.PullR
 	return err
 }
 
+// PullRequestsUnapproveActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-approve-delete
 func (a *API) PullRequestsUnapproveActivity(ctx context.Context, req bitbucket.PullRequestsUnapproveRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/approve", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -264,6 +274,7 @@ func (a *API) PullRequestsUnapproveActivity(ctx context.Context, req bitbucket.P
 	return err
 }
 
+// PullRequestsUpdateActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-put
 func (a *API) PullRequestsUpdateActivity(ctx context.Context, req bitbucket.PullRequestsUpdateRequest) (map[string]any, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s", req.Workspace, req.RepoSlug, req.PullRequestID)
@@ -279,6 +290,7 @@ func (a *API) PullRequestsUpdateActivity(ctx context.Context, req bitbucket.Pull
 	return resp, nil
 }
 
+// PullRequestsUpdateCommentActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-put
 func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbucket.PullRequestsUpdateCommentRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)

@@ -130,7 +130,7 @@ func (c *Conn) parseClosePayload(payload []byte) (status StatusCode, reason stri
 		c.logger.Debug("received WebSocket close control frame",
 			slog.String("close_status", StatusNotReceived.String()))
 		status = StatusNormalClosure
-		return
+		return status, reason
 	case 1:
 		status = StatusProtocolError
 	default:
@@ -149,7 +149,7 @@ func (c *Conn) parseClosePayload(payload []byte) (status StatusCode, reason stri
 	c.logger.Debug("received WebSocket close control frame",
 		slog.String("close_status", status.String()), slog.String("close_reason", reason))
 
-	return
+	return status, reason
 }
 
 // checkClosePayload performs protocol sanity checks and corrections on the

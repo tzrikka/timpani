@@ -60,7 +60,7 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 	var secrets map[string]string
 	secrets, err = a.thrippy.CustomLinkCreds(ctx, "")
 	if err != nil {
-		return
+		return l, "", "", err
 	}
 
 	apiURL, err = url.JoinPath(secrets["base_url"], URLPathPrefix, pathSuffix)
@@ -68,7 +68,7 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 		l.Error("failed to construct Jira API URL", slog.Any("error", err),
 			slog.String("base_url", secrets["base_url"]), slog.String("path", URLPathPrefix+pathSuffix))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
-		return
+		return l, "", "", err
 	}
 
 	// "access_token" has a value only in "jira-app-oauth" link secrets.
@@ -78,5 +78,5 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 		auth = fmt.Sprintf("Basic %s:%s", secrets["email"], secrets["api_token"])
 	}
 
-	return
+	return l, apiURL, auth, err
 }

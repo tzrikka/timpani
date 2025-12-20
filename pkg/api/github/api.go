@@ -31,7 +31,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 	var secrets map[string]string
 	secrets, err = a.thrippy.LinkCreds(ctx)
 	if err != nil {
-		return
+		return l, "", "", err
 	}
 
 	baseURL := secrets["api_base_url"] // Added automatically for "github-app-jwt" links.
@@ -49,7 +49,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 		l.Error("failed to construct GitHub API URL", slog.Any("error", err),
 			slog.String("base_url", baseURL), slog.String("path", path))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
-		return
+		return l, "", "", err
 	}
 
 	// "access_token" has a value only in "github-app-user" link secrets.
@@ -62,11 +62,11 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 			msg := "failed to generate JWT for GitHub API call"
 			l.Warn(msg, slog.Any("error", err), slog.String("link_id", a.thrippy.LinkID))
 			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
-			return
+			return l, apiURL, token, err
 		}
 	}
 
-	return
+	return l, apiURL, token, nil
 }
 
 // generateJWT generates a JSON Web Token (JWT) for a GitHub app. Based on:

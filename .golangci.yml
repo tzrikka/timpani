@@ -2,6 +2,7 @@ version: "2"
 
 linters:
   enable:
+    - asasalint
     - asciicheck
     - bidichk
     - bodyclose
@@ -20,15 +21,18 @@ linters:
     - fatcontext
     - gocheckcompilerdirectives
     - gocritic
+    - godoclint
     - godot
     - godox
     - gosec
     - gosmopolitan
     - govet
+    - iface
     - ineffassign
     - intrange
     - mirror
     - misspell
+    - modernize
     - musttag
     - noctx
     - nosprintfhostport
@@ -51,9 +55,16 @@ linters:
         source: "defer .*Close()"
   
   settings:
+    errcheck:
+      check-type-assertions: true
     godot:
       scope: all
       capital: true
+    iface:
+      enable:
+        - identical
+        - unused
+        - unexported
     misspell:
       locale: US
     predeclared:

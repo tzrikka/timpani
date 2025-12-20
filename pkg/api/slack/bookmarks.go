@@ -12,6 +12,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// BookmarksAddActivity is based on:
 // https://docs.slack.dev/reference/methods/bookmarks.add/
 func (a *API) BookmarksAddActivity(ctx context.Context, req slack.BookmarksAddRequest) (*slack.BookmarksAddResponse, error) {
 	t := time.Now().UTC()
@@ -30,6 +31,7 @@ func (a *API) BookmarksAddActivity(ctx context.Context, req slack.BookmarksAddRe
 	return resp, nil
 }
 
+// BookmarksEditActivity is based on:
 // https://docs.slack.dev/reference/methods/bookmarks.edit/
 func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEditRequest) (*slack.BookmarksEditResponse, error) {
 	t := time.Now().UTC()
@@ -55,6 +57,7 @@ func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEdit
 	return resp, nil
 }
 
+// BookmarksListActivity is based on:
 // https://docs.slack.dev/reference/methods/bookmarks.list/
 func (a *API) BookmarksListActivity(ctx context.Context, req slack.BookmarksListRequest) (*slack.BookmarksListResponse, error) {
 	t := time.Now().UTC()
@@ -73,6 +76,7 @@ func (a *API) BookmarksListActivity(ctx context.Context, req slack.BookmarksList
 	return resp, nil
 }
 
+// BookmarksRemoveActivity is based on:
 // https://docs.slack.dev/reference/methods/bookmarks.remove/
 func (a *API) BookmarksRemoveActivity(ctx context.Context, req slack.BookmarksRemoveRequest) (*slack.BookmarksRemoveResponse, error) {
 	t := time.Now().UTC()

@@ -16,17 +16,19 @@ const (
 	UsersListName = "github.users.list"
 )
 
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
+// UsersGetRequest is based on:
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
 type UsersGetRequest struct {
 	AccountID string `json:"account_id,omitempty"`
 	Username  string `json:"username,omitempty"`
 }
 
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
+// UsersGetActivity is based on:
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
+//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
 func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[string]any, error) {
 	path := "/user"
 	if req.AccountID != "" && req.Username != "" {
@@ -48,12 +50,14 @@ func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[st
 	return resp, nil
 }
 
+// UsersListRequest is based on:
 // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#list-users
 type UsersListRequest struct {
 	Since   int `json:"since,omitempty"`
 	PerPage int `json:"per_page,omitempty"`
 }
 
+// UsersListActivity is based on:
 // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#list-users
 func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) ([]map[string]any, error) {
 	query := url.Values{}

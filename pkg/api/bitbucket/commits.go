@@ -11,6 +11,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// CommitsDiffActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-diff-spec-get
 func (a *API) CommitsDiffActivity(ctx context.Context, req bitbucket.CommitsDiffRequest) (string, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/diff/%s", req.Workspace, req.RepoSlug, req.Spec)
@@ -30,6 +31,7 @@ func (a *API) CommitsDiffActivity(ctx context.Context, req bitbucket.CommitsDiff
 	return resp.String(), nil
 }
 
+// CommitsDiffstatActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-commits/#api-repositories-workspace-repo-slug-diffstat-spec-get
 func (a *API) CommitsDiffstatActivity(ctx context.Context, req bitbucket.CommitsDiffstatRequest) (*bitbucket.CommitsDiffstatResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/diffstat/%s", req.Workspace, req.RepoSlug, req.Spec)

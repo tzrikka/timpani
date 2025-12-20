@@ -14,6 +14,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// ConversationsArchiveActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.archive/
 func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.ConversationsArchiveRequest) (*slack.ConversationsArchiveResponse, error) {
 	t := time.Now().UTC()
@@ -39,6 +40,7 @@ func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.Conver
 	return resp, nil
 }
 
+// ConversationsCloseActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.close/
 func (a *API) ConversationsCloseActivity(ctx context.Context, req slack.ConversationsCloseRequest) (*slack.ConversationsCloseResponse, error) {
 	t := time.Now().UTC()
@@ -57,6 +59,7 @@ func (a *API) ConversationsCloseActivity(ctx context.Context, req slack.Conversa
 	return resp, nil
 }
 
+// ConversationsCreateActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.create/
 func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.ConversationsCreateRequest) (*slack.ConversationsCreateResponse, error) {
 	t := time.Now().UTC()
@@ -82,6 +85,7 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 	return resp, nil
 }
 
+// ConversationsHistoryActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.history/
 func (a *API) ConversationsHistoryActivity(ctx context.Context, req slack.ConversationsHistoryRequest) (*slack.ConversationsHistoryResponse, error) {
 	query := url.Values{}
@@ -121,6 +125,7 @@ func (a *API) ConversationsHistoryActivity(ctx context.Context, req slack.Conver
 	return resp, nil
 }
 
+// ConversationsInfoActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.info/
 func (a *API) ConversationsInfoActivity(ctx context.Context, req slack.ConversationsInfoRequest) (*slack.ConversationsInfoResponse, error) {
 	query := url.Values{}
@@ -148,6 +153,7 @@ func (a *API) ConversationsInfoActivity(ctx context.Context, req slack.Conversat
 	return resp, nil
 }
 
+// ConversationsInviteActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.invite/
 func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.ConversationsInviteRequest) (*slack.ConversationsInviteResponse, error) {
 	t := time.Now().UTC()
@@ -173,6 +179,7 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 	return resp, nil
 }
 
+// ConversationsJoinActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.join/
 func (a *API) ConversationsJoinActivity(ctx context.Context, req slack.ConversationsJoinRequest) (*slack.ConversationsJoinResponse, error) {
 	t := time.Now().UTC()
@@ -191,6 +198,7 @@ func (a *API) ConversationsJoinActivity(ctx context.Context, req slack.Conversat
 	return resp, nil
 }
 
+// ConversationsKickActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.kick/
 func (a *API) ConversationsKickActivity(ctx context.Context, req slack.ConversationsKickRequest) (*slack.ConversationsKickResponse, error) {
 	t := time.Now().UTC()
@@ -217,6 +225,7 @@ func (a *API) ConversationsKickActivity(ctx context.Context, req slack.Conversat
 	return resp, nil
 }
 
+// ConversationsLeaveActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.leave/
 func (a *API) ConversationsLeaveActivity(ctx context.Context, req slack.ConversationsLeaveRequest) (*slack.ConversationsLeaveResponse, error) {
 	t := time.Now().UTC()
@@ -235,6 +244,7 @@ func (a *API) ConversationsLeaveActivity(ctx context.Context, req slack.Conversa
 	return resp, nil
 }
 
+// ConversationsListActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.list/
 func (a *API) ConversationsListActivity(ctx context.Context, req slack.ConversationsListRequest) (*slack.ConversationsListResponse, error) {
 	query := url.Values{}
@@ -270,6 +280,7 @@ func (a *API) ConversationsListActivity(ctx context.Context, req slack.Conversat
 	return resp, nil
 }
 
+// ConversationsMembersActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.members/
 func (a *API) ConversationsMembersActivity(ctx context.Context, req slack.ConversationsMembersRequest) (*slack.ConversationsMembersResponse, error) {
 	query := url.Values{}
@@ -297,6 +308,7 @@ func (a *API) ConversationsMembersActivity(ctx context.Context, req slack.Conver
 	return resp, nil
 }
 
+// ConversationsOpenActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.open/
 func (a *API) ConversationsOpenActivity(ctx context.Context, req slack.ConversationsOpenRequest) (*slack.ConversationsOpenResponse, error) {
 	t := time.Now().UTC()
@@ -315,6 +327,7 @@ func (a *API) ConversationsOpenActivity(ctx context.Context, req slack.Conversat
 	return resp, nil
 }
 
+// ConversationsRenameActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.rename/
 func (a *API) ConversationsRenameActivity(ctx context.Context, req slack.ConversationsRenameRequest) (*slack.ConversationsRenameResponse, error) {
 	t := time.Now().UTC()
@@ -333,6 +346,7 @@ func (a *API) ConversationsRenameActivity(ctx context.Context, req slack.Convers
 	return resp, nil
 }
 
+// ConversationsRepliesActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.replies/
 func (a *API) ConversationsRepliesActivity(ctx context.Context, req slack.ConversationsRepliesRequest) (*slack.ConversationsRepliesResponse, error) {
 	query := url.Values{}
@@ -373,6 +387,7 @@ func (a *API) ConversationsRepliesActivity(ctx context.Context, req slack.Conver
 	return resp, nil
 }
 
+// ConversationsSetPurposeActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.setPurpose/
 func (a *API) ConversationsSetPurposeActivity(
 	ctx context.Context,
@@ -394,6 +409,7 @@ func (a *API) ConversationsSetPurposeActivity(
 	return resp, nil
 }
 
+// ConversationsSetTopicActivity is based on:
 // https://docs.slack.dev/reference/methods/conversations.setTopic/
 func (a *API) ConversationsSetTopicActivity(
 	ctx context.Context,

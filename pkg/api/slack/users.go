@@ -14,6 +14,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// UsersConversationsActivity is based on:
 // https://docs.slack.dev/reference/methods/users.conversations/
 func (a *API) UsersConversationsActivity(ctx context.Context, req slack.UsersConversationsRequest) (*slack.UsersConversationsResponse, error) {
 	query := url.Values{}
@@ -52,6 +53,7 @@ func (a *API) UsersConversationsActivity(ctx context.Context, req slack.UsersCon
 	return resp, nil
 }
 
+// UsersGetPresenceActivity is based on:
 // https://docs.slack.dev/reference/methods/users.getPresence/
 func (a *API) UsersGetPresenceActivity(ctx context.Context, req slack.UsersGetPresenceRequest) (*slack.UsersGetPresenceResponse, error) {
 	query := url.Values{}
@@ -75,6 +77,7 @@ func (a *API) UsersGetPresenceActivity(ctx context.Context, req slack.UsersGetPr
 	return resp, nil
 }
 
+// UsersInfoActivity is based on:
 // https://docs.slack.dev/reference/methods/users.info/
 func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest) (*slack.UsersInfoResponse, error) {
 	query := url.Values{}
@@ -106,6 +109,7 @@ func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest)
 	return resp, nil
 }
 
+// UsersListActivity is based on:
 // https://docs.slack.dev/reference/methods/users.list/
 func (a *API) UsersListActivity(ctx context.Context, req slack.UsersListRequest) (*slack.UsersListResponse, error) {
 	query := url.Values{}
@@ -138,6 +142,7 @@ func (a *API) UsersListActivity(ctx context.Context, req slack.UsersListRequest)
 	return resp, nil
 }
 
+// UsersLookupByEmailActivity is based on:
 // https://docs.slack.dev/reference/methods/users.lookupByEmail/
 func (a *API) UsersLookupByEmailActivity(ctx context.Context, req slack.UsersLookupByEmailRequest) (*slack.UsersLookupByEmailResponse, error) {
 	query := url.Values{}
@@ -166,6 +171,7 @@ func (a *API) UsersLookupByEmailActivity(ctx context.Context, req slack.UsersLoo
 	return resp, nil
 }
 
+// UsersProfileGetActivity is based on:
 // https://docs.slack.dev/reference/methods/users.profile.get/
 func (a *API) UsersProfileGetActivity(ctx context.Context, req slack.UsersProfileGetRequest) (*slack.UsersProfileGetResponse, error) {
 	query := url.Values{}

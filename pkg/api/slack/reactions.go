@@ -11,6 +11,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// ReactionsAddActivity is based on:
 // https://docs.slack.dev/reference/methods/reactions.add/
 func (a *API) ReactionsAddActivity(ctx context.Context, req slack.ReactionsAddRequest) (*slack.ReactionsAddResponse, error) {
 	t := time.Now().UTC()
@@ -29,6 +30,7 @@ func (a *API) ReactionsAddActivity(ctx context.Context, req slack.ReactionsAddRe
 	return resp, nil
 }
 
+// ReactionsGetActivity is based on:
 // https://docs.slack.dev/reference/methods/reactions.get/
 func (a *API) ReactionsGetActivity(ctx context.Context, req slack.ReactionsGetRequest) (*slack.ReactionsGetResponse, error) {
 	query := url.Values{}
@@ -64,6 +66,7 @@ func (a *API) ReactionsGetActivity(ctx context.Context, req slack.ReactionsGetRe
 	return resp, nil
 }
 
+// ReactionsListActivity is based on:
 // https://docs.slack.dev/reference/methods/reactions.list/
 func (a *API) ReactionsListActivity(ctx context.Context, req slack.ReactionsListRequest) (*slack.ReactionsListResponse, error) {
 	query := url.Values{}
@@ -105,6 +108,7 @@ func (a *API) ReactionsListActivity(ctx context.Context, req slack.ReactionsList
 	return resp, nil
 }
 
+// ReactionsRemoveActivity is based on:
 // https://docs.slack.dev/reference/methods/reactions.remove/
 func (a *API) ReactionsRemoveActivity(ctx context.Context, req slack.ReactionsRemoveRequest) (*slack.ReactionsRemoveResponse, error) {
 	t := time.Now().UTC()

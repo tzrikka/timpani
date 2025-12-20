@@ -10,6 +10,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// BotsInfoActivity is based on:
 // https://docs.slack.dev/reference/methods/bots.info/
 func (a *API) BotsInfoActivity(ctx context.Context, req slack.BotsInfoRequest) (*slack.BotsInfoResponse, error) {
 	query := url.Values{}

@@ -17,6 +17,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// ChatDeleteActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.delete/
 func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteRequest) (*slack.ChatDeleteResponse, error) {
 	t := time.Now().UTC()
@@ -42,6 +43,7 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 	return resp, nil
 }
 
+// ChatGetPermalinkActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.getPermalink/
 func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPermalinkRequest) (*slack.ChatGetPermalinkResponse, error) {
 	query := url.Values{}
@@ -64,6 +66,7 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 	return resp, nil
 }
 
+// ChatPostEphemeralActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postEphemeral/
 func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
 	t := time.Now().UTC()
@@ -90,6 +93,7 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	return resp, nil
 }
 
+// ChatPostMessageActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postMessage/
 func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
 	t := time.Now().UTC()
@@ -116,6 +120,7 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 	return resp, nil
 }
 
+// ChatUpdateActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.update/
 func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
 	if len(req.Text) > 4000 {

@@ -13,6 +13,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// SourceGetFileActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-source/#api-repositories-workspace-repo-slug-src-commit-path-get
 func (a *API) SourceGetFileActivity(ctx context.Context, req bitbucket.SourceGetRequest) (string, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/src/%s/%s", req.Workspace, req.RepoSlug, req.Commit, req.Path)

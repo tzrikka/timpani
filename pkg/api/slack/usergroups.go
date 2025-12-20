@@ -10,6 +10,7 @@ import (
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
+// UserGroupsListActivity is based on:
 // https://docs.slack.dev/reference/methods/usergroups.list/
 func (a *API) UserGroupsListActivity(ctx context.Context, req slack.UserGroupsListRequest) (*slack.UserGroupsListResponse, error) {
 	query := url.Values{}
@@ -42,6 +43,7 @@ func (a *API) UserGroupsListActivity(ctx context.Context, req slack.UserGroupsLi
 	return resp, nil
 }
 
+// UserGroupsUsersListActivity is based on:
 // https://docs.slack.dev/reference/methods/usergroups.users.list
 func (a *API) UserGroupsUsersListActivity(ctx context.Context, req slack.UserGroupsUsersListRequest) (*slack.UserGroupsUsersListResponse, error) {
 	query := url.Values{}

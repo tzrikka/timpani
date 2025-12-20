@@ -77,7 +77,7 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 	}
 
 	if ok {
-		_, err := parsedResp.(*strings.Builder).Write(rawResp) // Unparsed plaintext.
+		_, err := parsedResp.(*strings.Builder).Write(rawResp) //nolint:errcheck // Unparsed plaintext.
 		return err
 	}
 
@@ -99,7 +99,7 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 	var secrets map[string]string
 	secrets, err = a.thrippy.CustomLinkCreds(ctx, linkID)
 	if err != nil {
-		return
+		return l, "", "", err
 	}
 
 	apiURL, err = url.JoinPath(BaseURL, path)
@@ -107,7 +107,7 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 		l.Error("failed to construct Bitbucket API URL", slog.Any("error", err),
 			slog.String("base_url", BaseURL), slog.String("path", path))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
-		return
+		return l, "", "", err
 	}
 
 	// "access_token" has a value only in "bitbucket-app-oauth" link secrets.
@@ -117,5 +117,5 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 		auth = fmt.Sprintf("Basic %s:%s", secrets["email"], secrets["api_token"])
 	}
 
-	return
+	return l, apiURL, auth, nil
 }

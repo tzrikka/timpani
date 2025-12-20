@@ -20,12 +20,12 @@ func TestApprovalBlocks(t *testing.T) {
 	}
 
 	want := DefaultGreenButton
-	if got := es[0]["text"].(map[string]any)["text"]; got != want {
+	if got := es[0]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck
 		t.Errorf("approvalBlocks() green button label = %q, want %q", got, want)
 	}
 
 	want = "red"
-	if got := es[1]["text"].(map[string]any)["text"]; got != want {
+	if got := es[1]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck
 		t.Errorf("approvalBlocks() green button label = %q, want %q", got, want)
 	}
 

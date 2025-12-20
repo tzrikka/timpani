@@ -25,7 +25,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 	var secrets map[string]string
 	template, secrets, err = a.thrippy.LinkData(ctx)
 	if err != nil {
-		return
+		return l, "", "", err
 	}
 
 	baseURL := "https://slack.com"
@@ -38,7 +38,7 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 		l.Error("failed to construct Slack API URL", slog.Any("error", err),
 			slog.String("base_url", baseURL), slog.String("url_suffix", urlSuffix))
 		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
-		return
+		return l, "", "", err
 	}
 
 	botToken = secrets["bot_token"]
@@ -49,10 +49,10 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 		msg := "Slack bot token not found in Thrippy link credentials"
 		l.Warn(msg, slog.String("link_id", a.thrippy.LinkID))
 		err = temporal.NewNonRetryableApplicationError(msg, "error", nil, a.thrippy.LinkID)
-		return
+		return l, apiURL, botToken, err
 	}
 
-	return
+	return l, apiURL, botToken, nil
 }
 
 // httpGet is a Slack-specific HTTP GET wrapper for [client.HTTPRequest].
