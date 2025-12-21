@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/lmittmann/tint"
 	altsrc "github.com/urfave/cli-altsrc/v3"
 	"github.com/urfave/cli/v3"
 
@@ -93,9 +94,10 @@ func configFile() altsrc.StringSourcer {
 func initLog(devMode bool) {
 	var handler slog.Handler
 	if devMode {
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level:     slog.LevelDebug,
-			AddSource: true,
+		handler = tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: "15:04:05.000",
+			AddSource:  true,
 		})
 	} else {
 		handler = slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{

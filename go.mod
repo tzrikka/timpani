@@ -5,6 +5,7 @@ go 1.25.5
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/lithammer/shortuuid/v4 v4.2.0
+	github.com/lmittmann/tint v1.1.2
 	github.com/tzrikka/thrippy-api v1.5.0
 	github.com/tzrikka/timpani-api v1.7.2
 	github.com/tzrikka/xdg v1.3.3

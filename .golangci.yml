@@ -38,6 +38,7 @@ linters:
     - nosprintfhostport
     - perfsprint
     - predeclared
+    - protogetter
     - recvcheck
     # - revive
     - sloglint
