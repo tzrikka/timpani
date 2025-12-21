@@ -40,7 +40,7 @@ type Conn struct {
 	nonceGen io.Reader
 }
 
-// WebSocket data message, from one or more (defragmented) data frames,
+// Message with WebSocket data, from one or more (defragmented) data frames,
 // as defined in https://datatracker.ietf.org/doc/html/rfc6455#section-5.6.
 // Returned by the Go channel that is exposed by [Conn.IncomingMessages].
 type Message struct {
