@@ -31,13 +31,14 @@ import (
 
 // Run initializes the Temporal worker, and blocks to keep it running.
 func Run(ctx context.Context, cmd *cli.Command) error {
+	l := logger.FromContext(ctx)
 	addr := cmd.String("temporal-address")
-	slog.Info("Temporal server address: " + addr)
+	l.Info("Temporal server address: " + addr)
 
 	c, err := client.Dial(client.Options{
 		HostPort:  addr,
 		Namespace: cmd.String("temporal-namespace"),
-		Logger:    log.NewStructuredLogger(slog.Default()),
+		Logger:    log.NewStructuredLogger(l),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to dial Temporal: %w", err)
