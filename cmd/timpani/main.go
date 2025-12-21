@@ -41,7 +41,7 @@ func main() {
 			initLog(cmd.Bool("dev") || cmd.Bool("pretty-log"))
 			s := webhooks.NewHTTPServer(ctx, cmd)
 			go s.Run()
-			if err := s.ConnectLinks(ctx, cmd); err != nil {
+			if err := s.ConnectLinks(ctx); err != nil {
 				return err
 			}
 			return temporal.Run(ctx, cmd)

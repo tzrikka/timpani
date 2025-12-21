@@ -98,7 +98,7 @@ func baseURL(addr string) *url.URL {
 
 // Run starts an HTTP server to expose webhooks, and blocks forever.
 func (s *httpServer) Run() {
-	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
@@ -240,7 +240,7 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 
 // ConnectLinks initializes stateful connections for all the
 // configured Thrippy links that are not stateless webhooks.
-func (s *httpServer) ConnectLinks(ctx context.Context, cmd *cli.Command) error {
+func (s *httpServer) ConnectLinks(ctx context.Context) error {
 	for linkID := range s.webhookLinks {
 		template, secrets, err := s.linkData(ctx, linkID)
 		l := logger.FromContext(ctx).With(slog.String("link_id", linkID))

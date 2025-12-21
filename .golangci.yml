@@ -10,7 +10,7 @@ linters:
     - containedctx
     - contextcheck
     - copyloopvar
-    # - dupl
+    - dupl
     - dupword
     - embeddedstructfieldcheck
     - errcheck
