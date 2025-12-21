@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"net/url"
-	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
-	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 // UserGroupsListActivity is based on:
@@ -27,19 +25,14 @@ func (a *API) UserGroupsListActivity(ctx context.Context, req slack.UserGroupsLi
 		query.Set("team_id", req.TeamID)
 	}
 
-	t := time.Now().UTC()
 	resp := new(slack.UserGroupsListResponse)
 	if err := a.httpGet(ctx, slack.UserGroupsListActivityName, query, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.UserGroupsListActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UserGroupsListActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.UserGroupsListActivityName, nil)
 	return resp, nil
 }
 
@@ -55,18 +48,13 @@ func (a *API) UserGroupsUsersListActivity(ctx context.Context, req slack.UserGro
 		query.Set("team_id", req.TeamID)
 	}
 
-	t := time.Now().UTC()
 	resp := new(slack.UserGroupsUsersListResponse)
 	if err := a.httpGet(ctx, slack.UserGroupsUsersListActivityName, query, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.UserGroupsUsersListActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.UserGroupsUsersListActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.UserGroupsUsersListActivityName, nil)
 	return resp, nil
 }

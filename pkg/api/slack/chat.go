@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
-	"strings"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -14,33 +13,24 @@ import (
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/listeners"
-	"github.com/tzrikka/timpani/pkg/metrics"
 )
 
 // ChatDeleteActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.delete/
 func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteRequest) (*slack.ChatDeleteResponse, error) {
-	t := time.Now().UTC()
 	resp := new(slack.ChatDeleteResponse)
 	if err := a.httpPost(ctx, slack.ChatDeleteActivityName, req, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, err)
 		return nil, err
 	}
 
-	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, slackAPIError(resp, resp.Error))
-
-		if resp.Error == "cant_delete_message" {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
-		}
-		if strings.Contains(resp.Error, "invalid") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
-		}
+	switch {
+	case resp.Error == "cant_delete_message":
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
+	case !resp.OK:
 		return nil, errors.New("Slack API error: " + resp.Error)
+	default:
+		return resp, nil
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.ChatDeleteActivityName, nil)
-	return resp, nil
 }
 
 // ChatGetPermalinkActivity is based on:
@@ -50,73 +40,50 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 	query.Set("channel", req.Channel)
 	query.Set("message_ts", req.MessageTS)
 
-	t := time.Now().UTC()
 	resp := new(slack.ChatGetPermalinkResponse)
 	if err := a.httpGet(ctx, slack.ChatGetPermalinkActivityName, query, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, slackAPIError(resp, resp.Error))
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.ChatGetPermalinkActivityName, nil)
 	return resp, nil
 }
 
 // ChatPostEphemeralActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postEphemeral/
 func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
-	t := time.Now().UTC()
 	resp := new(slack.ChatPostEphemeralResponse)
 	if err := a.httpPost(ctx, slack.ChatPostEphemeralActivityName, req, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, slackAPIError(resp, resp.Error))
-
 		switch resp.Error {
 		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
 		}
-		if strings.Contains(resp.Error, "invalid") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
-		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.ChatPostEphemeralActivityName, nil)
 	return resp, nil
 }
 
 // ChatPostMessageActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postMessage/
 func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
-	t := time.Now().UTC()
 	resp := new(slack.ChatPostMessageResponse)
 	if err := a.httpPost(ctx, slack.ChatPostMessageActivityName, req, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, err)
 		return nil, err
 	}
 
 	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, slackAPIError(resp, resp.Error))
-
 		switch resp.Error {
 		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
 			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
 		}
-		if strings.Contains(resp.Error, "invalid") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
-		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.ChatPostMessageActivityName, nil)
 	return resp, nil
 }
 
@@ -127,27 +94,19 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 		req.Text = req.Text[:4000] // Prevent "msg_too_long" error.
 	}
 
-	t := time.Now().UTC()
 	resp := new(slack.ChatUpdateResponse)
 	if err := a.httpPost(ctx, slack.ChatUpdateActivityName, req, resp); err != nil {
-		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, err)
 		return nil, err
 	}
 
-	if !resp.OK {
-		metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, slackAPIError(resp, resp.Error))
-
-		if resp.Error == "cant_update_message" {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
-		}
-		if strings.Contains(resp.Error, "invalid") {
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, resp)
-		}
+	switch {
+	case resp.Error == "cant_update_message":
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
+	case !resp.OK:
 		return nil, errors.New("Slack API error: " + resp.Error)
+	default:
+		return resp, nil
 	}
-
-	metrics.IncrementAPICallCounter(t, slack.ChatUpdateActivityName, nil)
-	return resp, nil
 }
 
 // TimpaniPostApprovalWorkflow is a convenience wrapper over
