@@ -174,7 +174,7 @@ func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	statusCode = f(logger.InContext(r.Context(), l), w, intlis.RequestData{
+	statusCode = f(logger.WithContext(r.Context(), l), w, intlis.RequestData{
 		PathSuffix:  pathSuffix,
 		Headers:     r.Header,
 		WebForm:     r.Form,

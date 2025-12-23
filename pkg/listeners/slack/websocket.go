@@ -37,7 +37,7 @@ func ConnectionHandler(ctx context.Context, tc listeners.TemporalConfig, data li
 		return errors.New("internal server error")
 	}
 
-	go clientEventLoop(logger.InContext(ctx, l), tc, c)
+	go clientEventLoop(logger.WithContext(ctx, l), tc, c)
 	return nil
 }
 

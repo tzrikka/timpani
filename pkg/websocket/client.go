@@ -87,7 +87,7 @@ func newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
 }
 
 func (c *Client) newConn(ctx context.Context, f urlFunc, opts ...DialOpt) (*Conn, error) {
-	return newConn(logger.InContext(ctx, c.logger), f, opts...)
+	return newConn(logger.WithContext(ctx, c.logger), f, opts...)
 }
 
 // deleteClient deletes a newly-created [Client] which is not needed anymore,

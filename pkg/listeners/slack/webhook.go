@@ -89,7 +89,7 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	}
 
 	// Dispatch the event notification, based on its type.
-	signalName, err := dispatchFromWebhook(logger.InContext(ctx, l), r)
+	signalName, err := dispatchFromWebhook(logger.WithContext(ctx, l), r)
 	if err != nil {
 		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}

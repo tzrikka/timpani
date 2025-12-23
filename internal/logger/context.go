@@ -13,10 +13,14 @@ type ctxKey struct{}
 
 var ctxLoggerKey = ctxKey{}
 
-func InContext(ctx context.Context, l *slog.Logger) context.Context {
+// WithContext returns a derived [context.Context] that points to the
+// specified parent, and has the specified [slog.Logger] attached to it.
+func WithContext(ctx context.Context, l *slog.Logger) context.Context {
 	return context.WithValue(ctx, ctxLoggerKey, l)
 }
 
+// FromContext returns the [slog.Logger] attached to the specified
+// [context.Context], or [slog.Default] if none is attached.
 func FromContext(ctx context.Context) *slog.Logger {
 	l := slog.Default()
 	if ctxLogger, ok := ctx.Value(ctxLoggerKey).(*slog.Logger); ok {
