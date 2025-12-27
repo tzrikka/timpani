@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	"github.com/urfave/cli/v3"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/tzrikka/timpani/images"
 	intlis "github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/internal/thrippy"
@@ -97,7 +99,7 @@ func baseURL(addr string) *url.URL {
 }
 
 // Run starts an HTTP server to expose webhooks, and blocks forever.
-func (s *httpServer) Run() {
+func (s *httpServer) Run(ctx context.Context) {
 	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
@@ -111,6 +113,13 @@ func (s *httpServer) Run() {
 		http.HandleFunc("GET /start", s.thrippyHandler)
 		http.HandleFunc("POST /start", s.thrippyHandler)
 		http.HandleFunc("GET /success", s.thrippyHandler)
+
+		// https://github.com/tzrikka/revchat/blob/main/pkg/slack/commands/nudge.go
+		nudgeFiles, err := fs.Sub(images.RevChatNudge, ".")
+		if err != nil {
+			logger.Fatal(ctx, "failed to initialize static files in HTTP server", slog.Any("error", err))
+		}
+		http.Handle("/nudge/", http.FileServer(http.FS(nudgeFiles)))
 	}
 
 	server := &http.Server{

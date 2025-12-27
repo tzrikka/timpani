@@ -41,7 +41,7 @@ func main() {
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			initLog(cmd.Bool("dev") || cmd.Bool("pretty-log"))
 			s := webhooks.NewHTTPServer(ctx, cmd)
-			go s.Run()
+			go s.Run(ctx)
 			if err := s.ConnectLinks(ctx); err != nil {
 				return err
 			}
