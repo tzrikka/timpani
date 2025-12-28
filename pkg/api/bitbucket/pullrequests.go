@@ -148,6 +148,25 @@ func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullReq
 	return resp, nil
 }
 
+// PullRequestsGetCommentActivity is based on:
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-comments-comment-id-get
+func (a *API) PullRequestsGetCommentActivity(
+	ctx context.Context,
+	req bitbucket.PullRequestsGetCommentRequest,
+) (*bitbucket.PullRequestsGetCommentResponse, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)
+
+	t := time.Now().UTC()
+	resp := new(bitbucket.PullRequestsGetCommentResponse)
+	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsGetCommentActivityName, err)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // PullRequestsListActivityLogActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-activity-get
 func (a *API) PullRequestsListActivityLogActivity(

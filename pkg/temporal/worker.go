@@ -155,7 +155,7 @@ func Signal(ctx context.Context, cfg listeners.TemporalConfig, name string, payl
 	}
 
 	for _, info := range list.GetExecutions() {
-		wid, rid := info.Execution.WorkflowId, info.Execution.RunId
+		wid, rid := info.GetExecution().GetWorkflowId(), info.GetExecution().GetRunId()
 		l.Info("sending signal to Temporal workflow", slog.String("signal", name),
 			slog.String("workflow_id", wid), slog.String("run_id", rid))
 		if err := c.SignalWorkflow(ctx, wid, rid, name, payload); err != nil {

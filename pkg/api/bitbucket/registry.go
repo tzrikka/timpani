@@ -33,6 +33,7 @@ func Register(ctx context.Context, cmd *cli.Command, w worker.Worker) {
 	registerActivity(w, a.PullRequestsDeleteCommentActivity, bitbucket.PullRequestsDeleteCommentActivityName)
 	registerActivity(w, a.PullRequestsDiffstatActivity, bitbucket.PullRequestsDiffstatActivityName)
 	registerActivity(w, a.PullRequestsGetActivity, bitbucket.PullRequestsGetActivityName)
+	registerActivity(w, a.PullRequestsGetCommentActivity, bitbucket.PullRequestsGetCommentActivityName)
 	registerActivity(w, a.PullRequestsListActivityLogActivity, bitbucket.PullRequestsListActivityLogActivityName)
 	registerActivity(w, a.PullRequestsListCommitsActivity, bitbucket.PullRequestsListCommitsActivityName)
 	registerActivity(w, a.PullRequestsListForCommitActivity, bitbucket.PullRequestsListForCommitActivityName)
