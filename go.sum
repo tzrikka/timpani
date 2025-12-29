@@ -48,8 +48,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/tzrikka/thrippy-api v1.5.0 h1:8Q5JmzTieRlKjs+YuIOvbjTBSdqpoep8vlx2nox9Ugo=
 github.com/tzrikka/thrippy-api v1.5.0/go.mod h1:UEp7rcQhY5gKr84PpIpNAaigviSeZByvJOmHmmHvbrg=
-github.com/tzrikka/timpani-api v1.8.0 h1:pp4WmqPTjlPRIgGMp5uJMErbTyJVRYPyL0bvDoTzSdw=
-github.com/tzrikka/timpani-api v1.8.0/go.mod h1:Vfvdsg0TiFtdklqySi9Qi3Is7YbD5NLVbZkrV9yNIoQ=
+github.com/tzrikka/timpani-api v1.9.0 h1:o6+90iqZKQ7iou2ttFugzQviKENa6OQ+11p9feE6yvE=
+github.com/tzrikka/timpani-api v1.9.0/go.mod h1:Vfvdsg0TiFtdklqySi9Qi3Is7YbD5NLVbZkrV9yNIoQ=
 github.com/tzrikka/xdg v1.3.3 h1:IHkv0j11/Nnw6PILS13nA2j2bFncqLmcap0+rqDR8MY=
 github.com/tzrikka/xdg v1.3.3/go.mod h1:SVeuO5DrqSUti7xBpfB6zt1+Nqb9rkcPk3pHQ+esBJE=
 github.com/urfave/cli-altsrc/v3 v3.1.0 h1:6E5+kXeAWmRxXlPgdEVf9VqVoTJ2MJci0UMpUi/w/bA=

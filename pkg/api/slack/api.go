@@ -88,13 +88,11 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	slackResp, ok := jsonResp.(slack.Response)
-	if ok && !slackResp.OK {
-		err = slackAPIError(resp, slackResp.Error)
-		if strings.Contains(slackResp.Error, "invalid") {
-			metrics.IncrementAPICallCounter(t, urlSuffix, err)
-			return temporal.NewNonRetryableApplicationError(slackResp.Error, "SlackAPIError", err, resp)
-		}
+	baseResp := new(slack.Response)
+	if err := json.Unmarshal(resp, baseResp); err == nil && !baseResp.OK && strings.Contains(baseResp.Error, "invalid") {
+		err = errors.New(string(resp))
+		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		return temporal.NewNonRetryableApplicationError(baseResp.Error, "SlackAPIError", err, jsonResp)
 	}
 
 	l.Info("sent HTTP GET request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
@@ -132,13 +130,11 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
 	}
 
-	slackResp, ok := jsonResp.(slack.Response)
-	if ok && !slackResp.OK {
-		err = slackAPIError(resp, slackResp.Error)
-		if strings.Contains(slackResp.Error, "invalid") {
-			metrics.IncrementAPICallCounter(t, urlSuffix, err)
-			return temporal.NewNonRetryableApplicationError(slackResp.Error, "SlackAPIError", err, resp)
-		}
+	baseResp := new(slack.Response)
+	if err := json.Unmarshal(resp, baseResp); err == nil && !baseResp.OK && strings.Contains(baseResp.Error, "invalid") {
+		err = errors.New(string(resp))
+		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		return temporal.NewNonRetryableApplicationError(baseResp.Error, "SlackAPIError", err, jsonResp)
 	}
 
 	l.Info("sent HTTP POST request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
@@ -162,13 +158,4 @@ func (a *API) httpPostFile(ctx context.Context, uploadURL, contentType string, c
 		slog.String("content_type", contentType), slog.Int("length", len(content)))
 	metrics.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, nil)
 	return nil
-}
-
-// slackAPIError serializes a Slack API error response into an error.
-func slackAPIError(resp any, errCode string) error {
-	sb := new(strings.Builder)
-	if err := json.NewEncoder(sb).Encode(resp); err != nil {
-		return errors.New(errCode)
-	}
-	return errors.New(strings.TrimSpace(sb.String()))
 }
