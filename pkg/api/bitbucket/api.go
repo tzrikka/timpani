@@ -85,7 +85,7 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 		msg := "failed to decode HTTP response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
-		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
+		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL, string(rawResp))
 	}
 
 	return nil
@@ -106,7 +106,7 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 	if err != nil {
 		l.Error("failed to construct Bitbucket API URL", slog.Any("error", err),
 			slog.String("base_url", BaseURL), slog.String("path", path))
-		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
+		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err, BaseURL, path)
 		return l, "", "", err
 	}
 

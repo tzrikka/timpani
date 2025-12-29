@@ -36,11 +36,12 @@ func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logg
 		baseURL = "https://slack-gov.com" // https://docs.slack.dev/govslack
 	}
 
-	apiURL, err = url.JoinPath(baseURL, "api", strings.TrimPrefix(urlSuffix, "slack."))
+	suffix := strings.TrimPrefix(urlSuffix, "slack.")
+	apiURL, err = url.JoinPath(baseURL, "api", suffix)
 	if err != nil {
 		l.Error("failed to construct Slack API URL", slog.Any("error", err),
 			slog.String("base_url", baseURL), slog.String("url_suffix", urlSuffix))
-		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
+		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err, baseURL, "api", suffix)
 		return l, t, "", "", err
 	}
 
@@ -85,7 +86,7 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		msg := "failed to decode HTTP GET response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
-		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
+		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL, string(resp))
 	}
 
 	baseResp := new(slack.Response)
@@ -127,7 +128,7 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		msg := "failed to decode HTTP POST response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
-		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
+		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL, string(resp))
 	}
 
 	baseResp := new(slack.Response)

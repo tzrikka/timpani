@@ -48,7 +48,7 @@ func (a *API) httpRequest(ctx context.Context, pathSuffix, method string, queryO
 		msg := "failed to decode HTTP response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
-		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
+		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL, string(resp))
 	}
 
 	return nil
@@ -67,7 +67,7 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 	if err != nil {
 		l.Error("failed to construct Jira API URL", slog.Any("error", err),
 			slog.String("base_url", secrets["base_url"]), slog.String("path", URLPathPrefix+pathSuffix))
-		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
+		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err, URLPathPrefix, pathSuffix)
 		return l, "", "", err
 	}
 

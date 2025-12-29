@@ -48,7 +48,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 	if err != nil {
 		l.Error("failed to construct GitHub API URL", slog.Any("error", err),
 			slog.String("base_url", baseURL), slog.String("path", path))
-		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err)
+		err = temporal.NewNonRetryableApplicationError(err.Error(), fmt.Sprintf("%T", err), err, baseURL, path)
 		return l, "", "", err
 	}
 
@@ -60,7 +60,7 @@ func (a *API) httpRequestPrep(ctx context.Context, path string) (l log.Logger, a
 		token, err = generateJWT(secrets["client_id"], secrets["private_key"])
 		if err != nil {
 			msg := "failed to generate JWT for GitHub API call"
-			l.Warn(msg, slog.Any("error", err), slog.String("link_id", a.thrippy.LinkID))
+			l.Warn(msg, slog.Any("error", err), slog.String("thrippy_link_id", a.thrippy.LinkID))
 			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
 			return l, apiURL, token, err
 		}
@@ -125,9 +125,9 @@ func (a *API) httpGet(ctx context.Context, path string, query url.Values, jsonRe
 		msg := "failed to decode HTTP response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
 		msg = fmt.Sprintf("%s: %v", msg, err)
-		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL)
+		return temporal.NewNonRetryableApplicationError(msg, fmt.Sprintf("%T", err), err, apiURL, string(resp))
 	}
 
-	l.Info("sent HTTP GET request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
+	l.Info("sent HTTP GET request", slog.String("thrippy_link_id", a.thrippy.LinkID), slog.String("url", apiURL))
 	return nil
 }

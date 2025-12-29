@@ -25,7 +25,7 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 
 	switch {
 	case resp.Error == "cant_delete_message":
-		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS, resp)
 	case !resp.OK:
 		return nil, errors.New("Slack API error: " + resp.Error)
 	default:
@@ -62,7 +62,7 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 	if !resp.OK {
 		switch resp.Error {
 		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.User)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
@@ -80,7 +80,7 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 	if !resp.OK {
 		switch resp.Error {
 		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, resp)
+			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
 		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
@@ -101,7 +101,7 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 
 	switch {
 	case resp.Error == "cant_update_message":
-		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS)
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS, resp)
 	case !resp.OK:
 		return nil, errors.New("Slack API error: " + resp.Error)
 	default:

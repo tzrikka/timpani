@@ -33,7 +33,7 @@ func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEdit
 
 	switch {
 	case resp.Error == "permission_denied":
-		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.ChannelID, resp)
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.ChannelID, req.BookmarkID, resp)
 	case !resp.OK:
 		return nil, errors.New("Slack API error: " + resp.Error)
 	default:
