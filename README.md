@@ -1,6 +1,7 @@
 # Timpani
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/tzrikka/timpani.svg)](https://pkg.go.dev/github.com/tzrikka/timpani)
+[![Code Wiki](https://img.shields.io/badge/Code_Wiki-gold?logo=googlegemini)](https://codewiki.google/github.com/tzrikka/timpani)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tzrikka/timpani)](https://goreportcard.com/report/github.com/tzrikka/timpani)
 
 Timpani is a [Temporal](https://temporal.io/) worker that sends API calls and receives asynchronous event notifications to/from various well-known third-party services.
