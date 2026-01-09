@@ -29,5 +29,5 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v9 # https://github.com/marketplace/actions/golangci-lint
         with:
-          version: v2.7.2     # https://github.com/golangci/golangci-lint/releases
+          version: v2.8.0     # https://github.com/golangci/golangci-lint/releases
           args: --timeout=5m  # https://github.com/golangci/golangci-lint-action/issues/308
