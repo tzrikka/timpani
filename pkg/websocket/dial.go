@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"crypto/rand"
-	"crypto/sha1" //gosec:disable G505 -- mandated by the WebSocket protocol
+	"crypto/sha1" //gosec:disable G505 // Required by the WebSocket protocol.
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -218,7 +218,7 @@ var acceptGUID = []byte("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
 // expectedServerAcceptValue constructs the expected value of the "Sec-WebSocket-Accept"
 // header, as defined in https://datatracker.ietf.org/doc/html/rfc6455#section-4.2.2.
 func expectedServerAcceptValue(key string) string {
-	h := sha1.New() //gosec:disable G401 -- mandated by the WebSocket protocol
+	h := sha1.New() //gosec:disable G401 // Required by the WebSocket protocol.
 	h.Write([]byte(key))
 	h.Write(acceptGUID)
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))

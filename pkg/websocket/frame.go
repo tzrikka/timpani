@@ -267,7 +267,7 @@ func (c *Conn) writePayloadLength(n int) error {
 		if err := c.bufio.WriteByte(bit0 | len16bits); err != nil {
 			return err
 		}
-		binary.BigEndian.PutUint16(c.writeBuf[:2], uint16(n)) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint16(c.writeBuf[:2], uint16(n)) //gosec:disable G115 // Value checked before type conversion.
 		_, err := c.bufio.Write(c.writeBuf[:2])
 		return err
 
@@ -276,7 +276,7 @@ func (c *Conn) writePayloadLength(n int) error {
 		if err := c.bufio.WriteByte(bit0 | len64bits); err != nil {
 			return err
 		}
-		binary.BigEndian.PutUint64(c.writeBuf[:8], uint64(n)) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint64(c.writeBuf[:8], uint64(n)) //gosec:disable G115 // Value checked before type conversion.
 		_, err := c.bufio.Write(c.writeBuf[:8])
 		return err
 	}

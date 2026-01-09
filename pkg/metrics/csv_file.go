@@ -58,7 +58,7 @@ func IncrementAPICallCounter(t time.Time, method string, err error) {
 
 func appendToCSVFile(filename string, t time.Time, record []string) error {
 	filename = fmt.Sprintf(filename, t.Format(time.DateOnly))
-	f, err := os.OpenFile(filename, fileFlags, filePerms) //gosec:disable G304 -- hardcoded path
+	f, err := os.OpenFile(filename, fileFlags, filePerms) //gosec:disable G304 // Hardcoded path.
 	if err != nil {
 		return err
 	}

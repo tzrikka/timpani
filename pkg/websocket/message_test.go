@@ -123,11 +123,11 @@ func constructBenchmarkFrame(b *testing.B, bb benchmark) []byte {
 
 	switch bb.frameLens[0] {
 	case len16bits:
-		binary.BigEndian.PutUint16(frame[i:i+2], uint16(bb.frameLens[1])) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint16(frame[i:i+2], uint16(bb.frameLens[1])) //gosec:disable G115 // Value checked before type conversion.
 		_, _ = io.ReadFull(rand.Reader, frame[i+2:])
 		i += 2 + bb.frameLens[1]
 	case len64bits:
-		binary.BigEndian.PutUint64(frame[i:i+8], uint64(bb.frameLens[1])) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint64(frame[i:i+8], uint64(bb.frameLens[1])) //gosec:disable G115 // Value checked before type conversion.
 		_, _ = io.ReadFull(rand.Reader, frame[i+8:])
 		i += 8 + bb.frameLens[1]
 	default: // Up to 125 bytes.
@@ -145,9 +145,9 @@ func constructBenchmarkFrame(b *testing.B, bb benchmark) []byte {
 
 	switch bb.frameLens[0] {
 	case len16bits:
-		binary.BigEndian.PutUint16(frame[i:i+2], uint16(bb.frameLens[1])) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint16(frame[i:i+2], uint16(bb.frameLens[1])) //gosec:disable G115 // Value checked before type conversion.
 	case len64bits:
-		binary.BigEndian.PutUint64(frame[i:i+8], uint64(bb.frameLens[1])) //gosec:disable G115 -- value checked before cast
+		binary.BigEndian.PutUint64(frame[i:i+8], uint64(bb.frameLens[1])) //gosec:disable G115 // Value checked before type conversion.
 	}
 
 	return frame

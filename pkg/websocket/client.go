@@ -36,7 +36,7 @@ type urlFunc func(ctx context.Context) (string, error)
 func NewOrCachedClient(ctx context.Context, url urlFunc, id string, opts ...DialOpt) (*Client, error) {
 	hashedID := hash(id)
 	if client, ok := clients.Load(hashedID); ok {
-		return client.(*Client), nil //nolint:errcheck
+		return client.(*Client), nil //nolint:errcheck // Type conversion always succeeds.
 	}
 
 	c, err := newClient(ctx, url, opts...)
@@ -51,7 +51,7 @@ func NewOrCachedClient(ctx context.Context, url urlFunc, id string, opts ...Dial
 		go c.relayMessages(ctx)
 	}
 
-	return actual.(*Client), nil //nolint:errcheck
+	return actual.(*Client), nil //nolint:errcheck // Type conversion always succeeds.
 }
 
 // hash generates a stable-but-irreversible SHA-256 hash of a [Client] ID.
