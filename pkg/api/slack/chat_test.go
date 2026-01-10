@@ -20,13 +20,13 @@ func TestApprovalBlocks(t *testing.T) {
 	}
 
 	want := DefaultGreenButton
-	if got := es[0]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck // Type asserted always succeeds.
+	if got := es[0]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck // Type conversion always succeeds.
 		t.Errorf("approvalBlocks() green button label = %q, want %q", got, want)
 	}
 
 	want = "red"
-	if got := es[1]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck // Type asserted always succeeds.
-		t.Errorf("approvalBlocks() green button label = %q, want %q", got, want)
+	if got := es[1]["text"].(map[string]any)["text"]; got != want { //nolint:errcheck // Type conversion always succeeds.
+		t.Errorf("approvalBlocks() red button label = %q, want %q", got, want)
 	}
 
 	if es[0]["action_id"] == es[1]["action_id"] {
