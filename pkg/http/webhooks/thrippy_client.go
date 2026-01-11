@@ -18,7 +18,7 @@ import (
 // linkData returns the template name and saved secrets of the given Thrippy link.
 // This function reports gRPC errors, but if the link is not found it returns nothing.
 // The output must not be cached as it may change at any time, e.g. OAuth access tokens.
-func (s *httpServer) linkData(ctx context.Context, linkID string) (string, map[string]string, error) {
+func (s *HTTPServer) linkData(ctx context.Context, linkID string) (string, map[string]string, error) {
 	l := logger.FromContext(ctx).With(slog.String("link_id", linkID))
 
 	conn, err := grpc.NewClient(s.thrippyGRPCAddr, grpc.WithTransportCredentials(s.thrippyCreds))

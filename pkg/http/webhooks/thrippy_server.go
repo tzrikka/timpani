@@ -10,7 +10,7 @@ import (
 // thrippyHandler passes-through incoming HTTP requests (OAuth callbacks),
 // as a proxy, to a local Thrippy server. This allows Timpani and Thrippy to
 // share a single HTTP tunnel when running together in a local development setup.
-func (s *httpServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
+func (s *HTTPServer) thrippyHandler(w http.ResponseWriter, r *http.Request) {
 	l := slog.With(slog.String("http_method", r.Method), slog.String("url_path", r.URL.EscapedPath()))
 	l.Info("passing-through HTTP request to Thrippy")
 

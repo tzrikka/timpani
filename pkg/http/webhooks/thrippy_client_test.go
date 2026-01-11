@@ -94,7 +94,7 @@ func TestHTTPServerLinkData(t *testing.T) {
 				_ = gs.Serve(lis)
 			}()
 
-			hs := &httpServer{
+			hs := &HTTPServer{
 				thrippyGRPCAddr: lis.Addr().String(),
 				thrippyCreds:    insecure.NewCredentials(),
 			}

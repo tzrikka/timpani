@@ -89,7 +89,7 @@ func TestHTTPServerThrippyHandler(t *testing.T) {
 			defer s.Close()
 
 			u, _ := url.Parse(thrippyBaseURL)
-			server := &httpServer{thrippyURL: u}
+			server := &HTTPServer{thrippyURL: u}
 
 			// Construct client request.
 			w := httptest.NewRecorder()

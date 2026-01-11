@@ -31,7 +31,7 @@ const (
 	MaxSize = 10 << 20 // 10 MiB.
 )
 
-type httpServer struct {
+type HTTPServer struct {
 	httpPort     int             // To initialize the HTTP server.
 	webhookLinks map[string]bool // Configured Thrippy link IDs.
 	thrippyURL   *url.URL        // Optional passthrough for Thrippy OAuth.
@@ -42,7 +42,7 @@ type httpServer struct {
 	temporal intlis.TemporalConfig // Destination for event notifications.
 }
 
-func NewHTTPServer(ctx context.Context, cmd *cli.Command) *httpServer {
+func NewHTTPServer(ctx context.Context, cmd *cli.Command) *HTTPServer {
 	// Enumerate all configured Thrippy links - see also the initialization
 	// of non-webhook connections in [httpServer.ConnectLinks].
 	links := map[string]bool{}
@@ -52,7 +52,7 @@ func NewHTTPServer(ctx context.Context, cmd *cli.Command) *httpServer {
 		}
 	}
 
-	return &httpServer{
+	return &HTTPServer{
 		httpPort:     cmd.Int("webhook-port"),
 		webhookLinks: links,
 		thrippyURL:   baseURL(cmd.String("thrippy-http-address")),
@@ -99,7 +99,7 @@ func baseURL(addr string) *url.URL {
 }
 
 // Run starts an HTTP server to expose webhooks, and blocks forever.
-func (s *httpServer) Run(ctx context.Context) {
+func (s *HTTPServer) Run(ctx context.Context) {
 	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
@@ -134,7 +134,7 @@ func (s *httpServer) Run(ctx context.Context) {
 
 // webhookHandler checks and processes incoming asynchronous
 // event notifications over HTTP from third-party services.
-func (s *httpServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
+func (s *HTTPServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 	l := slog.With(slog.String("http_method", r.Method), slog.String("url_path", r.URL.EscapedPath()))
 	if r.Method == http.MethodPost {
 		l = l.With(slog.String("content_type", r.Header.Get("Content-Type")))
@@ -249,7 +249,7 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 
 // ConnectLinks initializes stateful connections for all the
 // configured Thrippy links that are not stateless webhooks.
-func (s *httpServer) ConnectLinks(ctx context.Context) error {
+func (s *HTTPServer) ConnectLinks(ctx context.Context) error {
 	for linkID := range s.webhookLinks {
 		template, secrets, err := s.linkData(ctx, linkID)
 		l := logger.FromContext(ctx).With(slog.String("link_id", linkID))
