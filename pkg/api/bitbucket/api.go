@@ -62,7 +62,7 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 		accept = client.AcceptText
 	}
 
-	rawResp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, client.ContentJSON, queryOrJSONBody)
+	rawResp, _, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, client.ContentJSON, queryOrJSONBody)
 	if err != nil {
 		l.Error("HTTP request error", slog.Any("error", err),
 			slog.String("http_method", method), slog.String("url", apiURL))

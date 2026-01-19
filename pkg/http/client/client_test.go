@@ -54,7 +54,7 @@ func TestHTTPRequest(t *testing.T) {
 			}
 			defer s.Close()
 
-			got, _, err := HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.contentType, tt.body)
+			got, _, _, err := HTTPRequest(t.Context(), tt.httpMethod, s.URL, "token", tt.accept, tt.contentType, tt.body)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTTPRequest() error = %v, want %v", err, tt.wantErr)
 				return
@@ -144,7 +144,7 @@ func TestParseResponse(t *testing.T) {
 				resp.Header.Set("Retry-After", strconv.Itoa(tt.retryAfter))
 			}
 
-			_, gotWait, err := parseResponse(resp, tt.body)
+			_, _, gotWait, err := parseResponse(resp, tt.body)
 			if (err != nil) != (tt.wantErr != "") || (err != nil && err.Error() != tt.wantErr) {
 				t.Errorf("parseResponse() error = %v, want %q", err, tt.wantErr)
 				return
