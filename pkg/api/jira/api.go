@@ -30,7 +30,7 @@ func (a *API) httpRequest(ctx context.Context, pathSuffix, method string, queryO
 		return err
 	}
 
-	resp, _, err := client.HTTPRequest(ctx, method, apiURL, auth, client.AcceptJSON, client.ContentJSON, queryOrJSONBody)
+	resp, _, _, err := client.HTTPRequest(ctx, method, apiURL, auth, client.AcceptJSON, client.ContentJSON, queryOrJSONBody)
 	if err != nil {
 		l.Error("HTTP request error", slog.Any("error", err),
 			slog.String("http_method", method), slog.String("url", apiURL))

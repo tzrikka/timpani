@@ -115,7 +115,7 @@ func (a *API) httpGet(ctx context.Context, path string, query url.Values, jsonRe
 		return err
 	}
 
-	resp, _, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, "", query)
+	resp, _, _, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, token, accept, "", query)
 	if err != nil {
 		l.Error("HTTP GET request error", slog.Any("error", err), slog.String("url", apiURL))
 		return err

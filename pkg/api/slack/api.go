@@ -66,7 +66,7 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 		return err
 	}
 
-	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, "", query)
+	resp, _, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, "", query)
 	if err != nil {
 		metrics.IncrementAPICallCounter(t, urlSuffix, err)
 
@@ -108,7 +108,7 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 		return err
 	}
 
-	resp, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, client.ContentJSON, jsonBody)
+	resp, _, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, client.ContentJSON, jsonBody)
 	if err != nil {
 		metrics.IncrementAPICallCounter(t, urlSuffix, err)
 
@@ -148,7 +148,7 @@ func (a *API) httpPostFile(ctx context.Context, uploadURL, contentType string, c
 	l := activity.GetLogger(ctx)
 	t := time.Now().UTC()
 
-	if resp, _, err := client.HTTPRequest(ctx, http.MethodPost, uploadURL, "", "", contentType, content); err != nil {
+	if resp, _, _, err := client.HTTPRequest(ctx, http.MethodPost, uploadURL, "", "", contentType, content); err != nil {
 		l.Error("HTTP POST request error", slog.Any("error", err), slog.String("url", uploadURL),
 			slog.String("content_type", contentType), slog.String("response", string(resp)))
 		metrics.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, err)
