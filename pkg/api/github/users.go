@@ -8,28 +8,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/tzrikka/timpani-api/pkg/github"
 	"github.com/tzrikka/timpani/pkg/metrics"
 )
-
-const (
-	UsersGetName  = "github.users.get"
-	UsersListName = "github.users.list"
-)
-
-// UsersGetRequest is based on:
-//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
-//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
-//   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
-type UsersGetRequest struct {
-	AccountID string `json:"account_id,omitempty"`
-	Username  string `json:"username,omitempty"`
-}
 
 // UsersGetActivity is based on:
 //   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
 //   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id
 //   - https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
-func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[string]any, error) {
+func (a *API) UsersGetActivity(ctx context.Context, req github.UsersGetRequest) (map[string]any, error) {
 	path := "/user"
 	if req.AccountID != "" && req.Username != "" {
 		return nil, errors.New("account ID and username are both optional and mutually-exclusive, specify at most one")
@@ -41,25 +28,18 @@ func (a *API) UsersGetActivity(ctx context.Context, req UsersGetRequest) (map[st
 
 	t := time.Now().UTC()
 	resp := map[string]any{}
-	err := a.httpGet(ctx, path, nil, &resp)
+	_, err := a.httpGet(ctx, "", path, nil, &resp)
+	metrics.IncrementAPICallCounter(t, github.UsersGetActivityName, err)
+
 	if err != nil {
-		metrics.IncrementAPICallCounter(t, UsersGetName, err)
 		return nil, err
 	}
-	metrics.IncrementAPICallCounter(t, UsersGetName, nil)
 	return resp, nil
-}
-
-// UsersListRequest is based on:
-// https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#list-users
-type UsersListRequest struct {
-	Since   int `json:"since,omitempty"`
-	PerPage int `json:"per_page,omitempty"`
 }
 
 // UsersListActivity is based on:
 // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#list-users
-func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) ([]map[string]any, error) {
+func (a *API) UsersListActivity(ctx context.Context, req github.UsersListRequest) ([]map[string]any, error) {
 	query := url.Values{}
 	if req.Since != 0 {
 		query.Set("since", strconv.Itoa(req.Since))
@@ -70,11 +50,11 @@ func (a *API) UsersListActivity(ctx context.Context, req UsersListRequest) ([]ma
 
 	t := time.Now().UTC()
 	resp := []map[string]any{}
-	err := a.httpGet(ctx, "/users/list", query, &resp)
+	_, err := a.httpGet(ctx, "", "/users/list", query, &resp)
+	metrics.IncrementAPICallCounter(t, github.UsersListActivityName, err)
+
 	if err != nil {
-		metrics.IncrementAPICallCounter(t, UsersListName, err)
 		return nil, err
 	}
-	metrics.IncrementAPICallCounter(t, UsersListName, nil)
 	return resp, nil
 }

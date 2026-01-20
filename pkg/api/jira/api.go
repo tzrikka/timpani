@@ -58,7 +58,7 @@ func (a *API) httpRequestPrep(ctx context.Context, pathSuffix string) (l log.Log
 	l = activity.GetLogger(ctx)
 
 	var secrets map[string]string
-	secrets, err = a.thrippy.CustomLinkCreds(ctx, "")
+	secrets, err = a.thrippy.LinkCreds(ctx, "")
 	if err != nil {
 		return l, "", "", err
 	}
