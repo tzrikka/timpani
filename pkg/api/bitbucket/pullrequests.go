@@ -325,7 +325,7 @@ func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbuck
 
 func paginatedQuery(pageLen, page string) url.Values {
 	query := url.Values{}
-	query.Set("pagelen", "100") // Default = 10, but we prefer to minimize number of API calls.
+	query.Set("pagelen", "100") // Default = 10, but we prefer to minimize the number of API calls.
 
 	if pageLen != "" {
 		query.Set("pagelen", pageLen)

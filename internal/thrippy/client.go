@@ -37,17 +37,10 @@ func NewLinkClient(ctx context.Context, id string, cmd *cli.Command) LinkClient 
 	}
 }
 
-// LinkCreds returns the saved secrets of the receiver's Thrippy link.
-// This function does not distinguish between "not found" and other gRPC errors.
-// The output must not be cached as it may change at any time, e.g. OAuth access tokens.
-func (t *LinkClient) LinkCreds(ctx context.Context) (map[string]string, error) {
-	return t.CustomLinkCreds(ctx, t.LinkID)
-}
-
-// CustomLinkCreds returns the saved secrets of the given Thrippy link.
-// This function does not distinguish between "not found" and other gRPC errors.
-// The output must not be cached as it may change at any time, e.g. OAuth access tokens.
-func (t *LinkClient) CustomLinkCreds(ctx context.Context, linkID string) (map[string]string, error) {
+// LinkCreds returns the saved secrets of the given Thrippy link, or of the receiver's default link
+// if no link ID is given. This function does not distinguish between "not found" and other gRPC
+// errors. The output must not be cached as it may change at any time, e.g. OAuth access tokens.
+func (t *LinkClient) LinkCreds(ctx context.Context, linkID string) (map[string]string, error) {
 	if linkID == "" {
 		linkID = t.LinkID
 	}

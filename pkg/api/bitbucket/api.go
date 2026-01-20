@@ -64,13 +64,11 @@ func (a *API) httpRequest(ctx context.Context, linkID, path, method string, quer
 
 	rawResp, _, _, err := client.HTTPRequest(ctx, method, apiURL, auth, accept, client.ContentJSON, queryOrJSONBody)
 	if err != nil {
-		l.Error("HTTP request error", slog.Any("error", err),
-			slog.String("http_method", method), slog.String("url", apiURL))
+		l.Error("HTTP request error", slog.Any("error", err), slog.String("http_method", method), slog.String("url", apiURL))
 		return err
 	}
 
-	l.Info("sent HTTP request", slog.String("link_id", a.thrippy.LinkID),
-		slog.String("http_method", method), slog.String("url", apiURL))
+	l.Info("sent HTTP request", slog.String("link_id", linkID), slog.String("http_method", method), slog.String("url", apiURL))
 
 	if parsedResp == nil {
 		return nil // No response body expected.
@@ -97,7 +95,7 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 	l = activity.GetLogger(ctx)
 
 	var secrets map[string]string
-	secrets, err = a.thrippy.CustomLinkCreds(ctx, linkID)
+	secrets, err = a.thrippy.LinkCreds(ctx, linkID)
 	if err != nil {
 		return l, "", "", err
 	}
