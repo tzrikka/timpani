@@ -25,9 +25,13 @@ jobs:
       - name: Build
         run: go build -v ./cmd/timpani
       - name: Test
-        run: gotestsum -f github-actions
+        run: gotestsum -f github-actions -- -coverprofile=coverage.txt ./...
       - name: Lint
         uses: golangci/golangci-lint-action@v9 # https://github.com/marketplace/actions/golangci-lint
         with:
           version: v2.8.0     # https://github.com/golangci/golangci-lint/releases
           args: --timeout=5m  # https://github.com/golangci/golangci-lint-action/issues/308
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5 # https://github.com/marketplace/actions/codecov
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
