@@ -106,7 +106,7 @@ func initLog(devMode bool) {
 		})
 	} else {
 		handler = slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
-			Level:     slog.LevelDebug,
+			Level:     slog.LevelInfo,
 			AddSource: true,
 		})
 	}
