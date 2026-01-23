@@ -4,7 +4,7 @@
 [![Code Wiki](https://img.shields.io/badge/Code_Wiki-gold?logo=googlegemini)](https://codewiki.google/github.com/tzrikka/timpani)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tzrikka/timpani)](https://goreportcard.com/report/github.com/tzrikka/timpani)
 
-Timpani is a [Temporal](https://temporal.io/) worker that sends API calls and receives asynchronous event notifications to/from various well-known third-party services.
+Timpani is a [Temporal](https://temporal.io/) worker that sends API calls and receives asynchronous event notifications to/from a variety of well-known third-party services.
 
 API calls are wrapped and exposed as Temporal [activities](https://docs.temporal.io/activities) for robustness and durable execution in larger workflows.
 
