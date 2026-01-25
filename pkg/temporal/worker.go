@@ -30,7 +30,7 @@ import (
 )
 
 // Run initializes the Temporal worker, and blocks to keep it running.
-func Run(ctx context.Context, cmd *cli.Command) error {
+func Run(ctx context.Context, cmd *cli.Command, bi *debug.BuildInfo) error {
 	l := logger.FromContext(ctx)
 	addr := cmd.String("temporal-address")
 	l.Info("Temporal server address: " + addr)
@@ -45,7 +45,6 @@ func Run(ctx context.Context, cmd *cli.Command) error {
 	}
 	defer c.Close()
 
-	bi, _ := debug.ReadBuildInfo()
 	w := worker.New(c, cmd.String("temporal-task-queue"), worker.Options{
 		DeploymentOptions: worker.DeploymentOptions{
 			UseVersioning: true,
