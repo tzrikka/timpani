@@ -11,13 +11,13 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"runtime/debug"
 	"time"
 
 	"github.com/urfave/cli/v3"
 	"go.temporal.io/api/workflowservice/v1"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/log"
-	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/worker"
 	"go.temporal.io/sdk/workflow"
 
@@ -45,7 +45,18 @@ func Run(ctx context.Context, cmd *cli.Command) error {
 	}
 	defer c.Close()
 
-	w := worker.New(c, cmd.String("temporal-task-queue"), worker.Options{})
+	bi, _ := debug.ReadBuildInfo()
+	w := worker.New(c, cmd.String("temporal-task-queue"), worker.Options{
+		DeploymentOptions: worker.DeploymentOptions{
+			UseVersioning: true,
+			Version: worker.WorkerDeploymentVersion{
+				DeploymentName: "timpani",
+				BuildID:        bi.Main.Version,
+			},
+			DefaultVersioningBehavior: workflow.VersioningBehaviorAutoUpgrade,
+		},
+	})
+
 	w.RegisterWorkflowWithOptions(waitForEventWorkflow, workflow.RegisterOptions{
 		Name: listeners.WaitForEventWorkflow,
 	})
@@ -64,12 +75,6 @@ func Run(ctx context.Context, cmd *cli.Command) error {
 // waitForEventWorkflow is a generic Temporal workflow that waits for a specific [Signal]
 // call from an event listener. Timeouts are optional. This workflow supports cancellation.
 func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventRequest) (map[string]any, error) {
-	// https://docs.temporal.io/develop/go/observability#visibility
-	sa := temporal.NewSearchAttributeKeyKeywordList("WaitingForSignals").ValueSet([]string{req.Signal})
-	if err := workflow.UpsertTypedSearchAttributes(ctx, sa); err != nil {
-		return nil, fmt.Errorf("failed to set workflow search attribute: %w", err)
-	}
-
 	childCtx, cancel := workflow.WithCancel(ctx)
 	defer cancel()
 

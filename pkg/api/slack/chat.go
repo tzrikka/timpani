@@ -119,32 +119,34 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 func (a *API) TimpaniPostApprovalWorkflow(ctx workflow.Context, req slack.TimpaniPostApprovalRequest) (*slack.TimpaniPostApprovalResponse, error) {
 	info := workflow.GetInfo(ctx)
 	id := base64.RawURLEncoding.EncodeToString([]byte(info.WorkflowExecution.ID))
-	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+	txCallCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		TaskQueue:           info.TaskQueueName,
 		StartToCloseTimeout: 5 * time.Second,
 		RetryPolicy:         &temporal.RetryPolicy{MaximumAttempts: 5},
 	})
-
-	fut1 := workflow.ExecuteActivity(actx, slack.ChatPostMessageActivityName, slack.ChatPostMessageRequest{
-		Channel: req.Channel,
-		Blocks:  approvalBlocks(req, id),
-
+	txCallFut := workflow.ExecuteActivity(txCallCtx, slack.ChatPostMessageActivityName, slack.ChatPostMessageRequest{
+		Channel:        req.Channel,
+		Blocks:         approvalBlocks(req, id),
 		ThreadTS:       req.ThreadTS,
 		ReplyBroadcast: req.ReplyBroadcast,
 		Metadata:       req.Metadata,
 	})
 
-	if err := fut1.Get(ctx, nil); err != nil {
+	if err := txCallFut.Get(ctx, nil); err != nil {
 		return nil, fmt.Errorf("failed to post chat message: %w", err)
 	}
 
-	fut2 := workflow.ExecuteChildWorkflow(ctx, listeners.WaitForEventWorkflow, listeners.WaitForEventRequest{
-		Signal:  "slack.events.block_actions",
-		Timeout: req.Timeout,
-	})
+	// https://docs.temporal.io/develop/go/observability#visibility
+	signal := "slack.events.block_actions"
+	attr := temporal.NewSearchAttributeKeyKeywordList("WaitingForSignals").ValueSet([]string{signal})
+	opts := workflow.ChildWorkflowOptions{TypedSearchAttributes: temporal.NewSearchAttributes(attr)}
+
+	rxEventCtx := workflow.WithChildOptions(ctx, opts)
+	rxEventReq := listeners.WaitForEventRequest{Signal: signal, Timeout: req.Timeout}
+	rxEventFut := workflow.ExecuteChildWorkflow(rxEventCtx, listeners.WaitForEventWorkflow, rxEventReq)
 
 	var payload map[string]any
-	if err := fut2.Get(ctx, &payload); err != nil {
+	if err := rxEventFut.Get(ctx, &payload); err != nil {
 		return nil, fmt.Errorf("failed to wait for events: %w", err)
 	}
 
