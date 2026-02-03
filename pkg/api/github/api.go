@@ -25,6 +25,11 @@ const (
 	defaultAccept = "application/vnd.github+json"
 )
 
+type tokenResponse struct {
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
 // httpDelete is a GitHub-specific HTTP DELETE wrapper for [client.HTTPRequest].
 func (a *API) httpDelete(ctx context.Context, linkID, path string, query url.Values) error {
 	_, err := a.httpRequest(ctx, linkID, path, http.MethodDelete, defaultAccept, query, nil)
@@ -114,25 +119,28 @@ func (a *API) httpRequestPrep(ctx context.Context, linkID, path string) (l log.L
 
 	// "access_token" has a value only in "github-app-user" link secrets.
 	// "pat" has a value only in "github-user-pat" link secrets.
-	auth = secrets["access_token"] + secrets["pat"]
-	if auth == "" {
-		// JWTs generation is supported only for "github-app-jwt" links.
-		auth, err = generateJWT(secrets["client_id"], secrets["private_key"])
-		if err != nil {
-			msg := "failed to generate JWT for GitHub API call"
-			l.Warn(msg, slog.Any("error", err), slog.String("link_id", a.thrippy.LinkID))
-			err = temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
-			return l, apiURL, auth, err
-		}
+	if auth := secrets["access_token"] + secrets["pat"]; auth != "" {
+		return l, apiURL, auth, nil
+	}
+
+	// Generating JWTs (and using them to generate installation tokens) is supported only for "github-app-jwt" links.
+	auth, err = generateJWT(secrets["client_id"], secrets["private_key"])
+	if err != nil {
+		msg := "failed to generate JWT for GitHub API call"
+		l.Warn(msg, slog.Any("error", err), slog.String("link_id", a.thrippy.LinkID))
+		return l, "", "", temporal.NewNonRetryableApplicationError(msg, "error", err, a.thrippy.LinkID)
+	}
+
+	auth, err = a.createInstallationToken(ctx, baseURL, secrets["install_id"], auth)
+	if err != nil {
+		return l, "", "", err
 	}
 
 	return l, apiURL, auth, nil
 }
 
 // generateJWT generates a JSON Web Token (JWT) for a GitHub app. Based on:
-//   - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app
-//   - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
-//   - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app
+// https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-json-web-token-jwt-for-a-github-app
 func generateJWT(clientID, privateKey string) (string, error) {
 	// Input sanity checks.
 	if clientID == "" {
@@ -168,4 +176,36 @@ func generateJWT(clientID, privateKey string) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+// createInstallationToken retrieves a new installation access token for a GitHub app. Based on:
+//   - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app
+//   - https://docs.github.com/en/rest/apps/apps?apiVersion=2022-11-28#create-an-installation-access-token-for-an-app
+func (a *API) createInstallationToken(ctx context.Context, baseURL, installID, auth string) (string, error) {
+	l := activity.GetLogger(ctx)
+	post := http.MethodPost
+
+	tokenURL, err := url.JoinPath(baseURL, "/app/installations", installID, "access_tokens")
+	if err != nil {
+		l.Error("failed to construct GitHub installation access token URL", slog.Any("error", err),
+			slog.String("base_url", baseURL), slog.String("install_id", installID))
+		return "", err
+	}
+
+	rawResp, _, _, err := client.HTTPRequest(ctx, post, tokenURL, auth, defaultAccept, "", http.NoBody)
+	if err != nil {
+		l.Error("HTTP request error", slog.Any("error", err), slog.String("http_method", post), slog.String("url", tokenURL))
+		return "", err
+	}
+	l.Info("sent HTTP request", slog.String("link_id", a.thrippy.LinkID),
+		slog.String("http_method", post), slog.String("url", tokenURL))
+
+	jsonResp := new(tokenResponse)
+	if err := json.Unmarshal(rawResp, jsonResp); err != nil {
+		l.Error("failed to decode GitHub installation access token response",
+			slog.Any("error", err), slog.String("response", string(rawResp)))
+		return "", err
+	}
+
+	return jsonResp.Token, nil
 }
