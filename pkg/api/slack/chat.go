@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	"go.temporal.io/sdk/temporal"
@@ -13,6 +14,19 @@ import (
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/listeners"
+	"github.com/tzrikka/timpani/internal/logger"
+)
+
+const (
+	// MarkdownTextMaxLength is based on:
+	//   - https://docs.slack.dev/reference/methods/chat.postEphemeral/#arguments
+	//   - https://docs.slack.dev/reference/methods/chat.postMessage/#arguments
+	//   - https://docs.slack.dev/reference/methods/chat.update/#arguments
+	MarkdownTextMaxLength = 12000
+
+	// UpdateTextMaxLength is based on:
+	// https://docs.slack.dev/reference/methods/chat.update/#errors (msg_too_long).
+	UpdateTextMaxLength = 4000
 )
 
 // ChatDeleteActivity is based on:
@@ -23,14 +37,13 @@ func (a *API) ChatDeleteActivity(ctx context.Context, req slack.ChatDeleteReques
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "cant_delete_message":
+	if resp.Error == "cant_delete_message" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS, resp)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // ChatGetPermalinkActivity is based on:
@@ -54,16 +67,21 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 // ChatPostEphemeralActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postEphemeral/
 func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
+	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
+		logger.FromContext(ctx).Warn("truncating Slack message markdown", "original_length", l, "new_length", MarkdownTextMaxLength)
+		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+	}
+
 	resp := new(slack.ChatPostEphemeralResponse)
 	if err := a.httpPost(ctx, slack.ChatPostEphemeralActivityName, req, resp); err != nil {
 		return nil, err
 	}
 
+	switch resp.Error {
+	case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.User)
+	}
 	if !resp.OK {
-		switch resp.Error {
-		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.User)
-		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 	return resp, nil
@@ -72,16 +90,25 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 // ChatPostMessageActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.postMessage/
 func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
+	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
+		logger.FromContext(ctx).Warn("truncating Slack message markdown", "original_length", l, "new_length", MarkdownTextMaxLength)
+		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+	}
+
 	resp := new(slack.ChatPostMessageResponse)
 	if err := a.httpPost(ctx, slack.ChatPostMessageActivityName, req, resp); err != nil {
 		return nil, err
 	}
 
+	switch resp.Error {
+	case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
+	case "msg_too_long":
+		req.Text = strconv.Itoa(len(req.Text))
+		req.MarkdownText = strconv.Itoa(len(req.MarkdownText))
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req)
+	}
 	if !resp.OK {
-		switch resp.Error {
-		case "channel_not_found", "is_archived", "not_in_channel", "user_not_in_channel":
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
-		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 	return resp, nil
@@ -90,8 +117,13 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 // ChatUpdateActivity is based on:
 // https://docs.slack.dev/reference/methods/chat.update/
 func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
-	if len(req.Text) > 4000 {
-		req.Text = req.Text[:4000] // Prevent "msg_too_long" error.
+	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
+		logger.FromContext(ctx).Warn("truncating Slack message markdown", "original_length", l, "new_length", MarkdownTextMaxLength)
+		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+	}
+	if l := len(req.Text); l > UpdateTextMaxLength {
+		logger.FromContext(ctx).Warn("truncating Slack message text", "original_length", l, "new_length", UpdateTextMaxLength)
+		req.Text = req.Text[:UpdateTextMaxLength-12] + " (truncated)"
 	}
 
 	resp := new(slack.ChatUpdateResponse)
@@ -99,14 +131,18 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "cant_update_message":
+	switch resp.Error {
+	case "cant_update_message":
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.TS, resp)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
+	case "msg_too_long":
+		req.Text = strconv.Itoa(len(req.Text))
+		req.MarkdownText = strconv.Itoa(len(req.MarkdownText))
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // TimpaniPostApprovalWorkflow is a convenience wrapper over

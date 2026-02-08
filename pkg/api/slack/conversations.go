@@ -19,14 +19,14 @@ func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.Conver
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "already_archived":
+	switch resp.Error {
+	case "already_archived":
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // ConversationsCloseActivity is based on:
@@ -51,14 +51,14 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "name_taken":
+	switch resp.Error {
+	case "name_taken":
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // ConversationsHistoryActivity is based on:
@@ -127,14 +127,14 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "already_in_channel":
+	switch resp.Error {
+	case "already_in_channel":
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // ConversationsJoinActivity is based on:
@@ -159,11 +159,11 @@ func (a *API) ConversationsKickActivity(ctx context.Context, req slack.Conversat
 		return nil, err
 	}
 
+	switch resp.Error {
+	case "channel_not_found", "not_in_channel":
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.User)
+	}
 	if !resp.OK {
-		switch resp.Error {
-		case "channel_not_found", "not_in_channel":
-			return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel, req.User)
-		}
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 	return resp, nil
