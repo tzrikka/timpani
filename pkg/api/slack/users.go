@@ -78,8 +78,7 @@ func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest)
 		return nil, err
 	}
 
-	switch resp.Error {
-	case "user_not_found":
+	if resp.Error == "user_not_found" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.User, resp)
 	}
 	if !resp.OK {

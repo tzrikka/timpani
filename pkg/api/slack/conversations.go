@@ -19,8 +19,7 @@ func (a *API) ConversationsArchiveActivity(ctx context.Context, req slack.Conver
 		return nil, err
 	}
 
-	switch resp.Error {
-	case "already_archived":
+	if resp.Error == "already_archived" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Channel)
 	}
 	if !resp.OK {
@@ -51,8 +50,7 @@ func (a *API) ConversationsCreateActivity(ctx context.Context, req slack.Convers
 		return nil, err
 	}
 
-	switch resp.Error {
-	case "name_taken":
+	if resp.Error == "name_taken" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.Name)
 	}
 	if !resp.OK {
@@ -127,8 +125,7 @@ func (a *API) ConversationsInviteActivity(ctx context.Context, req slack.Convers
 		return nil, err
 	}
 
-	switch resp.Error {
-	case "already_in_channel":
+	if resp.Error == "already_in_channel" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
 	}
 	if !resp.OK {

@@ -72,8 +72,7 @@ func (a *API) FilesDeleteActivity(ctx context.Context, req slack.FilesDeleteRequ
 		return nil, err
 	}
 
-	switch resp.Error {
-	case "file_not_found":
+	if resp.Error == "file_not_found" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.File)
 	}
 	if !resp.OK {
