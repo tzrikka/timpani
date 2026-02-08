@@ -21,7 +21,7 @@ func TestTruncate(t *testing.T) {
 		},
 		{
 			name:      "multi_byte_characters",
-			s:         "こんにちは世界 means 'Hello world' in Japanese",
+			s:         "こんにちは世界 means 'Hello world' in Japanese", //nolint:gosmopolitan // Test string.
 			maxLength: 20,
 			want:      "こん (truncated)",
 		},
