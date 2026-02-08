@@ -78,14 +78,13 @@ func (a *API) UsersInfoActivity(ctx context.Context, req slack.UsersInfoRequest)
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "user_not_found":
+	if resp.Error == "user_not_found" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.User, resp)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // UsersListActivity is based on:

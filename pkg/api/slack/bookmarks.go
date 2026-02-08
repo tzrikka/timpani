@@ -31,14 +31,13 @@ func (a *API) BookmarksEditActivity(ctx context.Context, req slack.BookmarksEdit
 		return nil, err
 	}
 
-	switch {
-	case resp.Error == "permission_denied":
+	if resp.Error == "permission_denied" {
 		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req.ChannelID, req.BookmarkID, resp)
-	case !resp.OK:
-		return nil, errors.New("Slack API error: " + resp.Error)
-	default:
-		return resp, nil
 	}
+	if !resp.OK {
+		return nil, errors.New("Slack API error: " + resp.Error)
+	}
+	return resp, nil
 }
 
 // BookmarksListActivity is based on:
