@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
@@ -155,15 +155,14 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 // truncate truncates the input string to the specified maximum length.
 // It ensures that we do not truncate in the middle of a multi-byte character.
 func truncate(s string, maxLength int) string {
-	maxLength = maxLength - 12 // For the " (truncated)" suffix.
-	l := len(s) - maxLength
-	r := []rune(s)
+	maxLength -= 12 // For the " (truncated)" suffix.
+	r := []rune(s[:maxLength])
+	l := len(r)
 
-	for l > 0 {
-		r = r[:len(r)-int(math.Max(1, float64(l/4)))]
-		l = len(string(r)) - maxLength
+	for l > 0 && r[l-1] == utf8.RuneError {
+		l--
+		r = r[:l]
 	}
-
 	return strings.TrimSpace(string(r)) + " (truncated)"
 }
 
