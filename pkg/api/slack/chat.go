@@ -6,16 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
+	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/internal/listeners"
-	"github.com/tzrikka/timpani/internal/logger"
 )
 
 const (
@@ -69,9 +71,9 @@ func (a *API) ChatGetPermalinkActivity(ctx context.Context, req slack.ChatGetPer
 // https://docs.slack.dev/reference/methods/chat.postEphemeral/
 func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostEphemeralRequest) (*slack.ChatPostEphemeralResponse, error) {
 	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
-		logger.FromContext(ctx).Warn("truncating Slack message markdown",
+		activity.GetLogger(ctx).Warn("truncating Slack message markdown",
 			slog.Int("original_length", l), slog.Int("new_length", MarkdownTextMaxLength))
-		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+		req.MarkdownText = truncate(req.MarkdownText, MarkdownTextMaxLength)
 	}
 
 	resp := new(slack.ChatPostEphemeralResponse)
@@ -93,9 +95,9 @@ func (a *API) ChatPostEphemeralActivity(ctx context.Context, req slack.ChatPostE
 // https://docs.slack.dev/reference/methods/chat.postMessage/
 func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMessageRequest) (*slack.ChatPostMessageResponse, error) {
 	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
-		logger.FromContext(ctx).Warn("truncating Slack message markdown",
+		activity.GetLogger(ctx).Warn("truncating Slack message markdown",
 			slog.Int("original_length", l), slog.Int("new_length", MarkdownTextMaxLength))
-		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+		req.MarkdownText = truncate(req.MarkdownText, MarkdownTextMaxLength)
 	}
 
 	resp := new(slack.ChatPostMessageResponse)
@@ -121,14 +123,14 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 // https://docs.slack.dev/reference/methods/chat.update/
 func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateRequest) (*slack.ChatUpdateResponse, error) {
 	if l := len(req.MarkdownText); l > MarkdownTextMaxLength {
-		logger.FromContext(ctx).Warn("truncating Slack message markdown",
+		activity.GetLogger(ctx).Warn("truncating Slack message markdown",
 			slog.Int("original_length", l), slog.Int("new_length", MarkdownTextMaxLength))
-		req.MarkdownText = req.MarkdownText[:MarkdownTextMaxLength-12] + " (truncated)"
+		req.MarkdownText = truncate(req.MarkdownText, MarkdownTextMaxLength)
 	}
 	if l := len(req.Text); l > UpdateTextMaxLength {
-		logger.FromContext(ctx).Warn("truncating Slack message text",
+		activity.GetLogger(ctx).Warn("truncating Slack message text",
 			slog.Int("original_length", l), slog.Int("new_length", UpdateTextMaxLength))
-		req.Text = req.Text[:UpdateTextMaxLength-12] + " (truncated)"
+		req.Text = truncate(req.Text, UpdateTextMaxLength)
 	}
 
 	resp := new(slack.ChatUpdateResponse)
@@ -148,6 +150,21 @@ func (a *API) ChatUpdateActivity(ctx context.Context, req slack.ChatUpdateReques
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
 	return resp, nil
+}
+
+// truncate truncates the input string to the specified maximum length.
+// It ensures that we do not truncate in the middle of a multi-byte character.
+func truncate(s string, maxLength int) string {
+	maxLength = maxLength - 12 // For the " (truncated)" suffix.
+	l := len(s) - maxLength
+	r := []rune(s)
+
+	for l > 0 {
+		r = r[:len(r)-int(math.Max(1, float64(l/4)))]
+		l = len(string(r)) - maxLength
+	}
+
+	return strings.TrimSpace(string(r)) + " (truncated)"
 }
 
 // TimpaniPostApprovalWorkflow is a convenience wrapper over
