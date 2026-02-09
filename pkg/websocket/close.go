@@ -167,10 +167,24 @@ func checkClosePayload(status StatusCode, reason string) (StatusCode, string) {
 	}
 
 	if len(reason) > maxCloseReason {
-		reason = reason[:maxCloseReason]
+		reason = validUTF8(reason[:maxCloseReason])
 	}
 
 	return status, reason
+}
+
+// validUTF8 truncates the input string, if needed, to ensure it doesn't end with a partial multi-byte character.
+func validUTF8(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+
+	b := []byte(s)
+	for len(b) > 0 && !utf8.Valid(b) {
+		b = b[:len(b)-1]
+	}
+
+	return string(b)
 }
 
 // sendCloseControlFrame either initiates or responds to a
