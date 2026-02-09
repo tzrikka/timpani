@@ -133,8 +133,8 @@ func parseResponse(resp *http.Response, body []byte) ([]byte, http.Header, int, 
 	// Additional GitHub-specific rate-limit handling, based on:
 	// https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28
 	if retryAfter == 0 && (resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests) {
-		if remaining := resp.Header.Get("X-Ratelimit-Remaining"); remaining == "0" {
-			if reset, err := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64); err == nil {
+		if remaining := resp.Header.Get("X-RateLimit-Remaining"); remaining == "0" {
+			if reset, err := strconv.ParseInt(resp.Header.Get("X-RateLimit-Reset"), 10, 64); err == nil {
 				retryAfter = math.Ceil(time.Until(time.Unix(reset, 0)).Seconds())
 			}
 		}
