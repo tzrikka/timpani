@@ -27,6 +27,10 @@ const (
 	//   - https://docs.slack.dev/reference/methods/chat.update/#arguments
 	MarkdownTextMaxLength = 12000
 
+	// PostTextMaxLength is based on:
+	// https://docs.slack.dev/reference/methods/chat.postMessage/#truncating
+	PostTextMaxLength = 40000
+
 	// UpdateTextMaxLength is based on:
 	// https://docs.slack.dev/reference/methods/chat.update/#errors (msg_too_long).
 	UpdateTextMaxLength = 4000
@@ -98,6 +102,11 @@ func (a *API) ChatPostMessageActivity(ctx context.Context, req slack.ChatPostMes
 		activity.GetLogger(ctx).Warn("truncating Slack message markdown",
 			slog.Int("original_length", l), slog.Int("new_length", MarkdownTextMaxLength))
 		req.MarkdownText = truncate(req.MarkdownText, MarkdownTextMaxLength)
+	}
+	if l := len(req.Text); l > PostTextMaxLength {
+		activity.GetLogger(ctx).Warn("truncating Slack message text",
+			slog.Int("original_length", l), slog.Int("new_length", PostTextMaxLength))
+		req.Text = truncate(req.Text, PostTextMaxLength)
 	}
 
 	resp := new(slack.ChatPostMessageResponse)
