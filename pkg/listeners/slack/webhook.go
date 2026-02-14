@@ -16,7 +16,7 @@ import (
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/http/client"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 const (
@@ -44,13 +44,13 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
-		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+		return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 	if statusCode := checkTimestampHeader(l, r); statusCode != http.StatusOK {
-		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+		return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 	if statusCode := checkSignatureHeader(l, r); statusCode != http.StatusOK {
-		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+		return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 
 	// Special handling for some events.
@@ -61,14 +61,14 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 		w.Header().Add(contentTypeHeader, "text/plain")
 		_, _ = fmt.Fprint(w, r.JSONPayload["challenge"])
 
-		metrics.IncrementWebhookEventCounter(l, t, "slack.events.url_verification", http.StatusOK)
+		otel.IncrementWebhookEventCounter(l, t, "slack.events.url_verification", http.StatusOK)
 		return 0 // [http.StatusOK] already written by "w.Write" ("fmt.Fprint(w)").
 	}
 
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#command_payload_descriptions
 	// (the informational note under the payload info table).
 	if r.WebForm.Get("ssl_check") != "" {
-		return metrics.IncrementWebhookEventCounter(l, t, "slack.events.ssl_check", http.StatusOK)
+		return otel.IncrementWebhookEventCounter(l, t, "slack.events.ssl_check", http.StatusOK)
 	}
 
 	// https://docs.slack.dev/interactivity/implementing-slash-commands#responding_to_commands
@@ -91,10 +91,10 @@ func WebhookHandler(ctx context.Context, w http.ResponseWriter, r listeners.Requ
 	// Dispatch the event notification, based on its type.
 	signalName, err := dispatchFromWebhook(logger.WithContext(ctx, l), r)
 	if err != nil {
-		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
+		return otel.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return metrics.IncrementWebhookEventCounter(l, t, signalName, statusCode)
+	return otel.IncrementWebhookEventCounter(l, t, signalName, statusCode)
 }
 
 func checkContentTypeHeader(l *slog.Logger, r listeners.RequestData) int {

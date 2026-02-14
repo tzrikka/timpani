@@ -12,7 +12,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 type prCommentBody struct {
@@ -42,7 +42,7 @@ func (a *API) PullRequestsApproveActivity(ctx context.Context, req bitbucket.Pul
 
 	t := time.Now().UTC()
 	err := a.httpPost(ctx, req.ThrippyLinkID, path, nil, nil)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsApproveActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsApproveActivityName, err)
 
 	return err
 }
@@ -60,7 +60,7 @@ func (a *API) PullRequestsCreateCommentActivity(
 	if req.ParentID != "" {
 		id, err := strconv.Atoi(req.ParentID)
 		if err != nil {
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 			return nil, temporal.NewNonRetryableApplicationError("invalid parent ID", fmt.Sprintf("%T", err), err, req.ParentID)
 		}
 		body.Parent = &prCreateCommentParent{ID: id}
@@ -68,7 +68,7 @@ func (a *API) PullRequestsCreateCommentActivity(
 
 	resp := new(bitbucket.PullRequestsCreateCommentResponse)
 	err := a.httpPost(ctx, req.ThrippyLinkID, path, body, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsCreateCommentActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (a *API) PullRequestsDeclineActivity(ctx context.Context, req bitbucket.Pul
 
 	t := time.Now().UTC()
 	err := a.httpPost(ctx, req.ThrippyLinkID, path, nil, nil)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDeclineActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDeclineActivityName, err)
 
 	return err
 }
@@ -95,7 +95,7 @@ func (a *API) PullRequestsDeleteCommentActivity(ctx context.Context, req bitbuck
 
 	t := time.Now().UTC()
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDeleteCommentActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDeleteCommentActivityName, err)
 
 	return err
 }
@@ -114,7 +114,7 @@ func (a *API) PullRequestsDiffstatActivity(
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
 			return nil, err
 		}
 
@@ -124,7 +124,7 @@ func (a *API) PullRequestsDiffstatActivity(
 
 	resp := new(bitbucket.PullRequestsDiffstatResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullReq
 	t := time.Now().UTC()
 	resp := map[string]any{}
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsGetActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsGetActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (a *API) PullRequestsGetCommentActivity(
 	t := time.Now().UTC()
 	resp := new(bitbucket.PullRequestsGetCommentResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsGetCommentActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsGetCommentActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -181,7 +181,7 @@ func (a *API) PullRequestsListActivityLogActivity(
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
 			return nil, err
 		}
 
@@ -191,7 +191,7 @@ func (a *API) PullRequestsListActivityLogActivity(
 
 	resp := new(bitbucket.PullRequestsListActivityLogResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -213,7 +213,7 @@ func (a *API) PullRequestsListCommitsActivity(
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
 			return nil, err
 		}
 
@@ -223,7 +223,7 @@ func (a *API) PullRequestsListCommitsActivity(
 
 	resp := new(bitbucket.PullRequestsListCommitsResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func (a *API) PullRequestsListForCommitActivity(
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
 			return nil, err
 		}
 
@@ -255,7 +255,7 @@ func (a *API) PullRequestsListForCommitActivity(
 
 	resp := new(bitbucket.PullRequestsListForCommitResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -277,7 +277,7 @@ func (a *API) PullRequestsListTasksActivity(
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
 			return nil, err
 		}
 
@@ -287,7 +287,7 @@ func (a *API) PullRequestsListTasksActivity(
 
 	resp := new(bitbucket.PullRequestsListTasksResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -309,7 +309,7 @@ func (a *API) PullRequestsMergeActivity(ctx context.Context, req bitbucket.PullR
 
 	t := time.Now().UTC()
 	err := a.httpPost(ctx, req.ThrippyLinkID, path, body, nil)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsMergeActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsMergeActivityName, err)
 
 	return err
 }
@@ -321,7 +321,7 @@ func (a *API) PullRequestsUnapproveActivity(ctx context.Context, req bitbucket.P
 
 	t := time.Now().UTC()
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, url.Values{})
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUnapproveActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsUnapproveActivityName, err)
 
 	return err
 }
@@ -334,7 +334,7 @@ func (a *API) PullRequestsUpdateActivity(ctx context.Context, req bitbucket.Pull
 	t := time.Now().UTC()
 	resp := map[string]any{}
 	err := a.httpPut(ctx, req.ThrippyLinkID, path, req.PullRequest, &resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -350,7 +350,7 @@ func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbuck
 
 	t := time.Now().UTC()
 	err := a.httpPut(ctx, req.ThrippyLinkID, path, body, nil)
-	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateCommentActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsUpdateCommentActivityName, err)
 
 	return err
 }

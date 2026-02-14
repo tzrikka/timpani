@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/github"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 type issueCommentMarkdown struct {
@@ -21,7 +21,7 @@ func (a *API) IssuesCommentsCreateActivity(ctx context.Context, req github.Issue
 	t := time.Now().UTC()
 	resp := new(github.IssueComment)
 	err := a.httpPost(ctx, req.ThrippyLinkID, path, "application/vnd.github.raw+json", issueCommentMarkdown{Body: req.Body}, resp)
-	metrics.IncrementAPICallCounter(t, github.IssuesCommentsCreateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.IssuesCommentsCreateActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (a *API) IssuesCommentsDeleteActivity(ctx context.Context, req github.Issue
 
 	t := time.Now().UTC()
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, nil)
-	metrics.IncrementAPICallCounter(t, github.IssuesCommentsDeleteActivityName, err)
+	otel.IncrementAPICallCounter(t, github.IssuesCommentsDeleteActivityName, err)
 
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (a *API) IssuesCommentsUpdateActivity(ctx context.Context, req github.Issue
 	t := time.Now().UTC()
 	resp := new(github.IssueComment)
 	err := a.httpPatch(ctx, req.ThrippyLinkID, path, "application/vnd.github.raw+json", issueCommentMarkdown{Body: req.Body}, resp)
-	metrics.IncrementAPICallCounter(t, github.IssuesCommentsUpdateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.IssuesCommentsUpdateActivityName, err)
 
 	if err != nil {
 		return nil, err

@@ -10,7 +10,7 @@ import (
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/listeners/github"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
@@ -27,7 +27,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
 		l.Warn("bad request: unexpected header value", slog.String("header", contentTypeHeader),
 			slog.String("got", ct), slog.String("want", contentTypeJSON))
-		return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
+		return otel.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
 	}
 
 	// Note 1: Bitbucket uses the exact same signature checking method as GitHub.
@@ -36,7 +36,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	// hitting rate limits. In such cases, the webhook secret may be blank.
 	if r.LinkSecrets["webhook_secret"] != "" {
 		if statusCode := github.CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-			return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+			return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 		}
 	}
 
@@ -44,8 +44,8 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	signalName := "bitbucket.events." + strings.ReplaceAll(r.Headers.Get(eventHeader), ":", ".")
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Error("failed to send Temporal signal", slog.Any("error", err))
-		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
+		return otel.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
+	return otel.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
 }

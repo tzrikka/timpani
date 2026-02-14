@@ -17,7 +17,7 @@ import (
 
 	"github.com/tzrikka/timpani-api/pkg/slack"
 	"github.com/tzrikka/timpani/pkg/http/client"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 func (a *API) httpRequestPrep(ctx context.Context, urlSuffix string) (l log.Logger, t time.Time, apiURL, botToken string, err error) {
@@ -68,7 +68,7 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 
 	resp, _, retryAfter, err := client.HTTPRequest(ctx, http.MethodGet, apiURL, botToken, client.AcceptJSON, "", query)
 	if err != nil {
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 
 		if retryAfter > 0 {
 			l.Warn("throttling HTTP GET request", slog.Int("retry_after", retryAfter), slog.String("url", apiURL))
@@ -81,7 +81,7 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 
 		msg := "failed to decode HTTP GET response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
@@ -92,12 +92,12 @@ func (a *API) httpGet(ctx context.Context, urlSuffix string, query url.Values, j
 	baseResp := new(slack.Response)
 	if err := json.Unmarshal(resp, baseResp); err == nil && !baseResp.OK && strings.Contains(baseResp.Error, "invalid") {
 		err = errors.New(string(resp))
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 		return temporal.NewNonRetryableApplicationError(baseResp.Error, "SlackAPIError", err, jsonResp)
 	}
 
 	l.Info("sent HTTP GET request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
-	metrics.IncrementAPICallCounter(t, urlSuffix, err)
+	otel.IncrementAPICallCounter(t, urlSuffix, err)
 	return nil
 }
 
@@ -110,7 +110,7 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 
 	resp, _, retryAfter, err := client.HTTPRequest(ctx, http.MethodPost, apiURL, botToken, client.AcceptJSON, client.ContentJSON, jsonBody)
 	if err != nil {
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 
 		if retryAfter > 0 {
 			l.Warn("throttling HTTP POST request", slog.Int("retry_after", retryAfter), slog.String("url", apiURL))
@@ -123,7 +123,7 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 	}
 
 	if err := json.Unmarshal(resp, jsonResp); err != nil {
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 
 		msg := "failed to decode HTTP POST response's JSON body"
 		l.Error(msg, slog.Any("error", err), slog.String("url", apiURL))
@@ -134,12 +134,12 @@ func (a *API) httpPost(ctx context.Context, urlSuffix string, jsonBody, jsonResp
 	baseResp := new(slack.Response)
 	if err := json.Unmarshal(resp, baseResp); err == nil && !baseResp.OK && strings.Contains(baseResp.Error, "invalid") {
 		err = errors.New(string(resp))
-		metrics.IncrementAPICallCounter(t, urlSuffix, err)
+		otel.IncrementAPICallCounter(t, urlSuffix, err)
 		return temporal.NewNonRetryableApplicationError(baseResp.Error, "SlackAPIError", err, jsonResp)
 	}
 
 	l.Info("sent HTTP POST request", slog.String("link_id", a.thrippy.LinkID), slog.String("url", apiURL))
-	metrics.IncrementAPICallCounter(t, urlSuffix, err)
+	otel.IncrementAPICallCounter(t, urlSuffix, err)
 	return nil
 }
 
@@ -151,12 +151,12 @@ func (a *API) httpPostFile(ctx context.Context, uploadURL, contentType string, c
 	if resp, _, _, err := client.HTTPRequest(ctx, http.MethodPost, uploadURL, "", "", contentType, content); err != nil {
 		l.Error("HTTP POST request error", slog.Any("error", err), slog.String("url", uploadURL),
 			slog.String("content_type", contentType), slog.String("response", string(resp)))
-		metrics.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, err)
+		otel.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, err)
 		return err
 	}
 
 	l.Info("sent HTTP POST request", slog.String("url", uploadURL),
 		slog.String("content_type", contentType), slog.Int("length", len(content)))
-	metrics.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, nil)
+	otel.IncrementAPICallCounter(t, slack.TimpaniUploadExternalActivityName, nil)
 	return nil
 }
