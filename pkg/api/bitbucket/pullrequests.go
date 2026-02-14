@@ -263,9 +263,9 @@ func (a *API) PullRequestsListForCommitActivity(
 	return resp, nil
 }
 
-// PullRequestsListTasks is based on:
+// PullRequestsListTasksActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks-get
-func (a *API) PullRequestsListTasks(
+func (a *API) PullRequestsListTasksActivity(
 	ctx context.Context,
 	req bitbucket.PullRequestsListTasksRequest,
 ) (*bitbucket.PullRequestsListTasksResponse, error) {
