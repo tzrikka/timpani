@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/github"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // PullRequestsGetActivity is based on:
@@ -19,7 +19,7 @@ func (a *API) PullRequestsGetActivity(ctx context.Context, req github.PullReques
 	t := time.Now().UTC()
 	resp := new(github.PullRequest)
 	_, err := a.httpGet(ctx, req.ThrippyLinkID, path, nil, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsGetActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsGetActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func paginatedActivity[T any](ctx context.Context, a *API, activityName, linkID,
 		t := time.Now().UTC()
 		resp := new([]T)
 		more, err := a.httpGet(ctx, linkID, path, query, resp)
-		metrics.IncrementAPICallCounter(t, activityName, err)
+		otel.IncrementAPICallCounter(t, activityName, err)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +96,7 @@ func (a *API) PullRequestsMergeActivity(ctx context.Context, req github.PullRequ
 	t := time.Now().UTC()
 	resp := new(github.PullRequestsMergeResponse)
 	err := a.httpPut(ctx, req.ThrippyLinkID, path, defaultAccept, req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsMergeActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsMergeActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (a *API) PullRequestsCommentsCreateActivity(ctx context.Context, req github
 	t := time.Now().UTC()
 	resp := new(github.PullComment)
 	err := a.httpPost(ctx, linkID, path, defaultAccept, req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsCommentsCreateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsCommentsCreateActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (a *API) PullRequestsCommentsCreateReplyActivity(
 	t := time.Now().UTC()
 	resp := new(github.PullComment)
 	err := a.httpPost(ctx, linkID, path, defaultAccept, req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsCommentsCreateReplyActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsCommentsCreateReplyActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (a *API) PullRequestsCommentsDeleteActivity(ctx context.Context, req github
 
 	t := time.Now().UTC()
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, nil)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsCommentsDeleteActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsCommentsDeleteActivityName, err)
 
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (a *API) PullRequestsCommentsUpdateActivity(ctx context.Context, req github
 	t := time.Now().UTC()
 	resp := new(github.PullComment)
 	err := a.httpPatch(ctx, linkID, path, "application/vnd.github-commitcomment.raw+json", req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsCommentsUpdateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsCommentsUpdateActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -203,7 +203,7 @@ func (a *API) PullRequestsReviewsCreateActivity(ctx context.Context, req github.
 	t := time.Now().UTC()
 	resp := new(github.Review)
 	err := a.httpPost(ctx, linkID, path, "application/vnd.github-commitcomment.raw+json", req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsReviewsCreateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsReviewsCreateActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func (a *API) PullRequestsReviewsDeleteActivity(ctx context.Context, req github.
 
 	t := time.Now().UTC()
 	err := a.httpDelete(ctx, req.ThrippyLinkID, path, nil)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsReviewsDeleteActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsReviewsDeleteActivityName, err)
 
 	if err != nil {
 		return err
@@ -241,7 +241,7 @@ func (a *API) PullRequestsReviewsDismissActivity(ctx context.Context, req github
 	t := time.Now().UTC()
 	resp := new(github.Review)
 	err := a.httpPut(ctx, linkID, path, "application/vnd.github-commitcomment.raw+json", req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsReviewsDismissActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsReviewsDismissActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -264,7 +264,7 @@ func (a *API) PullRequestsReviewsSubmitActivity(ctx context.Context, req github.
 	t := time.Now().UTC()
 	resp := new(github.Review)
 	err := a.httpPost(ctx, linkID, path, "application/vnd.github-commitcomment.raw+json", req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsReviewsSubmitActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsReviewsSubmitActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -287,7 +287,7 @@ func (a *API) PullRequestsReviewsUpdateActivity(ctx context.Context, req github.
 	t := time.Now().UTC()
 	resp := new(github.Review)
 	err := a.httpPut(ctx, linkID, path, "application/vnd.github-commitcomment.raw+json", req, resp)
-	metrics.IncrementAPICallCounter(t, github.PullRequestsReviewsUpdateActivityName, err)
+	otel.IncrementAPICallCounter(t, github.PullRequestsReviewsUpdateActivityName, err)
 
 	if err != nil {
 		return nil, err

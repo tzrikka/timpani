@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/github"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // UsersGetActivity is based on:
@@ -29,7 +29,7 @@ func (a *API) UsersGetActivity(ctx context.Context, req github.UsersGetRequest) 
 	t := time.Now().UTC()
 	resp := map[string]any{}
 	_, err := a.httpGet(ctx, "", path, nil, &resp)
-	metrics.IncrementAPICallCounter(t, github.UsersGetActivityName, err)
+	otel.IncrementAPICallCounter(t, github.UsersGetActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (a *API) UsersListActivity(ctx context.Context, req github.UsersListRequest
 	t := time.Now().UTC()
 	resp := []map[string]any{}
 	_, err := a.httpGet(ctx, "", "/users/list", query, &resp)
-	metrics.IncrementAPICallCounter(t, github.UsersListActivityName, err)
+	otel.IncrementAPICallCounter(t, github.UsersListActivityName, err)
 
 	if err != nil {
 		return nil, err

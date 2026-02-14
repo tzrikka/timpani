@@ -1,4 +1,4 @@
-package metrics_test
+package otel_test
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 func TestIncrementWebhookEventCounter(t *testing.T) {
@@ -20,12 +20,12 @@ func TestIncrementWebhookEventCounter(t *testing.T) {
 	}
 
 	want1 := 200
-	got1 := metrics.IncrementWebhookEventCounter(slog.Default(), now, "event", want1)
+	got1 := otel.IncrementWebhookEventCounter(slog.Default(), now, "event", want1)
 	if got1 != want1 {
 		t.Errorf("IncrementWebhookEventCounter() = %v, want %v", got1, want1)
 	}
 
-	f, err := os.ReadFile(fmt.Sprintf(metrics.DefaultMetricsFileIn, now.Format(time.DateOnly)))
+	f, err := os.ReadFile(fmt.Sprintf(otel.DefaultMetricsFileIn, now.Format(time.DateOnly)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,10 +45,10 @@ func TestIncrementAPICallCounter(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	metrics.IncrementAPICallCounter(now, "method 1", nil)
-	metrics.IncrementAPICallCounter(now, "method 2", errors.New("some error"))
+	otel.IncrementAPICallCounter(now, "method 1", nil)
+	otel.IncrementAPICallCounter(now, "method 2", errors.New("some error"))
 
-	f, err := os.ReadFile(fmt.Sprintf(metrics.DefaultMetricsFileOut, now.Format(time.DateOnly)))
+	f, err := os.ReadFile(fmt.Sprintf(otel.DefaultMetricsFileOut, now.Format(time.DateOnly)))
 	if err != nil {
 		t.Fatal(err)
 	}

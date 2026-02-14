@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // SourceGetFileActivity is based on:
@@ -28,7 +28,7 @@ func (a *API) SourceGetFileActivity(ctx context.Context, req bitbucket.SourceGet
 
 	t := time.Now().UTC()
 	resp, err := a.httpGetText(ctx, req.ThrippyLinkID, path, query)
-	metrics.IncrementAPICallCounter(t, bitbucket.SourceGetFileActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.SourceGetFileActivityName, err)
 
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "404 Not Found") {

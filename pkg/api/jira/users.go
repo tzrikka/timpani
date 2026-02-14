@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/jira"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // UsersGetActivity is based on:
@@ -18,7 +18,7 @@ func (a *API) UsersGetActivity(ctx context.Context, req jira.UsersGetRequest) (*
 	t := time.Now().UTC()
 	resp := new(jira.UsersGetResponse)
 	err := a.httpGet(ctx, "user", query, resp)
-	metrics.IncrementAPICallCounter(t, jira.UsersGetActivityName, err)
+	otel.IncrementAPICallCounter(t, jira.UsersGetActivityName, err)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (a *API) UsersSearchActivity(ctx context.Context, req jira.UsersSearchReque
 	t := time.Now().UTC()
 	var resp []jira.User
 	err := a.httpGet(ctx, "user/search", query, &resp)
-	metrics.IncrementAPICallCounter(t, jira.UsersSearchActivityName, err)
+	otel.IncrementAPICallCounter(t, jira.UsersSearchActivityName, err)
 
 	if err != nil {
 		return nil, err

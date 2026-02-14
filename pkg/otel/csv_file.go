@@ -1,7 +1,7 @@
-// Package metrics provides functions to record metrics data.
+// Package otel provides functions to record metrics data.
 // It is a very thin layer over OpenTelemetry, but it can
 // also write logs to local files for simple setups.
-package metrics
+package otel
 
 import (
 	"encoding/csv"

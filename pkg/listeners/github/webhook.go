@@ -17,7 +17,7 @@ import (
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/pkg/http/client"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 	"github.com/tzrikka/timpani/pkg/temporal"
 )
 
@@ -32,10 +32,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	t := time.Now().UTC()
 
 	if statusCode := checkContentTypeHeader(l, r); statusCode != http.StatusOK {
-		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+		return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 	if statusCode := CheckSignatureHeader(l, r); statusCode != http.StatusOK {
-		return metrics.IncrementWebhookEventCounter(l, t, "", statusCode)
+		return otel.IncrementWebhookEventCounter(l, t, "", statusCode)
 	}
 
 	// If the payload is a web form, convert it to JSON.
@@ -43,7 +43,7 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 		reader := strings.NewReader(r.WebForm.Get("payload"))
 		if err := json.NewDecoder(reader).Decode(&r.JSONPayload); err != nil {
 			l.Error("failed to extract and decode JSON payload from form data", slog.Any("error", err))
-			return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusInternalServerError)
+			return otel.IncrementWebhookEventCounter(l, t, "", http.StatusInternalServerError)
 		}
 	}
 
@@ -51,10 +51,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	signalName := "github.events." + r.Headers.Get(eventHeader)
 	if err := temporal.Signal(ctx, r.Temporal, signalName, r.JSONPayload); err != nil {
 		l.Error("failed to send Temporal signal", slog.Any("error", err))
-		return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
+		return otel.IncrementWebhookEventCounter(l, t, signalName, http.StatusInternalServerError)
 	}
 
-	return metrics.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
+	return otel.IncrementWebhookEventCounter(l, t, signalName, http.StatusOK)
 }
 
 func checkContentTypeHeader(l *slog.Logger, r listeners.RequestData) int {

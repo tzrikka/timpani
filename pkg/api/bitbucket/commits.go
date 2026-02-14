@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // CommitsDiffActivity is based on:
@@ -23,7 +23,7 @@ func (a *API) CommitsDiffActivity(ctx context.Context, req bitbucket.CommitsDiff
 
 	t := time.Now().UTC()
 	resp, err := a.httpGetText(ctx, req.ThrippyLinkID, path, query)
-	metrics.IncrementAPICallCounter(t, bitbucket.CommitsDiffActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.CommitsDiffActivityName, err)
 
 	if err != nil {
 		return "", err
@@ -58,7 +58,7 @@ func (a *API) CommitsDiffstatActivity(ctx context.Context, req bitbucket.Commits
 		overrideURL, err := url.Parse(req.Next)
 		if err != nil {
 			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			metrics.IncrementAPICallCounter(t, bitbucket.CommitsDiffstatActivityName, err)
+			otel.IncrementAPICallCounter(t, bitbucket.CommitsDiffstatActivityName, err)
 			return nil, err
 		}
 
@@ -68,7 +68,7 @@ func (a *API) CommitsDiffstatActivity(ctx context.Context, req bitbucket.Commits
 
 	resp := new(bitbucket.CommitsDiffstatResponse)
 	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	metrics.IncrementAPICallCounter(t, bitbucket.CommitsDiffstatActivityName, err)
+	otel.IncrementAPICallCounter(t, bitbucket.CommitsDiffstatActivityName, err)
 
 	if err != nil {
 		return nil, err

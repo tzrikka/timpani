@@ -8,7 +8,7 @@ import (
 
 	"github.com/tzrikka/timpani/internal/listeners"
 	"github.com/tzrikka/timpani/internal/logger"
-	"github.com/tzrikka/timpani/pkg/metrics"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 const (
@@ -23,10 +23,10 @@ func WebhookHandler(ctx context.Context, _ http.ResponseWriter, r listeners.Requ
 	if ct := r.Headers.Get(contentTypeHeader); ct != contentTypeJSON {
 		l.Warn("bad request: unexpected header value", slog.String("header", contentTypeHeader),
 			slog.String("got", ct), slog.String("want", contentTypeJSON))
-		return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
+		return otel.IncrementWebhookEventCounter(l, t, "", http.StatusBadRequest)
 	}
 
 	l.Warn("received Jira webhook event - processing not implemented yet")
 
-	return metrics.IncrementWebhookEventCounter(l, t, "", http.StatusOK)
+	return otel.IncrementWebhookEventCounter(l, t, "", http.StatusOK)
 }
