@@ -263,6 +263,38 @@ func (a *API) PullRequestsListForCommitActivity(
 	return resp, nil
 }
 
+// PullRequestsListTasks is based on:
+// https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-tasks-get
+func (a *API) PullRequestsListTasks(
+	ctx context.Context,
+	req bitbucket.PullRequestsListTasksRequest,
+) (*bitbucket.PullRequestsListTasksResponse, error) {
+	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/tasks", req.Workspace, req.RepoSlug, req.PullRequestID)
+	query := paginatedQuery(req.PageLen, req.Page)
+
+	t := time.Now().UTC()
+	if req.Next != "" {
+		overrideURL, err := url.Parse(req.Next)
+		if err != nil {
+			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
+			metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
+			return nil, err
+		}
+
+		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
+		query = overrideURL.Query()
+	}
+
+	resp := new(bitbucket.PullRequestsListTasksResponse)
+	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
+	metrics.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 // PullRequestsMergeActivity is based on:
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-merge-post
 func (a *API) PullRequestsMergeActivity(ctx context.Context, req bitbucket.PullRequestsMergeRequest) error {
