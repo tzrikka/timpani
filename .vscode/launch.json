@@ -16,7 +16,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "cmd/timpani/main.go",
+            "program": "cmd/timpani",
             "args": [
                 "--dev"
             ]
