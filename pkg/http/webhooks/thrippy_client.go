@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	thrippypb "github.com/tzrikka/thrippy-api/thrippy/v1"
 	"github.com/tzrikka/timpani/internal/logger"
@@ -33,9 +32,7 @@ func (s *HTTPServer) linkData(ctx context.Context, linkID string) (string, map[s
 	defer cancel()
 
 	// Template.
-	resp1, err := c.GetLink(ctx, thrippypb.GetLinkRequest_builder{
-		LinkId: proto.String(linkID),
-	}.Build())
+	resp1, err := c.GetLink(ctx, thrippypb.GetLinkRequest_builder{LinkId: new(linkID)}.Build())
 	if err != nil {
 		if status.Code(err) != codes.NotFound {
 			l.Error("bad response from gRPC service", slog.Any("error", err), slog.String("client_method", "GetLink"))
@@ -45,9 +42,7 @@ func (s *HTTPServer) linkData(ctx context.Context, linkID string) (string, map[s
 	}
 
 	// Credentials.
-	resp2, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{
-		LinkId: proto.String(linkID),
-	}.Build())
+	resp2, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{LinkId: new(linkID)}.Build())
 	if err != nil {
 		l.Error("bad response from gRPC service", slog.Any("error", err), slog.String("client_method", "GetCredentials"))
 		return "", nil, err

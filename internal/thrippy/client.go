@@ -14,7 +14,6 @@ import (
 	"go.temporal.io/sdk/activity"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/protobuf/proto"
 
 	thrippypb "github.com/tzrikka/thrippy-api/thrippy/v1"
 )
@@ -58,9 +57,7 @@ func (t *LinkClient) LinkCreds(ctx context.Context, linkID string) (map[string]s
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	resp, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{
-		LinkId: proto.String(linkID),
-	}.Build())
+	resp, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{LinkId: new(linkID)}.Build())
 	if err != nil {
 		l.Error("bad response from gRPC service", slog.Any("error", err),
 			slog.String("link_id", linkID), slog.String("client_method", "GetCredentials"))
@@ -88,9 +85,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 	defer cancel()
 
 	// Template.
-	resp1, err := c.GetLink(ctx, thrippypb.GetLinkRequest_builder{
-		LinkId: proto.String(t.LinkID),
-	}.Build())
+	resp1, err := c.GetLink(ctx, thrippypb.GetLinkRequest_builder{LinkId: new(t.LinkID)}.Build())
 	if err != nil {
 		l.Error("bad response from gRPC service", slog.Any("error", err),
 			slog.String("link_id", t.LinkID), slog.String("client_method", "GetLink"))
@@ -98,9 +93,7 @@ func (t *LinkClient) LinkData(ctx context.Context) (string, map[string]string, e
 	}
 
 	// Credentials.
-	resp2, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{
-		LinkId: proto.String(t.LinkID),
-	}.Build())
+	resp2, err := c.GetCredentials(ctx, thrippypb.GetCredentialsRequest_builder{LinkId: new(t.LinkID)}.Build())
 	if err != nil {
 		l.Error("bad response from gRPC service", slog.Any("error", err),
 			slog.String("link_id", t.LinkID), slog.String("client_method", "GetCredentials"))
