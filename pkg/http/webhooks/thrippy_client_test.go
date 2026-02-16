@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	thrippypb "github.com/tzrikka/thrippy-api/thrippy/v1"
 )
@@ -57,18 +56,14 @@ func TestHTTPServerLinkData(t *testing.T) {
 			respErr: status.Error(codes.NotFound, "link not found"),
 		},
 		{
-			name: "existing_link_without_secrets",
-			linkResp: thrippypb.GetLinkResponse_builder{
-				Template: proto.String("template"),
-			}.Build(),
+			name:         "existing_link_without_secrets",
+			linkResp:     thrippypb.GetLinkResponse_builder{Template: new("template")}.Build(),
 			credsResp:    thrippypb.GetCredentialsResponse_builder{}.Build(),
 			wantTemplate: "template",
 		},
 		{
-			name: "happy_path",
-			linkResp: thrippypb.GetLinkResponse_builder{
-				Template: proto.String("template"),
-			}.Build(),
+			name:     "happy_path",
+			linkResp: thrippypb.GetLinkResponse_builder{Template: new("template")}.Build(),
 			credsResp: thrippypb.GetCredentialsResponse_builder{
 				Credentials: map[string]string{"aaa": "111", "bbb": "222"},
 			}.Build(),
