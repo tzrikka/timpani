@@ -1,4 +1,3 @@
-//nolint:dupl
 package bitbucket
 
 import (
@@ -107,25 +106,13 @@ func (a *API) PullRequestsDiffstatActivity(
 	req bitbucket.PullRequestsDiffstatRequest,
 ) (*bitbucket.PullRequestsDiffstatResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/diffstat", req.Workspace, req.RepoSlug, req.PullRequestID)
-	query := paginatedQuery(req.PageLen, req.Page)
-
-	t := time.Now().UTC()
-	if req.Next != "" {
-		overrideURL, err := url.Parse(req.Next)
-		if err != nil {
-			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
-			return nil, err
-		}
-
-		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
-		query = overrideURL.Query()
+	path, query, err := paginatedQuery(bitbucket.PullRequestsDiffstatActivityName, path, req.PageLen, req.Page, req.Next)
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(bitbucket.PullRequestsDiffstatResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsDiffstatActivityName, err)
-
+	err = a.httpGet(ctx, bitbucket.PullRequestsDiffstatActivityName, req.ThrippyLinkID, path, query, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -137,11 +124,8 @@ func (a *API) PullRequestsDiffstatActivity(
 func (a *API) PullRequestsGetActivity(ctx context.Context, req bitbucket.PullRequestsGetRequest) (map[string]any, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s", req.Workspace, req.RepoSlug, req.PullRequestID)
 
-	t := time.Now().UTC()
 	resp := map[string]any{}
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsGetActivityName, err)
-
+	err := a.httpGet(ctx, bitbucket.PullRequestsGetActivityName, req.ThrippyLinkID, path, url.Values{}, &resp)
 	if err != nil {
 		return nil, err
 	}
@@ -156,11 +140,8 @@ func (a *API) PullRequestsGetCommentActivity(
 ) (*bitbucket.PullRequestsGetCommentResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/comments/%s", req.Workspace, req.RepoSlug, req.PullRequestID, req.CommentID)
 
-	t := time.Now().UTC()
 	resp := new(bitbucket.PullRequestsGetCommentResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, url.Values{}, &resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsGetCommentActivityName, err)
-
+	err := a.httpGet(ctx, bitbucket.PullRequestsGetCommentActivityName, req.ThrippyLinkID, path, url.Values{}, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -174,25 +155,13 @@ func (a *API) PullRequestsListActivityLogActivity(
 	req bitbucket.PullRequestsListActivityLogRequest,
 ) (*bitbucket.PullRequestsListActivityLogResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/activity", req.Workspace, req.RepoSlug, req.PullRequestID)
-	query := paginatedQuery(req.PageLen, req.Page)
-
-	t := time.Now().UTC()
-	if req.Next != "" {
-		overrideURL, err := url.Parse(req.Next)
-		if err != nil {
-			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
-			return nil, err
-		}
-
-		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
-		query = overrideURL.Query()
+	path, query, err := paginatedQuery(bitbucket.PullRequestsListActivityLogActivityName, path, req.PageLen, req.Page, req.Next)
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(bitbucket.PullRequestsListActivityLogResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListActivityLogActivityName, err)
-
+	err = a.httpGet(ctx, bitbucket.PullRequestsListActivityLogActivityName, req.ThrippyLinkID, path, query, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -206,25 +175,13 @@ func (a *API) PullRequestsListCommitsActivity(
 	req bitbucket.PullRequestsListCommitsRequest,
 ) (*bitbucket.PullRequestsListCommitsResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/commits", req.Workspace, req.RepoSlug, req.PullRequestID)
-	query := paginatedQuery(req.PageLen, req.Page)
-
-	t := time.Now().UTC()
-	if req.Next != "" {
-		overrideURL, err := url.Parse(req.Next)
-		if err != nil {
-			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
-			return nil, err
-		}
-
-		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
-		query = overrideURL.Query()
+	path, query, err := paginatedQuery(bitbucket.PullRequestsListCommitsActivityName, path, req.PageLen, req.Page, req.Next)
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(bitbucket.PullRequestsListCommitsResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListCommitsActivityName, err)
-
+	err = a.httpGet(ctx, bitbucket.PullRequestsListCommitsActivityName, req.ThrippyLinkID, path, query, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -238,25 +195,13 @@ func (a *API) PullRequestsListForCommitActivity(
 	req bitbucket.PullRequestsListForCommitRequest,
 ) (*bitbucket.PullRequestsListForCommitResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/commit/%s/pullrequests", req.Workspace, req.RepoSlug, req.Commit)
-	query := paginatedQuery(req.PageLen, req.Page)
-
-	t := time.Now().UTC()
-	if req.Next != "" {
-		overrideURL, err := url.Parse(req.Next)
-		if err != nil {
-			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
-			return nil, err
-		}
-
-		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
-		query = overrideURL.Query()
+	path, query, err := paginatedQuery(bitbucket.PullRequestsListForCommitActivityName, path, req.PageLen, req.Page, req.Next)
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(bitbucket.PullRequestsListForCommitResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListForCommitActivityName, err)
-
+	err = a.httpGet(ctx, bitbucket.PullRequestsListForCommitActivityName, req.ThrippyLinkID, path, query, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -270,25 +215,13 @@ func (a *API) PullRequestsListTasksActivity(
 	req bitbucket.PullRequestsListTasksRequest,
 ) (*bitbucket.PullRequestsListTasksResponse, error) {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/tasks", req.Workspace, req.RepoSlug, req.PullRequestID)
-	query := paginatedQuery(req.PageLen, req.Page)
-
-	t := time.Now().UTC()
-	if req.Next != "" {
-		overrideURL, err := url.Parse(req.Next)
-		if err != nil {
-			err = fmt.Errorf("invalid next page URL %q: %w", req.Next, err)
-			otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
-			return nil, err
-		}
-
-		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
-		query = overrideURL.Query()
+	path, query, err := paginatedQuery(bitbucket.PullRequestsListTasksActivityName, path, req.PageLen, req.Page, req.Next)
+	if err != nil {
+		return nil, err
 	}
 
 	resp := new(bitbucket.PullRequestsListTasksResponse)
-	err := a.httpGet(ctx, req.ThrippyLinkID, path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.PullRequestsListTasksActivityName, err)
-
+	err = a.httpGet(ctx, bitbucket.PullRequestsListTasksActivityName, req.ThrippyLinkID, path, query, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +232,6 @@ func (a *API) PullRequestsListTasksActivity(
 // https://developer.atlassian.com/cloud/bitbucket/rest/api-group-pullrequests/#api-repositories-workspace-repo-slug-pullrequests-pull-request-id-merge-post
 func (a *API) PullRequestsMergeActivity(ctx context.Context, req bitbucket.PullRequestsMergeRequest) error {
 	path := fmt.Sprintf("/repositories/%s/%s/pullrequests/%s/merge", req.Workspace, req.RepoSlug, req.PullRequestID)
-
 	body := &prMergeBody{
 		Type:              req.Type,
 		Message:           req.Message,
@@ -355,7 +287,7 @@ func (a *API) PullRequestsUpdateCommentActivity(ctx context.Context, req bitbuck
 	return err
 }
 
-func paginatedQuery(pageLen, page string) url.Values {
+func paginatedQuery(name, path, pageLen, page, next string) (string, url.Values, error) {
 	query := url.Values{}
 	query.Set("pagelen", "100") // Default = 10, but we prefer to minimize the number of API calls.
 
@@ -366,5 +298,17 @@ func paginatedQuery(pageLen, page string) url.Values {
 		query.Set("page", page)
 	}
 
-	return query
+	if next != "" {
+		overrideURL, err := url.Parse(next)
+		if err != nil {
+			err = fmt.Errorf("invalid next page URL %q: %w", next, err)
+			otel.IncrementAPICallCounter(time.Now().UTC(), name, err)
+			return "", nil, err
+		}
+
+		path = strings.TrimPrefix(overrideURL.Path, "/2.0") // [API.httpRequestPrep] adds this automatically.
+		query = overrideURL.Query()
+	}
+
+	return path, query, nil
 }

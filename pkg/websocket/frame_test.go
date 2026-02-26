@@ -85,7 +85,7 @@ func TestConnWriteFrame(t *testing.T) {
 		want[2+i] = got[2+i]
 	}
 	for i := range payload {
-		want[6+i] ^= got[2+(i%4)]
+		want[6+i] ^= got[2+(i%4)] //gosec:disable G602 // False positive in unit test.
 	}
 
 	if !reflect.DeepEqual(got, want) {

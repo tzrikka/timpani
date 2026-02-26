@@ -27,6 +27,7 @@ linters:
     - gosec
     - gosmopolitan
     - govet
+    - importas
     - iface
     - ineffassign
     - intrange
@@ -35,6 +36,7 @@ linters:
     - modernize
     - musttag
     - noctx
+    - nolintlint
     - nosprintfhostport
     - perfsprint
     - predeclared
@@ -44,7 +46,9 @@ linters:
     - sloglint
     - staticcheck
     - thelper
+    - tparallel
     - unconvert
+    - unparam
     - unused
     - usestdlibvars
     - usetesting
@@ -61,13 +65,29 @@ linters:
     godot:
       scope: all
       capital: true
+    gosec:
+      excludes:
+        - G704
+        - G706
     iface:
       enable:
         - identical
         - unused
         - unexported
+    importas:
+      no-extra-aliases: true
+      alias:
+        - pkg: github.com/tzrikka/thrippy-api/thrippy/v1
+          alias: thrippypb
+        - pkg: github.com/tzrikka/timpani/internal/listeners
+          alias: intlis
+        - pkg: github.com/urfave/cli-altsrc/v3
+          alias: altsrc
     misspell:
       locale: US
+    nolintlint:
+      allow-unused: false
+      require-explanation: true
     predeclared:
       qualified-name: true
     revive:

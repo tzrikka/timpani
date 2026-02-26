@@ -8,12 +8,14 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/log"
 	"go.temporal.io/sdk/temporal"
 
 	"github.com/tzrikka/timpani/pkg/http/client"
+	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 const (
@@ -26,18 +28,28 @@ func (a *API) httpDelete(ctx context.Context, linkID, path string, query url.Val
 }
 
 // httpGet is a Bitbucket-specific HTTP GET wrapper for [client.HTTPRequest].
-func (a *API) httpGet(ctx context.Context, linkID, path string, query url.Values, jsonResp any) error {
-	return a.httpRequest(ctx, linkID, path, http.MethodGet, query, jsonResp)
+func (a *API) httpGet(ctx context.Context, name, linkID, path string, query url.Values, jsonResp any) error {
+	t := time.Now().UTC()
+	err := a.httpRequest(ctx, linkID, path, http.MethodGet, query, jsonResp)
+	otel.IncrementAPICallCounter(t, name, err)
+	return err
 }
 
 // httpGetText is a Bitbucket-specific HTTP GET wrapper for [client.HTTPRequest].
 // Unlike [httpGet], it expects a plaintext response body and returns it unparsed.
-func (a *API) httpGetText(ctx context.Context, linkID, path string, query url.Values) (*strings.Builder, error) {
+func (a *API) httpGetText(ctx context.Context, name, linkID, path string, query url.Values) (string, error) {
+	t := time.Now().UTC()
 	resp := new(strings.Builder)
-	if err := a.httpRequest(ctx, linkID, path, http.MethodGet, query, resp); err != nil {
-		return nil, err
+	err := a.httpRequest(ctx, linkID, path, http.MethodGet, query, resp)
+	otel.IncrementAPICallCounter(t, name, err)
+
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "404 Not Found") {
+			return "", temporal.NewNonRetryableApplicationError(err.Error(), "BitbucketAPIError", err, query.Encode())
+		}
+		return "", err
 	}
-	return resp, nil
+	return resp.String(), nil
 }
 
 // httpPost is a Bitbucket-specific HTTP POST wrapper for [client.HTTPRequest].

@@ -16,7 +16,7 @@ func TestNewOrCachedClient(t *testing.T) {
 	}))
 	defer s.Close()
 
-	url := func(_ context.Context) (string, error) {
+	url := func(_ context.Context) (string, error) { //nolint:unparam // Required function signature, but not used in this test.
 		return s.URL, nil
 	}
 
