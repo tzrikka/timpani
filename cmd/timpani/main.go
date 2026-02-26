@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"runtime/debug"
 
@@ -13,6 +14,7 @@ import (
 
 	"github.com/tzrikka/timpani/internal/logger"
 	"github.com/tzrikka/timpani/internal/thrippy"
+	"github.com/tzrikka/timpani/pkg/http/client"
 	"github.com/tzrikka/timpani/pkg/http/webhooks"
 	"github.com/tzrikka/timpani/pkg/temporal"
 	"github.com/tzrikka/xdg"
@@ -43,6 +45,10 @@ func main() {
 		Version: bi.Main.Version,
 		Flags:   flags(),
 		Action: func(ctx context.Context, cmd *cli.Command) error {
+			if cmd.Bool("health-check") {
+				return sendHealthzRequest(ctx, cmd.Int("webhook-port"))
+			}
+
 			initLog(cmd.Bool("dev"), cmd.Bool("pretty-log"), bi)
 			s := webhooks.NewHTTPServer(ctx, cmd)
 			go s.Run(ctx)
@@ -68,6 +74,10 @@ func flags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:  "pretty-log",
 			Usage: "human-readable console logging, instead of JSON",
+		},
+		&cli.BoolFlag{
+			Name:  "health-check",
+			Usage: "send a single GET request to http://localhost:port/healthz",
 		},
 	}
 
@@ -124,4 +134,10 @@ func initLog(dev, prettyLog bool, bi *debug.BuildInfo) {
 
 	slog.SetDefault(slog.New(handler))
 	slog.Info("build versions", slog.String("go", bi.GoVersion), slog.String("main", bi.Main.Version))
+}
+
+func sendHealthzRequest(ctx context.Context, port int) error {
+	url := fmt.Sprintf("http://localhost:%d/healthz", port)
+	_, _, _, err := client.HTTPRequest(ctx, http.MethodGet, url, "", "", "", nil)
+	return err
 }

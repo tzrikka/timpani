@@ -10,3 +10,8 @@ builds:
       - arm64
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
+
+checksum:
+  name_template: "{{.ProjectName}}_v{{.Version}}_checksums.txt"
