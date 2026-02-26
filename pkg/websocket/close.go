@@ -1,4 +1,3 @@
-//nolint:godoclint
 package websocket
 
 import (
@@ -21,6 +20,7 @@ import (
 //   - 4000-4999: reserved for private use and thus can't be registered
 type StatusCode uint16
 
+//nolint:godoclint // Cumbersome to follow Go documentation guidelines for constants that mirror a specification.
 const (
 	// The purpose for which the connection was established has been fulfilled.
 	StatusNormalClosure StatusCode = iota + 1000

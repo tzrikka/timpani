@@ -219,7 +219,7 @@ func (c *Conn) checkFrameHeader(h frameHeader, msgType Opcode) (string, error) {
 //   - Sending data: https://datatracker.ietf.org/doc/html/rfc6455#section-6.1
 func (c *Conn) writeFrame(op Opcode, payload []byte) error {
 	// Construct the header (automatically set the FIN and MASKED bits).
-	if err := c.bufio.WriteByte(bit0 | byte(op)); err != nil {
+	if err := c.bufio.WriteByte(bit0 | byte(op)); err != nil { //gosec:disable G115 // Constrained op value cannot overflow.
 		return fmt.Errorf("failed to write WebSocket control frame header: %w", err)
 	}
 
@@ -260,7 +260,7 @@ func (c *Conn) writePayloadLength(n int) error {
 	switch {
 	// Up to 125 bytes (0 extra bytes).
 	case n <= maxControlPayload:
-		return c.bufio.WriteByte(bit0 | byte(n))
+		return c.bufio.WriteByte(bit0 | byte(n)) //gosec:disable G115 // Constrained n value cannot overflow.
 
 	// Up to 64 KiB (2 extra bytes).
 	case n <= math.MaxUint16:

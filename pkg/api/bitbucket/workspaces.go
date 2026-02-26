@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
-	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // WorkspacesListMembersActivity is based on:
@@ -18,17 +16,13 @@ func (a *API) WorkspacesListMembersActivity(
 	req bitbucket.WorkspacesListMembersRequest,
 ) (*bitbucket.WorkspacesListMembersResponse, error) {
 	path := fmt.Sprintf("/workspaces/%s/members", req.Workspace)
-
 	query := url.Values{}
 	if len(req.EmailsFilter) > 0 {
 		query.Set("q", fmt.Sprintf(`user.email IN ("%s")`, strings.Join(req.EmailsFilter, `","`)))
 	}
 
-	t := time.Now().UTC()
 	resp := new(bitbucket.WorkspacesListMembersResponse)
-	err := a.httpGet(ctx, "", path, query, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.WorkspacesListMembersActivityName, err)
-
+	err := a.httpGet(ctx, bitbucket.WorkspacesListMembersActivityName, "", path, query, resp)
 	if err != nil {
 		return nil, err
 	}

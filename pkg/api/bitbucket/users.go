@@ -5,10 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/tzrikka/timpani-api/pkg/bitbucket"
-	"github.com/tzrikka/timpani/pkg/otel"
 )
 
 // UsersGetActivity is based on:
@@ -24,11 +22,8 @@ func (a *API) UsersGetActivity(ctx context.Context, req bitbucket.UsersGetReques
 		path = strings.Replace(path, "user", "users", 1)
 	}
 
-	t := time.Now().UTC()
 	resp := new(bitbucket.WorkspacesListMembersResponse)
-	err := a.httpGet(ctx, "", path, nil, resp)
-	otel.IncrementAPICallCounter(t, bitbucket.UsersGetActivityName, err)
-
+	err := a.httpGet(ctx, bitbucket.UsersGetActivityName, "", path, nil, resp)
 	if err != nil {
 		return nil, err
 	}
