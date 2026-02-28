@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"go.temporal.io/sdk/activity"
 	"go.temporal.io/sdk/log"
@@ -21,7 +22,13 @@ const (
 
 // httpGet is a Jira-specific HTTP GET wrapper for [client.HTTPRequest].
 func (a *API) httpGet(ctx context.Context, pathSuffix string, query url.Values, jsonResp any) error {
-	return a.httpRequest(ctx, pathSuffix, http.MethodGet, query, jsonResp)
+	if err := a.httpRequest(ctx, pathSuffix, http.MethodGet, query, jsonResp); err != nil {
+		if strings.HasPrefix(err.Error(), "404 Not Found") {
+			return temporal.NewNonRetryableApplicationError(err.Error(), "JiraAPIError", err, query.Encode())
+		}
+		return err
+	}
+	return nil
 }
 
 func (a *API) httpRequest(ctx context.Context, pathSuffix, method string, queryOrJSONBody, jsonResp any) error {
