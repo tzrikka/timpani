@@ -118,7 +118,7 @@ func constructBenchmarkFrame(b *testing.B, bb benchmark) []byte {
 	} else if i == 0 {
 		frame[i] = 0x02 // Binary data without FIN.
 	}
-	frame[i+1] = byte(bb.frameLens[0])
+	frame[i+1] = byte(bb.frameLens[0]) //gosec:disable G115 // Value checked before type conversion.
 	i += 2
 
 	switch bb.frameLens[0] {
@@ -139,8 +139,8 @@ func constructBenchmarkFrame(b *testing.B, bb benchmark) []byte {
 		return frame
 	}
 
-	frame[i] = 0x80 // Continuation with FIN.
-	frame[i+1] = byte(bb.frameLens[0])
+	frame[i] = 0x80                    // Continuation with FIN.
+	frame[i+1] = byte(bb.frameLens[0]) //gosec:disable G115 // Value checked before type conversion.
 	i += 2
 
 	switch bb.frameLens[0] {

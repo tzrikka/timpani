@@ -172,7 +172,7 @@ func (s *HTTPServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.Body = io.NopCloser(bytes.NewReader(raw))
-	_ = r.ParseForm()
+	_ = r.ParseForm() //gosec:disable G120 // Body size already limited by [parseBody] call above.
 
 	// Forward the request's data to a service-specific handler.
 	l = l.With(slog.String("template", template))
