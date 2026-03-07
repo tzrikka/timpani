@@ -46,9 +46,9 @@ func NewHTTPServer(ctx context.Context, cmd *cli.Command) *HTTPServer {
 	// Enumerate all configured Thrippy links - see also the initialization
 	// of non-webhook connections in [httpServer.ConnectLinks].
 	links := map[string]bool{}
-	for _, fn := range cmd.FlagNames() {
-		if strings.HasPrefix(fn, "thrippy-link-") {
-			links[cmd.String(fn)] = true
+	for _, name := range cmd.FlagNames() {
+		if strings.HasPrefix(name, "thrippy-link-") {
+			links[cmd.String(name)] = true
 		}
 	}
 
@@ -251,6 +251,10 @@ func parseBody(w http.ResponseWriter, r *http.Request) ([]byte, map[string]any, 
 // configured Thrippy links that are not stateless webhooks.
 func (s *HTTPServer) ConnectLinks(ctx context.Context) error {
 	for linkID := range s.webhookLinks {
+		if linkID == "" {
+			continue
+		}
+
 		template, secrets, err := s.linkData(ctx, linkID)
 		l := logger.FromContext(ctx).With(slog.String("link_id", linkID))
 		if checkLinkDataForConn(l, template, secrets, err) != nil {
