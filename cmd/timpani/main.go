@@ -33,7 +33,7 @@ var services = []string{
 }
 
 func main() {
-	bi, ok := debug.ReadBuildInfo()
+	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		fmt.Println("Error reading build info")
 		os.Exit(1)
@@ -42,20 +42,20 @@ func main() {
 	cmd := &cli.Command{
 		Name:    "timpani",
 		Usage:   "Temporal worker that sends API calls and receives event notifications",
-		Version: bi.Main.Version,
+		Version: info.Main.Version,
 		Flags:   flags(),
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			if cmd.Bool("health-check") {
 				return sendHealthzRequest(ctx, cmd.Int("webhook-port"))
 			}
 
-			initLog(cmd.Bool("dev"), cmd.Bool("pretty-log"), bi)
+			initLog(cmd.Bool("dev"), cmd.Bool("pretty-log"), info)
 			s := webhooks.NewHTTPServer(ctx, cmd)
 			go s.Run(ctx)
 			if err := s.ConnectLinks(ctx); err != nil {
 				return err
 			}
-			return temporal.Run(ctx, cmd, bi)
+			return temporal.Run(ctx, cmd, info)
 		},
 	}
 
@@ -110,7 +110,7 @@ func configFile() altsrc.StringSourcer {
 
 // initLog initializes the logger for Timpani's HTTP server and Temporal
 // worker, based on whether it's running in development mode or not.
-func initLog(dev, prettyLog bool, bi *debug.BuildInfo) {
+func initLog(dev, prettyLog bool, info *debug.BuildInfo) {
 	var handler slog.Handler
 	switch {
 	case dev: // Including dev && prettyLog.
@@ -133,7 +133,7 @@ func initLog(dev, prettyLog bool, bi *debug.BuildInfo) {
 	}
 
 	slog.SetDefault(slog.New(handler))
-	slog.Info("build versions", slog.String("go", bi.GoVersion), slog.String("main", bi.Main.Version))
+	slog.Info("build versions", slog.String("go", info.GoVersion), slog.String("main", info.Main.Version))
 }
 
 func sendHealthzRequest(ctx context.Context, port int) error {

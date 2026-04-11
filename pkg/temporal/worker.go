@@ -30,7 +30,7 @@ import (
 )
 
 // Run initializes the Temporal worker, and blocks to keep it running.
-func Run(ctx context.Context, cmd *cli.Command, bi *debug.BuildInfo) error {
+func Run(ctx context.Context, cmd *cli.Command, info *debug.BuildInfo) error {
 	l := logger.FromContext(ctx)
 	addr := cmd.String("temporal-address")
 	l.Info("Temporal server address: " + addr)
@@ -50,7 +50,7 @@ func Run(ctx context.Context, cmd *cli.Command, bi *debug.BuildInfo) error {
 			UseVersioning: true,
 			Version: worker.WorkerDeploymentVersion{
 				DeploymentName: "timpani",
-				BuildID:        bi.Main.Version,
+				BuildID:        info.Main.Version,
 			},
 			DefaultVersioningBehavior: workflow.VersioningBehaviorAutoUpgrade,
 		},
