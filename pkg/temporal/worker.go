@@ -80,13 +80,11 @@ func waitForEventWorkflow(ctx workflow.Context, req listeners.WaitForEventReques
 	ch := workflow.GetSignalChannel(ctx, req.Signal)
 	payload := make(map[string]any)
 	l := workflow.GetLogger(ctx)
-	startTime := time.Now()
 
 	selector := workflow.NewSelector(childCtx)
 	selector.AddReceive(ch, func(c workflow.ReceiveChannel, _ bool) {
 		c.Receive(ctx, &payload)
-		l.Debug("received signal", slog.String("signal", req.Signal),
-			slog.String("duration", time.Since(startTime).String()))
+		l.Debug("received signal", slog.String("signal", req.Signal))
 	})
 
 	if req.Timeout == "" {
