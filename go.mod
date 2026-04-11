@@ -1,19 +1,19 @@
 module github.com/tzrikka/timpani
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/lithammer/shortuuid/v4 v4.2.0
 	github.com/lmittmann/tint v1.1.3
-	github.com/tzrikka/thrippy-api v1.5.2
-	github.com/tzrikka/timpani-api v1.13.1
-	github.com/tzrikka/xdg v1.4.1
+	github.com/tzrikka/thrippy-api v1.5.3
+	github.com/tzrikka/timpani-api v1.13.2
+	github.com/tzrikka/xdg v1.4.2
 	github.com/urfave/cli-altsrc/v3 v3.1.0
-	github.com/urfave/cli/v3 v3.7.0
-	go.temporal.io/api v1.62.2
-	go.temporal.io/sdk v1.40.0
-	google.golang.org/grpc v1.79.3
+	github.com/urfave/cli/v3 v3.8.0
+	go.temporal.io/api v1.62.8
+	go.temporal.io/sdk v1.42.0
+	google.golang.org/grpc v1.80.0
 )
 
 require (
@@ -30,13 +30,13 @@ require (
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
-	golang.org/x/net v0.51.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
-	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260226221140-a57be14db171 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260406210006-6f92a3bedf2d // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
