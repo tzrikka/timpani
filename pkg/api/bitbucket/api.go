@@ -32,6 +32,10 @@ func (a *API) httpGet(ctx context.Context, name, linkID, path string, query url.
 	t := time.Now().UTC()
 	err := a.httpRequest(ctx, linkID, path, http.MethodGet, query, jsonResp)
 	otel.IncrementAPICallCounter(t, name, err)
+
+	if err != nil && strings.HasPrefix(err.Error(), "404 Not Found") {
+		return temporal.NewNonRetryableApplicationError(err.Error(), "BitbucketAPIError", err, query.Encode())
+	}
 	return err
 }
 
