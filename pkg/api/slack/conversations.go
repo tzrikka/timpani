@@ -111,6 +111,9 @@ func (a *API) ConversationsInfoActivity(ctx context.Context, req slack.Conversat
 		return nil, err
 	}
 
+	if resp.Error == "channel_not_found" {
+		return nil, temporal.NewNonRetryableApplicationError(resp.Error, "SlackAPIError", nil, req, resp)
+	}
 	if !resp.OK {
 		return nil, errors.New("Slack API error: " + resp.Error)
 	}
